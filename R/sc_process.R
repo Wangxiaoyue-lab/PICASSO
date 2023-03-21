@@ -1,5 +1,5 @@
 # this is the working directory
-work_dir <- "/public/home/luoliheng/yujia/analysis/gz+jz/re_analysis_gz/"
+work_dir <- "../yujia/analysis/gz+jz/re_analysis_gz/"
 
 # Define the features to be displayed on n plots
 feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo", "percent_hb")
@@ -14,12 +14,12 @@ qc_check <- function(all_data = all_data, species = "mm") {
     require(Seurat)
     require(scCustomize)
     cell_cycle_genes_file <- switch(species,
-        mm = "/public/home/luoliheng/refgenome/cell_cycle_Mus_musculus.csv",
-        hs = "/public/home/luoliheng/refgenome/cell_cycle_Homo_sapiens.csv"
+        mm = "../refgenome/cell_cycle_Mus_musculus.csv",
+        hs = "../refgenome/cell_cycle_Homo_sapiens.csv"
     )
     annotations_file <- switch(species,
-        mm = "/public/home/luoliheng/refgenome/annotations_Mus_musculus.csv",
-        hs = "/public/home/luoliheng/refgenome/annotations_Homo_sapiens.csv"
+        mm = "../refgenome/annotations_Mus_musculus.csv",
+        hs = "../refgenome/annotations_Homo_sapiens.csv"
     )
     hb_pattern <- switch(species,
         mm = "^Hb[^(p)]",
