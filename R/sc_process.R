@@ -1,3 +1,4 @@
+require(tidyverse)
 # this is the working directory
 work_dir <- "../yujia/analysis/gz+jz/re_analysis_gz/"
 
@@ -10,7 +11,6 @@ pal <- viridis::viridis(n = 10)
 
 # This function checks the quality of the data
 qc_check <- function(all_data = all_data, species = "mm") {
-    require(dplyr)
     require(Seurat)
     require(scCustomize)
     cell_cycle_genes_file <- switch(species,
