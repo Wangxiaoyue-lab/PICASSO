@@ -1,13 +1,5 @@
-require(tidyverse)
-# this is the working directory
-work_dir <- "../yujia/analysis/gz+jz/re_analysis_gz/"
-
-# Define the features to be displayed on n plots
-feats <- c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo", "percent_hb")
-
-# Define the color palette
-pal <- viridis::viridis(n = 10)
-
+suppressPackageStartupMessages(require(Seurat))
+suppressPackageStartupMessages(require(scCustomize))
 
 # This function checks the quality of the data
 qc_check <- function(all_data = all_data, species = "mm") {
@@ -45,9 +37,6 @@ qc_check <- function(all_data = all_data, species = "mm") {
     s_genes <- s_g2m_genes$genes[[which(s_g2m_genes$phase == "S")]]
     g2m_genes <- s_g2m_genes$genes[[which(s_g2m_genes$phase == "G2/M")]]
 
-    pdf_dir <- paste0(work_dir, "before_qc.pdf")
-    pdf(pdf_dir)
-
     all_data_processed <- Add_Mito_Ribo_Seurat(all_data, species = species) %>%
         PercentageFeatureSet(hb_pattern, col.name = "percent_hb") %>%
         CellCycleScoring(g2m.features = g2m_genes, s.features = s_genes) %>%
@@ -58,6 +47,9 @@ qc_check <- function(all_data = all_data, species = "mm") {
         RunUMAP(dims = 1:20) %>%
         Find_doublet()
     return(all_data_processed)
+
+
+    save_files(fun = pdf, name_string = "before_qc")
     print(VlnPlot(all_data_processed,
         group.by = "orig.ident",
         features = feats,
@@ -83,7 +75,6 @@ qc_check <- function(all_data = all_data, species = "mm") {
     }
     dev.off()
 }
-
 
 Find_doublet <- function(data) {
     require(DoubletFinder)
@@ -157,21 +148,19 @@ qc_process <- function(all_data,
 
     require(clustree)
 
-    pdf_dir <- paste0(work_dir, "after_qc.pdf")
-    pdf(pdf_dir)
+    name_strings <- "after_qc"
+    save_files(fun = pdf, name_string = "after_qc")
+
     print(DimPlot(all_data, split.by = "orig.ident", ncol = 2))
     print(DimPlot_scCustom(all_data, group.by = "type", ggplot_default_colors = TRUE, figure_plot = TRUE))
     print(DimPlot_scCustom(all_data, group.by = "Phase", ggplot_default_colors = TRUE, figure_plot = TRUE))
-
     for (i in feats) {
         print(FeaturePlot_scCustom(all_data, colors_use = pal, features = i))
     }
-
     for (i in resolutions) {
         group <- paste0(assay_use, "_snn_res.", i)
         print(DimPlot(all_data, group.by = group, label = T))
     }
-
     print(clustree(all_data@meta.data, prefix = paste0(assay_use, "_snn_res.")))
     dev.off()
 }
