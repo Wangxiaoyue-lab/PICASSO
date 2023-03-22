@@ -3,25 +3,12 @@ suppressPackageStartupMessages(require(scCustomize))
 
 
 # This function checks the quality of the data
-qc_check <- function(all_data = all_data, species = "mm") {
-    cell_cycle_genes_file <- switch(species,
-        "mm" = paste0(script_path, "/../Refgenome/cell_cycle_Mus_musculus.csv"),
-        "hs" = paste0(script_path, "/../Refgenome/cell_cycle_Homo_sapiens.csv")
-    )
-    annotations_file <- switch(species,
-        "mm" = paste0(script_path, "/../Refgenome/annotations_Mus_musculus.csv"),
-        "hs" = paste0(script_path, "/../Refgenome/annotations_Homo_sapiens.csv")
-    )
-    hb_pattern <- switch(species,
-        "mm" = "^Hb[^(p)]",
-        "hs" = "^HB[^(P)]"
-    )
+qc_check <- function(all_data = all_data) {
     if (is.null(cell_cycle_genes_file) || is.null(annotations_file) || is.null(hb_pattern)) {
         stop("Invalid species argument. Must be 'mm' or 'hs'.")
     }
 
-    cell_cycle_genes <- read.csv(cell_cycle_genes_file)
-    annotations <- read.csv(annotations_file)
+
 
     # Get gene names for Ensembl IDs for each gene
     cell_cycle_markers <- left_join(cell_cycle_genes, annotations, by = c("geneID" = "gene_id"))
@@ -35,6 +22,7 @@ qc_check <- function(all_data = all_data, species = "mm") {
     s_genes <- s_g2m_genes$genes[[which(s_g2m_genes$phase == "S")]]
     g2m_genes <- s_g2m_genes$genes[[which(s_g2m_genes$phase == "G2/M")]]
 
+
     all_data_processed <- Add_Mito_Ribo_Seurat(all_data, species = species) %>%
         PercentageFeatureSet(hb_pattern, col.name = "percent_hb") %>%
         CellCycleScoring(g2m.features = g2m_genes, s.features = s_genes) %>%
@@ -47,7 +35,7 @@ qc_check <- function(all_data = all_data, species = "mm") {
     return(all_data_processed)
 
 
-    save_files(fun = pdf, name_string = "before_qc")
+    pdf(save_file(fun = pdf, name_string = "before_qc"))
     print(VlnPlot(all_data_processed,
         group.by = "orig.ident",
         features = feats,
@@ -64,7 +52,7 @@ qc_check <- function(all_data = all_data, species = "mm") {
         scale_y_log10())
     print(ElbowPlot(all_data_processed))
     print(DimPlot(all_data_processed, split.by = "orig.ident", ncol = 2))
-    print(DimPlot(all_data_processed, group.by = "type"))
+    print(DimPlot(all_data_processed, group.by = gruop_var))
     print(DimPlot(all_data_processed, group.by = "doublet_info"))
     print(DimPlot(all_data_processed, group.by = "Phase"))
 
@@ -75,16 +63,15 @@ qc_check <- function(all_data = all_data, species = "mm") {
 }
 
 Find_doublet <- function(data) {
-    require(DoubletFinder)
-    require(dplyr)
-    sweep.res.list <- paramSweep_v3(data, PCs = 1:dim_use, sct = FALSE)
+    suppressPackageStartupMessages(require(DoubletFinder))
+    sweep.res.list <- paramSweep_v3(data, PCs = 1:20, sct = FALSE)
     sweep.stats <- summarizeSweep(sweep.res.list, GT = FALSE)
     bcmvn <- find.pK(sweep.stats)
     p <- bcmvn$pK[which.max(bcmvn$BCmetric)] %>%
         as.character() %>%
         as.numeric()
     nExp_poi <- round(0.05 * ncol(data))
-    data <- doubletFinder_v3(data, PCs = 1:dim_use, pN = 0.25, pK = p, nExp = nExp_poi, reuse.pANN = FALSE, sct = FALSE)
+    data <- doubletFinder_v3(data, PCs = 1:20, pN = 0.25, pK = p, nExp = nExp_poi, reuse.pANN = FALSE, sct = FALSE)
     colnames(data@meta.data)[ncol(data@meta.data)] <- "doublet_info"
     c <- grep("pANN_", colnames(data@meta.data))
     data@meta.data <- data@meta.data[, -c]
@@ -95,25 +82,19 @@ Find_doublet <- function(data) {
 qc_process <- function(all_data,
                        dim_use = 20,
                        resolutions = c(0.1, 0.2, 0.3, 0.5),
-                       run_sctransform = TRUE,
                        run_harmony = TRUE,
-                       percent_mito = 20,
-                       percent_hb = 5,
+                       max_mt = 20,
+                       max_hb = 5,
                        nFeature_RNA_min = 500,
                        nFeature_RNA_max = 7500,
                        vars_to_regress = c("percent_mito", "S.Score", "G2M.Score"),
                        group_by_vars = "orig.ident") {
     all_data <- subset(all_data,
-        subset = percent_mito < percent_mito &
-            percent_hb < percent_hb &
+        subset = percent_mito < max_mt &
+            percent_hb < max_hb &
             doublet_info == "Singlet" &
             nFeature_RNA > nFeature_RNA_min &
             nFeature_RNA < nFeature_RNA_max
-    )
-
-    assay_use <- switch(run_sctransform + 1,
-        "RNA",
-        "SCT"
     )
     ident_value <- paste0(assay_use, "_snn_res.", min(resolutions))
 
@@ -133,6 +114,7 @@ qc_process <- function(all_data,
     )
 
     if (run_harmony) {
+        require(harmony)
         all_data <- all_data %>%
             RunHarmony(group.by.vars = group_by_vars, dims.use = 1:dim_use, assay.use = assay_use)
     }
@@ -143,14 +125,11 @@ qc_process <- function(all_data,
         SetIdent(value = ident_value)
 
     return(all_data)
-
     require(clustree)
-
-    name_strings <- "after_qc"
-    save_files(fun = pdf, name_string = "after_qc")
+    pdf(save_file(fun = pdf, name_string = "after_qc"))
 
     print(DimPlot(all_data, split.by = "orig.ident", ncol = 2))
-    print(DimPlot_scCustom(all_data, group.by = "type", ggplot_default_colors = TRUE, figure_plot = TRUE))
+    print(DimPlot_scCustom(all_data, group.by = gruop_var, ggplot_default_colors = TRUE, figure_plot = TRUE))
     print(DimPlot_scCustom(all_data, group.by = "Phase", ggplot_default_colors = TRUE, figure_plot = TRUE))
     for (i in feats) {
         print(FeaturePlot_scCustom(all_data, colors_use = pal, features = i))
@@ -161,4 +140,42 @@ qc_process <- function(all_data,
     }
     print(clustree(all_data@meta.data, prefix = paste0(assay_use, "_snn_res.")))
     dev.off()
+}
+
+find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ...) {
+    suppressPackageStartupMessages(require(scCustomize))
+    modi_fun <- function(marker_genes) {
+        marker_genes <- Add_Pct_Diff(marker_genes) %>%
+            mutate(type = if_else(avg_log2FC > 0, "up", "down")) %>%
+            left_join(
+                unique(annotations[, c("gene_name", "description")]),
+                by = c("gene" = "gene_name")
+            )
+        return(marker_genes)
+    }
+    if (assay_use == "SCT") {
+        all_data <- PrepSCTFindMarkers(all_data)
+    }
+    if (!is.null(ident)) {
+        all_data <- SetIdent(all_data, value = ident)
+    }
+    if (all == TRUE) {
+        marker_genes <- FindAllMarkers(all_data, assay = assay_use, ...) %>% modi_fun()
+    } else {
+        if (!is.null(loop_var)) {
+            data_list <- lapply(loop_var, function(x) {
+                marker_genes <- FindMarkers(all_data, assay = assay_use, subset.ident = x, ...) %>%
+                    rownames_to_column("gene") %>%
+                    mutate(cluster = rep(x, nrow(.))) %>%
+                    modi_fun()
+            })
+            marker_genes <- do.call(rbind, data_list)
+        } else {
+            marker_genes <- FindMarkers(all_data, assay = assay_use, ...) %>%
+                rownames_to_column("gene") %>%
+                modi_fun()
+        }
+    }
+
+    return(marker_genes)
 }
