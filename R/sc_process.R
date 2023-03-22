@@ -6,12 +6,12 @@ qc_check <- function(all_data = all_data, species = "mm") {
     require(Seurat)
     require(scCustomize)
     cell_cycle_genes_file <- switch(species,
-        mm = "../refgenome/cell_cycle_Mus_musculus.csv",
-        hs = "../refgenome/cell_cycle_Homo_sapiens.csv"
+        mm = "../Refgenome/cell_cycle_Mus_musculus.csv",
+        hs = "../Refgenome/cell_cycle_Homo_sapiens.csv"
     )
     annotations_file <- switch(species,
-        mm = "../refgenome/annotations_Mus_musculus.csv",
-        hs = "../refgenome/annotations_Homo_sapiens.csv"
+        mm = "../Refgenome/annotations_Mus_musculus.csv",
+        hs = "../Refgenome/annotations_Homo_sapiens.csv"
     )
     hb_pattern <- switch(species,
         mm = "^Hb[^(p)]",
