@@ -1,23 +1,21 @@
 suppressPackageStartupMessages(require(Seurat))
 suppressPackageStartupMessages(require(scCustomize))
 
+
 # This function checks the quality of the data
 qc_check <- function(all_data = all_data, species = "mm") {
-    require(Seurat)
-    require(scCustomize)
     cell_cycle_genes_file <- switch(species,
-        mm = "../Refgenome/cell_cycle_Mus_musculus.csv",
-        hs = "../Refgenome/cell_cycle_Homo_sapiens.csv"
+        "mm" = paste0(script_path, "/../Refgenome/cell_cycle_Mus_musculus.csv"),
+        "hs" = paste0(script_path, "/../Refgenome/cell_cycle_Homo_sapiens.csv")
     )
     annotations_file <- switch(species,
-        mm = "../Refgenome/annotations_Mus_musculus.csv",
-        hs = "../Refgenome/annotations_Homo_sapiens.csv"
+        "mm" = paste0(script_path, "/../Refgenome/annotations_Mus_musculus.csv"),
+        "hs" = paste0(script_path, "/../Refgenome/annotations_Homo_sapiens.csv")
     )
     hb_pattern <- switch(species,
-        mm = "^Hb[^(p)]",
-        hs = "^HB[^(P)]"
+        "mm" = "^Hb[^(p)]",
+        "hs" = "^HB[^(P)]"
     )
-
     if (is.null(cell_cycle_genes_file) || is.null(annotations_file) || is.null(hb_pattern)) {
         stop("Invalid species argument. Must be 'mm' or 'hs'.")
     }

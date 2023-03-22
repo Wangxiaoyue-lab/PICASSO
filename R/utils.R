@@ -1,6 +1,7 @@
 suppressPackageStartupMessages(require(tidyverse))
 suppressPackageStartupMessages(require(patchwork))
 
+script_path <- getwd()
 source("sc_process.R")
 
 save_files <- function(
