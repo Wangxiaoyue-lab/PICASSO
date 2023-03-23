@@ -177,3 +177,58 @@ find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ..
     }
     return(marker_genes)
 }
+
+
+in_data_markers()
+
+makers_plot <- function(markers, seurat_object, dot_plot = TRUE, clustered = TRUE, feature_plot = TRUE, max_markers, col_dot = viridis_plasma_dark_high, col_fea =pal , ...1,...2) {
+    plot_function <- function() {
+        markers <- in_data_markers(markers, seurat_object)
+        if (dot_plot == TRUE) {
+            alldata <- seurat_object
+            switch(assay_use,
+                "RNA" = markers <- in_data_markers(markers, alldata[["RNA"]]),
+                "SCT" = markers <- in_data_markers(markers, alldata[["SCT"]])
+            )
+            do_dot_plot()
+        }
+        if (feature_plot == TRUE) {
+            do_feature_plot()
+        }
+        do_dot_plot <- function() {
+            n_markers <- length(markers)
+            n_plots <- ceiling(n_markers / max_markers)
+            for (i in 1:n_plots) {
+                start <- (i - 1) * n + 1
+                end <- min(i * n, n_markers)
+
+                if (clustered) {
+                    
+                } else {
+                    p_dot <- DotPlot_scCustom(object = seurat_object, features = markers[start:end], cols = col_dot, ... )
+                }
+            }
+            print(p_dot)
+        }
+        do_feature_plot <- function() {
+            for (i in markers) {
+                p_fea <- FeaturePlot(object = seurat_object, features = i, cols = makers_plot <- function(markers, seurat_object, dot_plot = TRUE, clustered = TRUE, feature_plot = TRUE, max_markers, col_dot = viridis_plasma_dark_high, col_fea =pal , ...) {
+, ...)
+            }
+            print(p_fea + plot_annotation(patste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
+        }
+    }
+
+    if (class(markers) != "character") {
+        require(patchwork)
+        cell_type <- colnames(markers)
+        annotation <- TRUE
+        for (i in cell_type) {
+            markers <- markers$i
+            plot_function()
+        }
+    } else {
+        annotation <- FALSE
+        plot_function()
+    }
+}
