@@ -141,7 +141,6 @@ qc_process <- function(all_data,
     print(clustree(all_data@meta.data, prefix = paste0(assay_use, "_snn_res.")))
     dev.off()
 }
-
 find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ...) {
     suppressPackageStartupMessages(require(scCustomize))
     modi_fun <- function(marker_genes) {
@@ -176,6 +175,5 @@ find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ..
                 modi_fun()
         }
     }
-
     return(marker_genes)
 }
