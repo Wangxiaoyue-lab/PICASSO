@@ -1,10 +1,12 @@
+project_name <- "Embryo"
+pal <- viridis::viridis(n = 10)
 source("/public/home/luoliheng/SINGLE/R/utils.R", chdir = TRUE)
 suppressPackageStartupMessages(require(Seurat))
 suppressPackageStartupMessages(require(velocyto.R))
 suppressPackageStartupMessages(require(SeuratWrappers))
 
 work_dir <- "/public/home/luoliheng/embryonic_cells/new_analysis/rna_velo/"
-
+project_name
 
 velo_data <- ReadVelocity(file = "/public/home/luoliheng/embryonic_cells/rawdata/velocyto/combined.loom") %>%
   as.Seurat() %>%
