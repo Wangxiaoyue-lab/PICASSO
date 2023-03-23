@@ -1,5 +1,7 @@
 # PICASSO: Pipeline, Code and Analysis for Scalable Single-cell Omics
 
+![PICASSO.png]("PICASSO\PICASSO.png")
+
 ## Version
 
 ### 001
