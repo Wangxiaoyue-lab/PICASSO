@@ -1,7 +1,7 @@
 # PICASSO: Pipeline, Code and Analysis for Scalable Single-cell Omics
 
-![PICASSO.png]("PICASSO\PICASSO.png")
-
+[![PICASSO.png]("[PICASSO\PICASSO.png](https://github.com/Moloch0/PICASSO/blob/main/PICASSO.png)")
+](https://github.com/Moloch0/PICASSO/blob/main/PICASSO.png)
 ## Version
 
 ### 001
