@@ -181,7 +181,7 @@ find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ..
 
 in_data_markers()
 
-makers_plot <- function(markers, seurat_object, dot_plot = TRUE, clustered = TRUE, feature_plot = TRUE, max_markers, col_dot = viridis_plasma_dark_high, col_fea =pal , ...1,...2) {
+makers_plot <- function(markers, seurat_object, dot_plot = TRUE, max_markers, cluster = 10, feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal, ...) {
     plot_function <- function() {
         markers <- in_data_markers(markers, seurat_object)
         if (dot_plot == TRUE) {
@@ -195,27 +195,30 @@ makers_plot <- function(markers, seurat_object, dot_plot = TRUE, clustered = TRU
         if (feature_plot == TRUE) {
             do_feature_plot()
         }
+
         do_dot_plot <- function() {
             n_markers <- length(markers)
             n_plots <- ceiling(n_markers / max_markers)
             for (i in 1:n_plots) {
                 start <- (i - 1) * n + 1
                 end <- min(i * n, n_markers)
-
-                if (clustered) {
-                    
+                if (is.numeric(cluster)) {
+                    p_dot <- Clustered_DotPlot(seurat_object, features = na.omit(marker), k = m, plot_km_elbow = FALSE, ...)
                 } else {
-                    p_dot <- DotPlot_scCustom(object = seurat_object, features = markers[start:end], cols = col_dot, ... )
+                    p_dot <- DotPlot_scCustom(seurat_object, features = markers[start:end], cols = col_dot, ...)
                 }
             }
             print(p_dot)
         }
         do_feature_plot <- function() {
             for (i in markers) {
-                p_fea <- FeaturePlot(object = seurat_object, features = i, cols = makers_plot <- function(markers, seurat_object, dot_plot = TRUE, clustered = TRUE, feature_plot = TRUE, max_markers, col_dot = viridis_plasma_dark_high, col_fea =pal , ...) {
-, ...)
+                p_fea <- FeaturePlot_scCustom(seurat_object, features = j, colors_use = col_fea, max.cutoff = "q95", ...) & NoAxes()
             }
-            print(p_fea + plot_annotation(patste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
+            if (annotation == TRUE) {
+                print(p_fea + plot_annotation(patste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
+            } else {
+                print(p_fea)
+            }
         }
     }
 
