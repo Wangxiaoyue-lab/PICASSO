@@ -15,8 +15,9 @@ velo_data$type <- colnames(velo_data) %>% str_extract("^[^:]+")
     species = "hs",
     Find_doublet = FALSE
   )
-  qc_plot%>% 
+  velo_data <- qc_plot(velo_data, vln_group = "type", dim_group = c("orig.ident","type","doublet_info","Phase"),feats = c("nCount_spliced", "nFeature_spliced", "percent_mito", "percent_ribo", "percent_hb"))
   
+  %>% 
 
   SCTransform(assay = "spliced") %>%
   RunPCA(verbose = FALSE) %>%
