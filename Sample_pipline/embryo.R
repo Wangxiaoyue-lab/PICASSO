@@ -1,36 +1,30 @@
-require(Seurat)
-require(monocle)
-require(tidyverse)
-work_dir <- "/public/home/luoliheng/embryonic_cells/new_analysis/"
-# Load the data
-alldata <- readRDS(paste0(work_dir, "basic/qc.rds"))
+project_name <- "Embryo"
+pal <- viridis::viridis(n = 10)
+source("/public/home/luoliheng/SINGLE/scRNA_analysis/utils.R", chdir = TRUE)
+suppressPackageStartupMessages(require(Seurat))
+suppressPackageStartupMessages(require(SeuratWrappers))
 
-cds <- as.CellDataSet(alldata) %>%
-  detectGenes(min_expr = 0.1) %>%
-  estimateSizeFactors() %>%
-  estimateDispersions()
+work_dir <- "/public/home/luoliheng/embryonic_cells/new_analysis/trajectory/"
 
+velo_data <- ReadVelocity(file = "/public/home/luoliheng/embryonic_cells/rawdata/velocyto/combined.loom") %>%
+  as.Seurat()
 
-cds <- setOrderingFilter(VariableFeatures(alldata)) %>%
-  plot_ordering_genes() %>%
-  reduceDimension(max_components = 2, method = "DDRTree") %>%
-  orderCells()
+velo_data$type <- colnames(velo_data) %>% str_extract("^[^:]+")
 
-pdf(paste0(work_dir, "monocle2/monocle2.pdf"))
-plot_cell_trajectory(cds, color_by = "type")
-plot_cell_trajectory(cds, color_by = "State")
-plot_cell_trajectory(cds, color_by = "Pseudotime")
-dev.off()
+  velo_data<-  qc_check(velo_data,
+    species = "hs",
+    Find_doublet = FALSE
+  )
+  qc_plot%>% 
+  
 
-saveRDS(cds, paste0(work_dir, "monocle2/monocle2.rds"))
+  SCTransform(assay = "spliced") %>%
+  RunPCA(verbose = FALSE) %>%
+  FindNeighbors(dims = 1:20) %>%
+  FindClusters() %>%
+  RunUMAP(dims = 1:20)
+  
+  
+   %>%
+  RunVelocity(deltaT = 1, kCells = 25, fit.quantile = 0.02)
 
-
-pseudotime_de <- differentialGeneTest(test[VariableFeatures(alldata), ],
-  fullModelFormulaStr = "~sm.ns(Pseudotime)"
-)
-pseudotime_de <- pseudotime_de[order(pseudotime_de$qval), ]
-
-states_de <- differentialGeneTest(test[expressed_genes, ],
-  fullModelFormulaStr = "~State"
-)
-states_de <- states_de[order(states_de$qval), ]
