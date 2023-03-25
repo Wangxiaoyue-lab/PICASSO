@@ -2,7 +2,7 @@ suppressPackageStartupMessages(require(tidyverse))
 suppressPackageStartupMessages(require(patchwork))
 
 script_path <- getwd()
-# source("sc_process.R")
+source("sc_process.R")
 
 save_file <- function(
     file = NULL, data = NULL, fun = NULL, name_string = NULL, ...) {
@@ -23,6 +23,9 @@ save_file <- function(
         if (!is.null(data)) {
             fun(data, filename, ...)
         } else {
+            if (defaultend == ".pdf") {
+                fun(filename, ...) # pdf only
+            }
             return(filename)
         }
     } else {
@@ -62,11 +65,11 @@ hb_pattern <- switch(species,
 
 
 in_data_markers <- function(genes, dataset) {
-    not_in_data_marker <- setdiff(genes, row.names(dataset))
-    warning(paste("The following genes are not in the", deparse(substitute(dataset), ":", paste(not_in_data_marker, collapse = ", "))))
-    marker <- setdiff(genes, not_in_data_marker)
-    if (is.null(marker)) {
-        stop(paste("No marker genes are in the dataset!", deparse(substitute(dataset))))
+    not_in_data_marker <- base::setdiff(genes, row.names(dataset))
+    print(paste("The following genes are not in the", deparse(substitute(dataset), ":", paste(not_in_data_marker, collapse = ", "))))
+    genes <- base::setdiff(genes, not_in_data_marker)
+    if (is.null(genes)) {
+        stop(paste("No marker genes are in the dataset", deparse(substitute(dataset))))
     }
-    return(marker)
+    return(genes)
 }

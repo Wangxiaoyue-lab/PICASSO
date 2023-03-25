@@ -8,8 +8,6 @@ qc_check <- function(all_data = all_data) {
         stop("Invalid species argument. Must be 'mm' or 'hs'.")
     }
 
-
-
     # Get gene names for Ensembl IDs for each gene
     cell_cycle_markers <- left_join(cell_cycle_genes, annotations, by = c("geneID" = "gene_id"))
 
@@ -35,7 +33,6 @@ qc_check <- function(all_data = all_data) {
     return(all_data_processed)
 
 
-    pdf(save_file(fun = pdf, name_string = "before_qc"))
     print(VlnPlot(all_data_processed,
         group.by = "orig.ident",
         features = feats,
@@ -59,7 +56,6 @@ qc_check <- function(all_data = all_data) {
     for (i in feats) {
         print(FeaturePlot_scCustom(all_data_processed, colors_use = pal, features = i))
     }
-    dev.off()
 }
 
 Find_doublet <- function(data) {
@@ -83,15 +79,15 @@ qc_process <- function(all_data,
                        dim_use = 20,
                        resolutions = c(0.1, 0.2, 0.3, 0.5),
                        run_harmony = TRUE,
-                       max_mt = 20,
-                       max_hb = 5,
+                       mt_max = 20,
+                       hb_max = 5,
                        nFeature_RNA_min = 500,
                        nFeature_RNA_max = 7500,
                        vars_to_regress = c("percent_mito", "S.Score", "G2M.Score"),
                        group_by_vars = "orig.ident") {
     all_data <- subset(all_data,
-        subset = percent_mito < max_mt &
-            percent_hb < max_hb &
+        subset = percent_mito < mt_max &
+            percent_hb < hb_max &
             doublet_info == "Singlet" &
             nFeature_RNA > nFeature_RNA_min &
             nFeature_RNA < nFeature_RNA_max
@@ -126,7 +122,6 @@ qc_process <- function(all_data,
 
     return(all_data)
     require(clustree)
-    pdf(save_file(fun = pdf, name_string = "after_qc"))
 
     print(DimPlot(all_data, split.by = "orig.ident", ncol = 2))
     print(DimPlot_scCustom(all_data, group.by = gruop_var, ggplot_default_colors = TRUE, figure_plot = TRUE))
@@ -139,7 +134,6 @@ qc_process <- function(all_data,
         print(DimPlot(all_data, group.by = group, label = T))
     }
     print(clustree(all_data@meta.data, prefix = paste0(assay_use, "_snn_res.")))
-    dev.off()
 }
 find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ...) {
     suppressPackageStartupMessages(require(scCustomize))
@@ -178,60 +172,65 @@ find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ..
     return(marker_genes)
 }
 
+select_markers <- function() {}
 
-in_data_markers()
+plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_markers = 40, cluster = 10, feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal, ...) {
+    plot_function <- function(markers, annotation) {
+        do_dot_plot <- function() {
+            n_markers <- length(markers)
+            n_plots <- ceiling(n_markers / max_markers)
+            for (i in 1:n_plots) {
+                start <- (i - 1) * max_markers + 1
+                end <- min(i * max_markers, n_markers)
+                if (is.numeric(cluster)) {
+                    p_dot <- Clustered_DotPlot(all_data, features = markers[start:end], k = cluster, plot_km_elbow = FALSE, ...)
+                } else {
+                    p_dot <- DotPlot_scCustom(all_data, features = markers[start:end], flip_axes = TRUE, colors_use = col_dot, ...)
+                }
+                if (annotation == TRUE) {
+                    print(p_dot + plot_annotation(paste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
+                } else {
+                    print(p_dot)
+                }
+            }
+        }
 
-makers_plot <- function(markers, seurat_object, dot_plot = TRUE, max_markers, cluster = 10, feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal, ...) {
-    plot_function <- function() {
-        markers <- in_data_markers(markers, seurat_object)
+        do_feature_plot <- function() {
+            for (j in markers) {
+                p_fea <- FeaturePlot_scCustom(all_data, features = j, colors_use = col_fea, max.cutoff = "q95", ...) & NoAxes()
+            }
+            if (annotation == TRUE) {
+                print(p_fea + plot_annotation(paste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
+            } else {
+                print(p_fea)
+            }
+        }
         if (dot_plot == TRUE) {
-            alldata <- seurat_object
             switch(assay_use,
-                "RNA" = markers <- in_data_markers(markers, alldata[["RNA"]]),
-                "SCT" = markers <- in_data_markers(markers, alldata[["SCT"]])
+                "RNA" = markers <- in_data_markers(markers, all_data[["RNA"]]@scale.data),
+                "SCT" = markers <- in_data_markers(markers, all_data[["SCT"]]@scale.data)
             )
             do_dot_plot()
         }
         if (feature_plot == TRUE) {
             do_feature_plot()
         }
-
-        do_dot_plot <- function() {
-            n_markers <- length(markers)
-            n_plots <- ceiling(n_markers / max_markers)
-            for (i in 1:n_plots) {
-                start <- (i - 1) * n + 1
-                end <- min(i * n, n_markers)
-                if (is.numeric(cluster)) {
-                    p_dot <- Clustered_DotPlot(seurat_object, features = na.omit(marker), k = m, plot_km_elbow = FALSE, ...)
-                } else {
-                    p_dot <- DotPlot_scCustom(seurat_object, features = markers[start:end], cols = col_dot, ...)
-                }
-            }
-            print(p_dot)
-        }
-        do_feature_plot <- function() {
-            for (i in markers) {
-                p_fea <- FeaturePlot_scCustom(seurat_object, features = j, colors_use = col_fea, max.cutoff = "q95", ...) & NoAxes()
-            }
-            if (annotation == TRUE) {
-                print(p_fea + plot_annotation(patste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
-            } else {
-                print(p_fea)
-            }
-        }
     }
-
-    if (class(markers) != "character") {
+    # If the unfiltered_markers is a data frame, we have multiple cell types, so we'll loop through them.
+    if (any(class(unfilterd_markers) == "data.frame") == TRUE) {
+        # Load the patchwork package so we can combine plots
         require(patchwork)
-        cell_type <- colnames(markers)
-        annotation <- TRUE
-        for (i in cell_type) {
-            markers <- markers$i
-            plot_function()
+        # Get the cell type names from the column names.
+        cell_types <- colnames(unfilterd_markers)
+        # Loop through the cell types
+        for (cell_type in cell_types) {
+            # Plot the marker genes for each cell type.
+            print("Ploting markers...")
+            plot_function(in_data_markers(unlist(na.omit(unfilterd_markers[, cell_type])), all_data), annotation = TRUE)
         }
     } else {
-        annotation <- FALSE
-        plot_function()
+        # Otherwise, we have a single cell type, so just plot the marker genes.
+        print("Ploting markers...")
+        plot_function(in_data_markers(na.omit(unfilterd_markers), all_data), annotation = FALSE)
     }
 }

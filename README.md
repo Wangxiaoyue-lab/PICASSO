@@ -1,6 +1,8 @@
 # PICASSO: Pipeline, Code and Analysis for Scalable Single-cell Omics
 
+**Temporarily designed for single-cell learning**
 ![PICASSO.png](https://raw.githubusercontent.com/Moloch0/PICASSO/main/PICASSO.png)
+
 ## Version
 
 ### 001
@@ -12,7 +14,5 @@
 - Add the function of color scheme
 
   - See details in PICASSO\R\Le_Reve
-
-# Temporarily designed for single-cell learning
 
 ## Functions
