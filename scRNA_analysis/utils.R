@@ -1,8 +1,10 @@
 suppressPackageStartupMessages(require(tidyverse))
-suppressPackageStartupMessages(require(patchwork))
+suppressPackageStartupMessages(require(Seurat))
+
+print(paste("This scripts is in:", getwd()))
 
 script_path <- getwd()
-source("sc_process.R")
+source("./01qc_by_seurat/sc_process.R")
 
 save_file <- function(
     file = NULL, data = NULL, fun = NULL, name_string = NULL, ...) {
@@ -33,36 +35,38 @@ save_file <- function(
         warning("No function specified!")
     }
 }
+
 name_file <- function(work_dir, project_name, name_string = NULL, defaultend = NULL) {
     paste0(work_dir, project_name, "_", name_string, defaultend)
 }
 
-if (exists("run_sctransform")) {
-    assay_use <- switch(run_sctransform + 1,
-        "RNA",
-        "SCT"
-    )
-} else {
-    assay_use <- "RNA"
+find_assay <- function() {
+    if (exists("run_sctransform")) {
+        assay_use <- switch(run_sctransform + 1,
+            "RNA",
+            "SCT"
+        ) %>% return()
+    } else {
+        assay_use <- "RNA" %>% return()
+    }
 }
-species <- "mm"
-cell_cycle_genes_file <- switch(species,
-    "mm" = paste0(script_path, "/../Refgenome/cell_cycle_Mus_musculus.csv"),
-    "hs" = paste0(script_path, "/../Refgenome/cell_cycle_Homo_sapiens.csv")
-)
-cell_cycle_genes <- read.csv(cell_cycle_genes_file)
 
-annotations_file <- switch(species,
-    "mm" = paste0(script_path, "/../Refgenome/annotations_Mus_musculus.csv"),
-    "hs" = paste0(script_path, "/../Refgenome/annotations_Homo_sapiens.csv")
-)
-annotations <- read.csv(annotations_file)
-
-hb_pattern <- switch(species,
-    "mm" = "^Hb[^(p)]",
-    "hs" = "^HB[^(P)]"
-)
-
+read_refdata <- function(species, file_type) {
+    # Check the file_type argument and get the appropriate file path based on the species and file_type arguments
+    data <- switch(file_type,
+        "cell_cycle_markers" = switch(species,
+            "mm" = paste0(script_path, "/Refgenome/cell_cycle_Mus_musculus.csv"),
+            "hs" = paste0(script_path, "/Refgenome/cell_cycle_Homo_sapiens.csv"),
+            stop("Invalid species argument")
+        ),
+        "annotations" = switch(species,
+            "mm" = paste0(script_path, "/Refgenome/annotations_Mus_musculus.csv"),
+            "hs" = paste0(script_path, "/Refgenome/annotations_Homo_sapiens.csv"),
+        ),
+        stop("Invalid file_type argument")
+    ) %>% read.csv()
+    return(data)
+}
 
 in_data_markers <- function(genes, dataset) {
     not_in_data_marker <- base::setdiff(genes, row.names(dataset))

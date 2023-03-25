@@ -3,13 +3,18 @@ suppressPackageStartupMessages(require(scCustomize))
 
 
 # This function checks the quality of the data
-qc_check <- function(all_data = all_data) {
-    if (is.null(cell_cycle_genes_file) || is.null(annotations_file) || is.null(hb_pattern)) {
-        stop("Invalid species argument. Must be 'mm' or 'hs'.")
-    }
-
+qc_check <- function(
+    all_data = all_data, species = "hs",
+    Find_doublet = TRUE) {
+    hb_pattern <- switch(species,
+        "mm" = "^Hb[^(p)]",
+        "hs" = "^HB[^(P)]"
+    )
     # Get gene names for Ensembl IDs for each gene
-    cell_cycle_markers <- left_join(cell_cycle_genes, annotations, by = c("geneID" = "gene_id"))
+    cell_cycle_markers <- left_join(read_refdata(species, "cell_cycle_markers"),
+        read_refdata(species, "annotations"),
+        by = c("geneID" = "gene_id")
+    )
 
     # Acquire the S and G2M phase genes
     s_g2m_genes <- cell_cycle_markers %>%
@@ -20,7 +25,6 @@ qc_check <- function(all_data = all_data) {
     s_genes <- s_g2m_genes$genes[[which(s_g2m_genes$phase == "S")]]
     g2m_genes <- s_g2m_genes$genes[[which(s_g2m_genes$phase == "G2/M")]]
 
-
     all_data_processed <- Add_Mito_Ribo_Seurat(all_data, species = species) %>%
         PercentageFeatureSet(hb_pattern, col.name = "percent_hb") %>%
         CellCycleScoring(g2m.features = g2m_genes, s.features = s_genes) %>%
@@ -28,34 +32,11 @@ qc_check <- function(all_data = all_data) {
         ScaleData(features = rownames(all_data)) %>%
         FindVariableFeatures() %>%
         RunPCA(verbose = F, npcs = 20) %>%
-        RunUMAP(dims = 1:20) %>%
-        Find_doublet()
-    return(all_data_processed)
-
-
-    print(VlnPlot(all_data_processed,
-        group.by = "orig.ident",
-        features = feats,
-        pt.size = 0,
-        ncol = 3
-    ) + NoLegend())
-    print(QC_Plot_UMIvsGene(all_data_processed,
-        meta_gradient_name = "percent_mito",
-        low_cutoff_gene = 1000,
-        high_cutoff_UMI = 3000,
-        meta_gradient_low_cutoff = 20
-    ) +
-        scale_x_log10() +
-        scale_y_log10())
-    print(ElbowPlot(all_data_processed))
-    print(DimPlot(all_data_processed, split.by = "orig.ident", ncol = 2))
-    print(DimPlot(all_data_processed, group.by = gruop_var))
-    print(DimPlot(all_data_processed, group.by = "doublet_info"))
-    print(DimPlot(all_data_processed, group.by = "Phase"))
-
-    for (i in feats) {
-        print(FeaturePlot_scCustom(all_data_processed, colors_use = pal, features = i))
-    }
+        RunUMAP(dims = 1:20)
+    ifelse(Find_doublet == TRUE,
+        all_data_processed <- Find_doublet(all_data_processed) %>% return(),
+        return(all_data_processed)
+    )
 }
 
 Find_doublet <- function(data) {
@@ -74,17 +55,43 @@ Find_doublet <- function(data) {
     return(data)
 }
 
+qc_plot <- function(all_data_processed, feats = c("nFeature_RNA", "nCount_RNA", "percent_mito"), group_var, pal) {
+    print(VlnPlot(all_data_processed,
+        group.by = "orig.ident",
+        features = feats,
+        pt.size = 0,
+        ncol = 3
+    ) + NoLegend())
+    print(QC_Plot_UMIvsGene(all_data_processed,
+        meta_gradient_name = "percent_mito",
+        low_cutoff_gene = 1000,
+        high_cutoff_UMI = 3000,
+        meta_gradient_low_cutoff = 20
+    ) +
+        scale_x_log10() +
+        scale_y_log10())
+    print(ElbowPlot(all_data_processed))
+    print(DimPlot(all_data_processed, split.by = "orig.ident", ncol = 2))
+    lapply(group_var, function(x) {
+        print(DimPlot(all_data_processed, group.by = x))
+    })
+    print(DimPlot(all_data_processed, group.by = "doublet_info"))
+    print(DimPlot(all_data_processed, group.by = "Phase"))
+    for (i in feats) {
+        print(FeaturePlot_scCustom(all_data_processed, colors_use = pal, features = i))
+    }
+}
 
 qc_process <- function(all_data,
                        dim_use = 20,
                        resolutions = c(0.1, 0.2, 0.3, 0.5),
                        run_harmony = TRUE,
+                       group_in_harmony = "orig.ident",
                        mt_max = 20,
                        hb_max = 5,
                        nFeature_RNA_min = 500,
                        nFeature_RNA_max = 7500,
-                       vars_to_regress = c("percent_mito", "S.Score", "G2M.Score"),
-                       group_by_vars = "orig.ident") {
+                       vars_to_regress = c("percent_mito", "S.Score", "G2M.Score")) {
     all_data <- subset(all_data,
         subset = percent_mito < mt_max &
             percent_hb < hb_max &
@@ -112,7 +119,7 @@ qc_process <- function(all_data,
     if (run_harmony) {
         require(harmony)
         all_data <- all_data %>%
-            RunHarmony(group.by.vars = group_by_vars, dims.use = 1:dim_use, assay.use = assay_use)
+            RunHarmony(group.by.vars = group_in_harmony, dims.use = 1:dim_use, assay.use = assay_use)
     }
 
     all_data <- RunUMAP(all_data, reduction = reduction_use, dims = 1:dim_use) %>%
@@ -121,6 +128,7 @@ qc_process <- function(all_data,
         SetIdent(value = ident_value)
 
     return(all_data)
+
     require(clustree)
 
     print(DimPlot(all_data, split.by = "orig.ident", ncol = 2))
@@ -135,11 +143,16 @@ qc_process <- function(all_data,
     }
     print(clustree(all_data@meta.data, prefix = paste0(assay_use, "_snn_res.")))
 }
+
 find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ...) {
     suppressPackageStartupMessages(require(scCustomize))
+
     modi_fun <- function(marker_genes) {
+        # Add a column with the percentage difference
         marker_genes <- Add_Pct_Diff(marker_genes) %>%
+            # Create a new column with the type of marker gene
             mutate(type = if_else(avg_log2FC > 0, "up", "down")) %>%
+            # Use the left_join() function to add the gene name and description
             left_join(
                 unique(annotations[, c("gene_name", "description")]),
                 by = c("gene" = "gene_name")
@@ -153,9 +166,11 @@ find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ..
         all_data <- SetIdent(all_data, value = ident)
     }
     if (all == TRUE) {
+        # If all is TRUE, find all markers
         marker_genes <- FindAllMarkers(all_data, assay = assay_use, ...) %>% modi_fun()
     } else {
         if (!is.null(loop_var)) {
+            # If all is FALSE and loop_var is not NULL, find markers for each cluster
             data_list <- lapply(loop_var, function(x) {
                 marker_genes <- FindMarkers(all_data, assay = assay_use, subset.ident = x, ...) %>%
                     rownames_to_column("gene") %>%
@@ -164,6 +179,7 @@ find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ..
             })
             marker_genes <- do.call(rbind, data_list)
         } else {
+            # If all is FALSE and loop_var is NULL, find markers
             marker_genes <- FindMarkers(all_data, assay = assay_use, ...) %>%
                 rownames_to_column("gene") %>%
                 modi_fun()
@@ -176,17 +192,23 @@ select_markers <- function() {}
 
 plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_markers = 40, cluster = 10, feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal, ...) {
     plot_function <- function(markers, annotation) {
+        # Create a function to plot the dot plot
         do_dot_plot <- function() {
+            # Calculate the number of markers and the number of plots
             n_markers <- length(markers)
             n_plots <- ceiling(n_markers / max_markers)
+            # Loop through each plot
             for (i in 1:n_plots) {
+                # Calculate the start and end index for the markers
                 start <- (i - 1) * max_markers + 1
                 end <- min(i * max_markers, n_markers)
+                # Plot the dot plot
                 if (is.numeric(cluster)) {
                     p_dot <- Clustered_DotPlot(all_data, features = markers[start:end], k = cluster, plot_km_elbow = FALSE, ...)
                 } else {
                     p_dot <- DotPlot_scCustom(all_data, features = markers[start:end], flip_axes = TRUE, colors_use = col_dot, ...)
                 }
+                # Add annotation if required
                 if (annotation == TRUE) {
                     print(p_dot + plot_annotation(paste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
                 } else {
@@ -195,30 +217,42 @@ plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_marker
             }
         }
 
+        # Create a function to plot features
         do_feature_plot <- function() {
+            # For each marker
             for (j in markers) {
+                # Plot the feature with FeaturePlot_scCustom
                 p_fea <- FeaturePlot_scCustom(all_data, features = j, colors_use = col_fea, max.cutoff = "q95", ...) & NoAxes()
             }
+            # If annotation is true
             if (annotation == TRUE) {
+                # Print the feature plot with the cell type as the title
                 print(p_fea + plot_annotation(paste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
             } else {
+                # Print the feature plot without annotation
                 print(p_fea)
             }
         }
+
+        # Create a vector of markers that are present in the data
+        markers <- switch(assay_use,
+            "RNA" =  in_data_markers(markers, all_data[["RNA"]]@scale.data),
+            "SCT" =  in_data_markers(markers, all_data[["SCT"]]@scale.data)
+        )
+
+        # Create the dot plot (if requested)
         if (dot_plot == TRUE) {
-            switch(assay_use,
-                "RNA" = markers <- in_data_markers(markers, all_data[["RNA"]]@scale.data),
-                "SCT" = markers <- in_data_markers(markers, all_data[["SCT"]]@scale.data)
-            )
             do_dot_plot()
         }
+
+        # Create the feature plot (if requested)
         if (feature_plot == TRUE) {
             do_feature_plot()
         }
     }
     # If the unfiltered_markers is a data frame, we have multiple cell types, so we'll loop through them.
     if (any(class(unfilterd_markers) == "data.frame") == TRUE) {
-        # Load the patchwork package so we can combine plots
+        # Load the patchwork package so we can annotate plots
         require(patchwork)
         # Get the cell type names from the column names.
         cell_types <- colnames(unfilterd_markers)
