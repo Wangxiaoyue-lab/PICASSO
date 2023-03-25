@@ -15,7 +15,6 @@ qc_check <- function(
         read_refdata(species, "annotations"),
         by = c("geneID" = "gene_id")
     )
-
     # Acquire the S and G2M phase genes
     s_g2m_genes <- cell_cycle_markers %>%
         dplyr::filter(phase %in% c("S", "G2/M")) %>%
@@ -55,7 +54,7 @@ Find_doublet <- function(data) {
     return(data)
 }
 
-qc_plot <- function(all_data_processed, feats = c("nFeature_RNA", "nCount_RNA", "percent_mito"), group_var, pal) {
+qc_plot <- function(all_data_processed, vln_group, dim_group, feats = c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_ribo", "percent_hb"), pal) {
     print(VlnPlot(all_data_processed,
         group.by = "orig.ident",
         features = feats,
@@ -71,12 +70,10 @@ qc_plot <- function(all_data_processed, feats = c("nFeature_RNA", "nCount_RNA", 
         scale_x_log10() +
         scale_y_log10())
     print(ElbowPlot(all_data_processed))
-    print(DimPlot(all_data_processed, split.by = "orig.ident", ncol = 2))
-    lapply(group_var, function(x) {
+    lapply(dim_group, function(x) {
         print(DimPlot(all_data_processed, group.by = x))
     })
-    print(DimPlot(all_data_processed, group.by = "doublet_info"))
-    print(DimPlot(all_data_processed, group.by = "Phase"))
+
     for (i in feats) {
         print(FeaturePlot_scCustom(all_data_processed, colors_use = pal, features = i))
     }
