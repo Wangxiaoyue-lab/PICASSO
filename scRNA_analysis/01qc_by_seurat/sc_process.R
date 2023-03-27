@@ -31,10 +31,9 @@ qc_check <- function(
         FindVariableFeatures() %>%
         RunPCA(verbose = F, npcs = 20) %>%
         RunUMAP(dims = 1:20)
-    ifelse(Find_doublet == TRUE,
-        all_data <- Find_doublet(all_data) %>% return(),
-        return(all_data)
-    )
+    if (Find_doublet) {
+        all_data <- Find_doublet(all_data)
+    }
 }
 
 Find_doublet <- function(data) {
