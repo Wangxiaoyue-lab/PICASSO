@@ -10,6 +10,8 @@ print(paste("Your project name is:", project_name))
 script_path <- getwd()
 source("./01qc_by_seurat/sc_process.R")
 
+
+
 save_file <- function(
     file = NULL, data = NULL, fun = NULL, name_string = NULL, ...) {
     # determine file extension based on write function (if provided)
@@ -40,6 +42,7 @@ save_file <- function(
 name_file <- function(work_dir, project_name, name_string = NULL, defaultend = NULL) {
     paste0(work_dir, project_name, "_", name_string, defaultend)
 }
+
 
 find_assay <- function(all_data = all_data) {
     print("The current assay used for the analysis is:", DefaultAssay(all_data))
@@ -72,4 +75,15 @@ in_data_markers <- function(genes, dataset) {
         stop(paste("No marker genes are in the dataset", deparse(substitute(dataset))))
     }
     return(genes)
+}
+
+
+time_it <- function(f) {
+    function(...) {
+        start_time <- Sys.time()
+        result <- f(...)
+        end_time <- Sys.time()
+        print(paste0("Execution time: ", end_time - start_time))
+        return(result)
+    }
 }
