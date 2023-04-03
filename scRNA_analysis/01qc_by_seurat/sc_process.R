@@ -1,6 +1,7 @@
 p_load(scCustomize)
 
 
+
 # This function checks the quality of the data
 qc_check <- function(
     all_data = all_data, species = "hs",
@@ -52,13 +53,16 @@ Find_doublet <- function(data) {
     return(data)
 }
 
+
 qc_check_plot <- function(all_data, feature_scatter = TRUE, vln_group, dim_group, feats = NULL, colors = pal) {
-    print(VlnPlot(all_data,
-        group.by = vln_group,
-        features = feats,
-        pt.size = 0,
-        ncol = 3
-    ) + NoLegend())
+    lapply(vln_group, function(x) {
+        print(VlnPlot(all_data,
+            group.by = vln_group,
+            features = feats,
+            pt.size = 0,
+            ncol = 3
+        ) + NoLegend())
+    })
     if (feature_scatter == TRUE) {
         print(QC_Plot_UMIvsGene(all_data,
             meta_gradient_name = "percent_mito",
@@ -78,24 +82,17 @@ qc_check_plot <- function(all_data, feature_scatter = TRUE, vln_group, dim_group
     })
 }
 
+#
+
+
+
 qc_process <- function(all_data,
                        dim_use = 20,
                        resolutions = c(0.1, 0.2, 0.3, 0.5),
                        run_harmony = TRUE,
                        run_sctransform = TRUE,
                        group_in_harmony = "orig.ident",
-                       mt_max = 20,
-                       hb_max = 5,
-                       nFeature_RNA_min = 500,
-                       nFeature_RNA_max = 7500,
                        vars_to_regress = c("percent_mito", "S.Score", "G2M.Score")) {
-    all_data <- subset(all_data,
-        subset = percent_mito < mt_max &
-            percent_hb < hb_max &
-            doublet_info == "Singlet" &
-            nFeature_RNA > nFeature_RNA_min &
-            nFeature_RNA < nFeature_RNA_max
-    )
     assay_use <<- switch(run_sctransform + 1,
         "RNA",
         "SCT"
@@ -130,6 +127,8 @@ qc_process <- function(all_data,
 }
 
 
+#
+
 qc_process_plot <- function(
     all_data,
     dim_group = c("orig.ident", "type", "Phase"),
@@ -152,6 +151,8 @@ qc_process_plot <- function(
     })
     print(clustree(all_data@meta.data, prefix = paste0(assay_use, "_snn_res.")))
 }
+
+
 
 find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ...) {
     assay_use <<- ifelse(exists("assay_use"), assay_use %||% DefaultAssay(all_data), DefaultAssay(all_data))
@@ -199,10 +200,40 @@ find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ..
 
 select_markers <- function() {}
 
+
 plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_markers = 40, cluster = 10, feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal, ...) {
     assay_use <<- ifelse(exists("assay_use"), assay_use %||% DefaultAssay(all_data), DefaultAssay(all_data))
     plot_function <- function(markers, annotation) {
         # Create a function to plot the dot plot
+        do_dot_plot <- function() {
+            # Calculate the number of markers and the number of plots
+            n_markers <- length(markers)
+            n_plots <- ceiling(n_markers / max_markers)
+            # Loop through each plot
+            for (i in 1:n_plots) {
+                # Calculate the start and end index for the markers
+                start <- (i - 1) * max_markers + 1
+                end <- min(i * max_markers, n_markers)
+                # Plot the dot plot
+                if (is.numeric(cluster)) {
+                    # Create a vector of markers that are present in the data
+                    scaled_markers <- switch(assay_use,
+                        "RNA" =  in_data_markers(markers, all_data[["RNA"]]@scale.data),
+                        "SCT" =  in_data_markers(markers, all_data[["SCT"]]@scale.data)
+                    )
+                    Clustered_DotPlot(all_data, features = scaled_markers[start:end], k = cluster, plot_km_elbow = FALSE, ...)
+                } else {
+                    p_dot <- DotPlot_scCustom(all_data, features = markers[start:end], flip_axes = TRUE, colors_use = col_dot, ...)
+                }
+                # Add annotation
+                if (annotation == TRUE) {
+                    print(p_dot + plot_annotation(paste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
+                } else {
+                    print(p_dot)
+                }
+            }
+        }
+
         do_dot_plot <- function() {
             # Calculate the number of markers and the number of plots
             n_markers <- length(markers)
@@ -261,6 +292,7 @@ plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_marker
             do_feature_plot()
         }
     }
+
     # If the unfiltered_markers is a data frame, we have multiple cell types, so we'll loop through them.
     if (any(class(unfilterd_markers) == "data.frame") == TRUE) {
         # Load the patchwork package so we can annotate plots
