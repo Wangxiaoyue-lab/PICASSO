@@ -1,4 +1,4 @@
-# Instructions in PICASSO\scRNA_analysis\utils.R
+# Instructions of PICASSO\scRNA_analysis
 
 ## Before all the functions
 
@@ -39,7 +39,7 @@ The script will load `Seurat` and `tidyverse` automatically
 ```R
 # Arguments
 save_file(file = NULL, data = NULL, fun = NULL, name_string = NULL, ...) 
-# only saveRDS, write.csv, pdf is supported for now
+# only saveRDS, write.csv, pdf are supported for now
 
 # Example 1
 save_file(fun = pdf, name_string = "markers")
@@ -139,7 +139,13 @@ qc_check_plot(all_data, feature_scatter = TRUE, vln_group, dim_group, feats = NU
 # This function plots QC metrics for each sample, including the number of reads per cell, the number of genes detected per cell,  the percentage of mitochondrial reads per cell, and the UMI vs. gene counts plot. 
 pal <- viridis::viridis(n = 10)
 save_file(fun = pdf, name_string = "before_qc")
-qc_check_plot(all_data, feature_scatter = TRUE, vln_group = "type", dim_group = c("orig.ident", "type", "doublet_info", "Phase"), feats = c("nCount_RNA", "nFeature_RNA", "percent_mito", "percent_ribo", "percent_hb"), colors = pal)
+qc_check_plot(all_data,
+  feature_scatter = TRUE,
+  vln_group = "type",
+  dim_group = c("orig.ident", "type", "doublet_info", "Phase"),
+  feats = c("nCount_RNA", "nFeature_RNA", "percent_mito", "percent_ribo", "percent_hb"),
+  colors = pal
+)
 dev.off()
 ```
 
@@ -210,10 +216,10 @@ save_file(data = marker_genes, fun = write.csv, name_string = "markers", row.nam
 # all = FALSE. Use FindMarkers
 # ident = NULL. Otherwise, this function will be executed
 # all_data <- SetIdent(all_data, value = ident)
-# loop_var = 0:3. The defult ident will be seurat_clusters find by FindClusters in Seurat. Here I want to loop from  cluster 0 to cluster 3
+# loop_var = 0:3. The defult ident will be seurat_clusters find by FindClusters in Seurat. 
+# Here I want to loop from  cluster 0 to cluster 3
 # group.by="type". In a cluster, I want to compare columns with group name "type"
 # ident.1 = "ident_A". In this group, I want to compare "ident_A" with other "type"s
-
 ```
 
 ### `plot_makers`
@@ -235,12 +241,12 @@ plot_makers(unfilterd_markers,
 require(readxl)
 marker <- read_excel("/public/home/files/markers.xlsx", sheet = 1)
 pal <- viridis::viridis(n = 10)
+
 save_file(fun = pdf, name_string = "markers")
 plot_makers(marker, all_data,
   dot_plot = TRUE, max_markers = 40, cluster = "no",
   feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal
 )
-
 dev.off()
 ```
 
