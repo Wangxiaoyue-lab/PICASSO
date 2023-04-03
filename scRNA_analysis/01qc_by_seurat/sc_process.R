@@ -74,7 +74,7 @@ qc_check_plot <- function(all_data, feature_scatter = TRUE, vln_group, dim_group
         print(DimPlot(all_data, group.by = x))
     })
     lapply(feats, function(x) {
-        print(FeaturePlot_scCustom(all_data, colors_use = colors, features = x))
+        FeaturePlot_scCustom(all_data, colors_use = colors, features = x)
     })
 }
 
@@ -96,7 +96,7 @@ qc_process <- function(all_data,
             nFeature_RNA > nFeature_RNA_min &
             nFeature_RNA < nFeature_RNA_max
     )
-    assay_use <- switch(run_sctransform + 1,
+    assay_use <<- switch(run_sctransform + 1,
         "RNA",
         "SCT"
     )
@@ -136,12 +136,12 @@ qc_process_plot <- function(
     feats = c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_hb"),
     colors = pal,
     resolutions = c(0.1, 0.2, 0.3, 0.5)) {
-    assay_use <- DefaultAssay(all_data)
+    assay_use <<- ifelse(exists("assay_use"), assay_use %||% DefaultAssay(all_data), DefaultAssay(all_data))
     lapply(dim_group, function(x) {
         print(DimPlot_scCustom(all_data, group.by = x, ggplot_default_colors = TRUE, figure_plot = TRUE))
     })
     lapply(feats, function(x) {
-        print(FeaturePlot_scCustom(all_data, colors_use = colors, features = x))
+        FeaturePlot_scCustom(all_data, colors_use = colors, features = x)
     })
 
 
@@ -154,6 +154,8 @@ qc_process_plot <- function(
 }
 
 find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ...) {
+    assay_use <<- ifelse(exists("assay_use"), assay_use %||% DefaultAssay(all_data), DefaultAssay(all_data))
+
     modi_fun <- function(marker_genes) {
         # Add a column with the percentage difference
         marker_genes <- Add_Pct_Diff(marker_genes) %>%
@@ -198,6 +200,7 @@ find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ..
 select_markers <- function() {}
 
 plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_markers = 40, cluster = 10, feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal, ...) {
+    assay_use <<- ifelse(exists("assay_use"), assay_use %||% DefaultAssay(all_data), DefaultAssay(all_data))
     plot_function <- function(markers, annotation) {
         # Create a function to plot the dot plot
         do_dot_plot <- function() {
@@ -211,11 +214,16 @@ plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_marker
                 end <- min(i * max_markers, n_markers)
                 # Plot the dot plot
                 if (is.numeric(cluster)) {
-                    p_dot <- Clustered_DotPlot(all_data, features = markers[start:end], k = cluster, plot_km_elbow = FALSE, ...)
+                    # Create a vector of markers that are present in the data
+                    scaled_markers <- switch(assay_use,
+                        "RNA" =  in_data_markers(markers, all_data[["RNA"]]@scale.data),
+                        "SCT" =  in_data_markers(markers, all_data[["SCT"]]@scale.data)
+                    )
+                    Clustered_DotPlot(all_data, features = scaled_markers[start:end], k = cluster, plot_km_elbow = FALSE, ...)
                 } else {
                     p_dot <- DotPlot_scCustom(all_data, features = markers[start:end], flip_axes = TRUE, colors_use = col_dot, ...)
                 }
-                # Add annotation if p_loadd
+                # Add annotation
                 if (annotation == TRUE) {
                     print(p_dot + plot_annotation(paste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
                 } else {
@@ -228,24 +236,20 @@ plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_marker
         do_feature_plot <- function() {
             # For each marker
             for (j in markers) {
+                FeaturePlot_scCustom
                 # Plot the feature with FeaturePlot_scCustom
                 p_fea <- FeaturePlot_scCustom(all_data, features = j, colors_use = col_fea, max.cutoff = "q95", ...) & NoAxes()
-            }
-            # If annotation is true
-            if (annotation == TRUE) {
-                # Print the feature plot with the cell type as the title
-                print(p_fea + plot_annotation(paste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
-            } else {
-                # Print the feature plot without annotation
-                print(p_fea)
+                # If annotation is true
+                if (annotation == TRUE) {
+                    # Print the feature plot with the cell type as the title
+                    print(p_fea + plot_annotation(paste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
+                } else {
+                    # Print the feature plot without annotation
+                    print(p_fea)
+                }
             }
         }
 
-        # Create a vector of markers that are present in the data
-        markers <- switch(assay_use,
-            "RNA" =  in_data_markers(markers, all_data[["RNA"]]@scale.data),
-            "SCT" =  in_data_markers(markers, all_data[["SCT"]]@scale.data)
-        )
 
         # Create the dot plot (if requested)
         if (dot_plot == TRUE) {
@@ -266,8 +270,8 @@ plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_marker
         # Loop through the cell types
         for (cell_type in cell_types) {
             # Plot the marker genes for each cell type.
-            print("Ploting markers...")
-            plot_function(in_data_markers(unlist(na.omit(unfilterd_markers[, cell_type])), all_data), annotation = TRUE)
+            print(paste0("Ploting markers in ", cell_type, "..."))
+            plot_function(in_data_markers(marker[, cell_type] %>% na.omit() %>% unlist() %>% as.character(), all_data), annotation = TRUE)
         }
     } else {
         # Otherwise, we have a single cell type, so just plot the marker genes.

@@ -2,8 +2,14 @@ suppressPackageStartupMessages(require(pacman))
 p_load(Seurat, tidyverse)
 
 print(paste("This scripts is in:", getwd()))
-print(paste("Your work directory is in:", work_dir))
-print(paste("Your project name is:", project_name))
+
+
+ifelse(!exists("work_dir"), warning("Variable 'work_dir' does not exist."),
+    print(paste("Your work directory is in:", work_dir))
+)
+ifelse(!exists("project_name"), warning("Variable 'project_name' does not exist."),
+    print(paste("Your project name is:", project_name))
+)
 
 
 
@@ -33,8 +39,9 @@ save_file <- function(
     } else {
         if (defaultend == ".pdf") {
             fun(filename, ...) # pdf only
+        } else {
+            return(filename)
         }
-        return(filename)
     }
 }
 
@@ -69,10 +76,12 @@ read_refdata <- function(species, file_type) {
 
 in_data_markers <- function(genes, dataset) {
     not_in_data_marker <- base::setdiff(genes, row.names(dataset))
-    print(paste("The following genes are not in the", deparse(substitute(dataset), ":", paste(not_in_data_marker, collapse = ", "))))
-    genes <- base::setdiff(genes, not_in_data_marker)
+    if (length(not_in_data_marker) != 0) {
+        cat(paste("The following genes are not in the", deparse(substitute(dataset)), ":\n", paste(not_in_data_marker, collapse = ", ")))
+        genes <- base::setdiff(genes, not_in_data_marker)
+    }
     if (is.null(genes)) {
-        stop(paste("No marker genes are in the dataset", deparse(substitute(dataset))))
+        stop(paste("No marker genes are in the", deparse(substitute(dataset))))
     }
     return(genes)
 }
@@ -86,4 +95,30 @@ time_it <- function(f) {
         print(paste0("Execution time: ", end_time - start_time))
         return(result)
     }
+}
+
+check_expression <- function(all_data = all_data, feats = NULL, ...) {
+    if (any(class(feats) == "data.frame") == TRUE) {
+        classed_genes <- names(feats)
+        result <- classed_genes %>%
+            map(~ {
+                mediate_result <- AverageExpression(all_data, features = as.character(na.omit(feats[[.x]]), ...)) %>%
+                    as.data.frame() %>%
+                    mutate(row_sum = rowSums(.)) %>%
+                    rowwise() %>%
+                    mutate(row_var = var(c_across(dplyr::everything()))) %>%
+                    ungroup()
+                mediate_result$class <- .x
+                mediate_result
+            }) %>%
+            bind_rows()
+    } else {
+        result <- AverageExpression(all_data, features = na.omit(feats), ...) %>%
+            as.data.frame() %>%
+            mutate(row_sum = rowSums(.)) %>%
+            rowwise() %>%
+            mutate(row_var = var(c_across(dplyr::everything()))) %>%
+            ungroup()
+    }
+    return(result)
 }
