@@ -18,6 +18,7 @@ source("./01qc_by_seurat/sc_process.R")
 
 
 
+
 save_file <- function(
     file = NULL, data = NULL, fun = NULL, name_string = NULL, ...) {
     # determine file extension based on write function (if provided)
@@ -51,6 +52,8 @@ name_file <- function(work_dir, project_name, name_string = NULL, defaultend = N
 }
 
 
+
+
 find_assay <- function(all_data = all_data) {
     print("The current assay used for the analysis is:", DefaultAssay(all_data))
     print("All assays in this object is:", Assays(all_data))
@@ -58,7 +61,6 @@ find_assay <- function(all_data = all_data) {
 
 
 read_refdata <- function(species, file_type) {
-    # Check the file_type argument and get the appropriate file path based on the species and file_type arguments
     data <- switch(file_type,
         "cell_cycle_markers" = switch(species,
             "mm" = paste0(script_path, "/Refgenome/cell_cycle_Mus_musculus.csv"),
@@ -74,6 +76,8 @@ read_refdata <- function(species, file_type) {
     return(data)
 }
 
+
+
 in_data_markers <- function(genes, dataset) {
     not_in_data_marker <- base::setdiff(genes, row.names(dataset))
     if (length(not_in_data_marker) != 0) {
@@ -87,6 +91,8 @@ in_data_markers <- function(genes, dataset) {
 }
 
 
+
+
 time_it <- function(f) {
     function(...) {
         start_time <- Sys.time()
@@ -96,6 +102,8 @@ time_it <- function(f) {
         return(result)
     }
 }
+
+
 
 check_expression <- function(all_data = all_data, feats = NULL, ...) {
     if (any(class(feats) == "data.frame") == TRUE) {
