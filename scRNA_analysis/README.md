@@ -3,7 +3,7 @@
 ## Before all the functions
 
 1. Define `work_dir` and `project_name`
-   (Please define it or you can not use `save_file` function)
+   (Define it first, otherwise you cannot use the `save_file `function)
    like
 
 ```R
@@ -21,18 +21,18 @@ source("/public/home/SINGLE/scRNA_analysis/utils.R", chdir = TRUE)
 [1] "Your project name is: MSC"
 ```
 
-The script will load 'Seurat' and 'tidyverse' automatically
+The script will load `Seurat` and `tidyverse` automatically
 
 ## Use the functions provided in utils.R
 
 ### `save_file`
 
-1. save_file() generates a file name and writes data to that file. It is used when saving data, plots, and other output from the model.
+1. `save_file `generates a file name and writes data to that file. It is used when saving data, plots, and other outputs.
 2. It can be used when saving a single object:
    `save_file(file = "test.rds", data = data, fun = saveRDS)`
-3. or when saving multiple objects to the same file. This is useful when saving a list of objects, or when saving a large data frame to a csv file.
+3. Or when saving a large data frame to a csv file.
    `save_file(file = "test.csv", data = data, fun = write.csv, row.names = FALSE, col.names = TRUE)`
-4. or when saving a pdf file:
+4. Or when saving a pdf file:
    `save_file(file = "test.pdf", fun = pdf, width = 8, height = 6)`
 5. If no file name is provided, the function pastes `work_dir`, `project_name`, and `name_string`, which I often use.
 
@@ -56,7 +56,7 @@ readRDS(save_file(fun = saveRDS, name_string = "qc"))
 
 ### `find_assay`
 
- This function prints the current assay used for the analysis and all assays in the object. The function takes the object as a parameter, which is all_data by default.
+This function prints the current assay used for the analysis and all assays in the object. The function takes the object as a parameter, which is all_data by default.
 
 ```R
 # Arguments
@@ -75,7 +75,7 @@ read_refdata(species, file_type)
 
 ### `in_data_markers`
 
- This function checks if the genes(vector) passed as argument are present in the dataset.If not, it returns a warning message and fliters them. If all the genes are present, it returns the marker genes.
+This function checks if the genes(vector) passed as argument are present in the dataset.If not, it returns a warning message and fliters them. If all the genes are present, it returns the marker genes.
 
 ```R
 # Arguments
@@ -84,7 +84,7 @@ in_data_markers(genes, dataset)
 
 ### `time_it`
 
- The function prints the execution time of the wrapped function. The function returns the result of the wrapped function.
+The function prints the execution time of the wrapped function. The function returns the result of the wrapped function.
 
 ```R
 # Arguments
@@ -93,7 +93,7 @@ time_it(f)
 
 ### `check_expression`
 
- This function is used to check the expression of certain genes in the dataset.  It takes the dataset, a vector of genes or a dataframe of genes, and returns the average expression of the genes. If a dataframe of genes is provided, the function will return the average expression of each gene and each idents. Also the sum and variance between idents. Other arguments will be passed into `AverageExpression`.
+This function is used to check the expression of certain genes in the dataset.  It takes the dataset, a vector of genes or a dataframe of genes, and returns the average expression of the genes. If a dataframe of genes is provided, the function will return the average expression of each gene and each idents. Also the sum and variance between idents. Other arguments will be passed into `AverageExpression`.
 
 ```R
 # Arguments
@@ -116,7 +116,7 @@ save_file(data=a,fun=write.csv,name_string="exp_in_types")
 
 ### `qc_check`
 
- This function checks the quality of the data. Takes in the all_data Seurat object and a species name, calculates the percent of Mito/Ribo/hemoglobin gene expression, scores the cells for cell cycle phases, normalizes scales the data, finds the variable features, runs PCA and UMAP, finds the doublets by `Find_doublet`  in the data.
+This function checks the quality of the data. Takes in the all_data Seurat object and a species name, calculates the percent of Mito/Ribo/hemoglobin gene expression, scores the cells for cell cycle phases, normalizes scales the data, finds the variable features, runs PCA and UMAP, finds the doublets by `Find_doublet`  in the data.
 
 ```R
 # Arguments
@@ -129,7 +129,7 @@ save_file(data = all_data, fun = saveRDS, name_string = "before_qc")
 
 ### `qc_check_plot`
 
- The function plots the elbow plot, also the `feats` plot with `VlnPlot` which is grouped by `vln_group`,`DimPlot` group by `dim_group`, `FeaturePlot_scCustom` group by `feats`, colors in FeaturePlot is `colors`
+The function plots the elbow plot, also the `feats` plot with `VlnPlot` which is grouped by `vln_group`,`DimPlot` group by `dim_group`, `FeaturePlot_scCustom` group by `feats`, colors in FeaturePlot is `colors`
 
 ```R
 # Arguments
@@ -149,13 +149,15 @@ This function runs the QC process on the Seurat object. It takes as input the Se
 
 ```R
 # Arguments
-qc_process <- function(all_data,
-                       dim_use = 20,
-                       resolutions = c(0.1, 0.2, 0.3, 0.5),
-                       run_harmony = TRUE,
-                       run_sctransform = TRUE,
-                       group_in_harmony = "orig.ident",
-                       vars_to_regress = c("percent_mito", "S.Score", "G2M.Score"))
+qc_process(all_data,
+    dim_use = 20,
+    resolutions = c(0.1, 0.2, 0.3, 0.5),
+    run_harmony = TRUE,
+    run_sctransform = TRUE,
+    group_in_harmony = "orig.ident",
+    vars_to_regress = c("percent_mito", "S.Score", "G2M.Score")
+)
+
 
 # Example 1
 all_data <- subset(all_data,
@@ -181,6 +183,7 @@ qc_process_plot(
     colors = pal,
     resolutions = c(0.1, 0.2, 0.3, 0.5))
 # Note the default ident will be the smallest resolution
+
 # Example 1
 save_file(fun = pdf, name_string = "after_qc")
 pal <- viridis::viridis(n = 10)
@@ -190,7 +193,7 @@ dev.off()
 
 ### `find_markers`
 
- The function is to find marker genes. Determine whether all markers are found. Choose identity to use. And loop_var could be used to find markers for each cluster.  Additional arguments will be passed to `FindMarkers` or `FindAllMarkers` .
+The function is to find marker genes. Determine whether all markers are found. Choose identity to use. And loop_var could be used to find markers for each cluster.  Additional arguments will be passed to `FindMarkers` or `FindAllMarkers` .
 
 ```R
 # Arguments
@@ -199,12 +202,15 @@ find_markers(all_data, all = TRUE, ident = NULL, loop_var = NULL, ...)
 # Percentage difference, type of marker gene(up or down),gene description will be added
 
 # Example 1
-marker_genes <- find_markers(all_data, all = FALSE, ident = NULL, loop_var = 0:3, ident.1 = "ident_A", group.by = "type", only.pos = FALSE)
+marker_genes <- find_markers(all_data,
+  all = FALSE, ident = NULL, loop_var = 0:3,
+  ident.1 = "ident_A", group.by = "type", only.pos = FALSE
+)
 save_file(data = marker_genes, fun = write.csv, name_string = "markers", row.names = FALSE, col.names = TRUE)
 # all = FALSE. Use FindMarkers
 # ident = NULL. Otherwise, this function will be executed
 # all_data <- SetIdent(all_data, value = ident)
-# loop_var = 0:3. The defult ident will be seurat_clusters find by FindClusters in Seurat.Here I want to loop from  cluster 0 to cluster 3
+# loop_var = 0:3. The defult ident will be seurat_clusters find by FindClusters in Seurat. Here I want to loop from  cluster 0 to cluster 3
 # group.by="type". In a cluster, I want to compare columns with group name "type"
 # ident.1 = "ident_A". In this group, I want to compare "ident_A" with other "type"s
 
@@ -220,14 +226,21 @@ save_file(data = marker_genes, fun = write.csv, name_string = "markers", row.nam
 
 ```R
 # Arguments
-plot_makers(unfilterd_markers, all_data, dot_plot = TRUE, max_markers = 40, cluster = 10, feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal, ...) 
+plot_makers(unfilterd_markers,
+  all_data, dot_plot = TRUE, max_markers = 40, cluster = 10,
+  feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal, ...
+)
 
 # Example 1
 require(readxl)
 marker <- read_excel("/public/home/files/markers.xlsx", sheet = 1)
 pal <- viridis::viridis(n = 10)
 save_file(fun = pdf, name_string = "markers")
-plot_makers(marker, all_data, dot_plot = TRUE, max_markers = 40, cluster = "no", feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal)
+plot_makers(marker, all_data,
+  dot_plot = TRUE, max_markers = 40, cluster = "no",
+  feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal
+)
+
 dev.off()
 ```
 
@@ -254,8 +267,8 @@ dev.off()
 
 ## Please try to install them, follow their tutorials and their citation rules
 
-[Seurat](https://satijalab.org/seurat/)
-[tidyverse](https://www.tidyverse.org/)
-[scCustomize](https://samuel-marsh.github.io/scCustomize/)
-[DoubletFinder](https://github.com/chris-mcginnis-ucsf/DoubletFinder)
-[clustree](https://lazappi.github.io/clustree/)
+- [Seurat](https://satijalab.org/seurat/)
+- [tidyverse](https://www.tidyverse.org/)
+- [scCustomize](https://samuel-marsh.github.io/scCustomize/)
+- [DoubletFinder](https://github.com/chris-mcginnis-ucsf/DoubletFinder)
+- [clustree](https://lazappi.github.io/clustree/)
