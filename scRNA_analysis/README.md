@@ -1,5 +1,8 @@
 # Instructions of PICASSO\scRNA_analysis
 
+Compiled: 2023-04-04
+By: Luo Liheng
+
 ## Before all the functions
 
 1. Define `work_dir` and `project_name`
