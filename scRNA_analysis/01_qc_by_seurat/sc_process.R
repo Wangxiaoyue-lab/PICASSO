@@ -154,10 +154,11 @@ qc_process_plot <- function(
 
 
 
-find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, ...) {
+find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, species, ...) {
     assay_use <<- ifelse(exists("assay_use"), assay_use %||% DefaultAssay(all_data), DefaultAssay(all_data))
 
     modi_fun <- function(marker_genes) {
+        annotations <- read_refdata(species, "annotations")
         # Add a column with the percentage difference
         marker_genes <- Add_Pct_Diff(marker_genes) %>%
             # Create a new column with the type of marker gene

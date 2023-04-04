@@ -1,20 +1,23 @@
 suppressPackageStartupMessages(require(pacman))
 p_load(Seurat, tidyverse)
 
-print(paste("This scripts is in:", getwd()))
-
-
-ifelse(!exists("work_dir"), warning("Variable 'work_dir' does not exist."),
-    print(paste("Your work directory is in:", work_dir))
-)
-ifelse(!exists("project_name"), warning("Variable 'project_name' does not exist."),
-    print(paste("Your project name is:", project_name))
-)
-
+cat("This scripts is in:", getwd(), "\n")
 
 
 script_path <- getwd()
-source("./01qc_by_seurat/sc_process.R")
+source("./01_qc_by_seurat/sc_process.R")
+
+if (!exists("work_dir")) {
+    warning("Variable 'work_dir' does not exist.")
+} else {
+    cat("Your work directory is in:", work_dir, "\n")
+}
+
+if (!exists("project_name")) {
+    warning("Variable 'project_name' does not exist.")
+} else {
+    cat("Your project name is:", project_name, "\n")
+}
 
 
 
@@ -54,9 +57,9 @@ name_file <- function(work_dir, project_name, name_string = NULL, defaultend = N
 
 
 
-find_assay <- function(all_data = all_data) {
-    print("The current assay used for the analysis is:", DefaultAssay(all_data))
-    print("All assays in this object is:", Assays(all_data))
+find_assay <- function(all_data = NULL) {
+    cat("The current assay used for the analysis is:", DefaultAssay(all_data), "\n")
+    cat("All assays in this object:", Assays(all_data), "\n")
 }
 
 
