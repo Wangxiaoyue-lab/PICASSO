@@ -177,7 +177,7 @@ all_data <- subset(all_data,
             nFeature_RNA > 500 &
             nFeature_RNA < 7500
     ) %>% qc_process()
-# Note, if you choose to run_sctransform, the default assay will be "SCT" 
+# Note, if you choose to run_sctransform, the default assay will be "SCT", and the feature will be nFeature_SCT
 ```
 
 ### `qc_process_plot`
@@ -203,25 +203,26 @@ dev.off()
 
 ### `find_markers`
 
-The function is to find marker genes. Determine whether all markers are found. Choose identity to use. And loop_var could be used to find markers for each cluster.  Additional arguments will be passed to `FindMarkers` or `FindAllMarkers` .
+The function is to find marker genes. Determine whether `all `markers are found. Choose `ident `to use. And `loop_var `could be used to find markers for each cluster.  Additional arguments will be passed to `FindMarkers` or `FindAllMarkers` .
 
 ```R
 # Arguments
-find_markers(all_data, all = TRUE, ident = NULL, loop_var = NULL, ...)
+find_markers(all_data, all = TRUE, ident = NULL, loop_var = NULL, species,...)
 # Note that the output will be different from the original result
 # Percentage difference, type of marker gene(up or down),gene description will be added
 
 # Example 1
 marker_genes <- find_markers(all_data,
-  all = FALSE, ident = NULL, loop_var = 0:3,
+  all = FALSE, ident = NULL, loop_var = 0:3, species="mm",
   ident.1 = "ident_A", group.by = "type", only.pos = FALSE
 )
 save_file(data = marker_genes, fun = write.csv, name_string = "markers", row.names = FALSE, col.names = TRUE)
 # all = FALSE. Use FindMarkers
 # ident = NULL. Otherwise, this function will be executed
 # all_data <- SetIdent(all_data, value = ident)
-# loop_var = 0:3. The defult ident will be seurat_clusters find by FindClusters in Seurat. 
+# loop_var = 0:3. Check your defult ident. 
 # Here I want to loop from  cluster 0 to cluster 3
+# species will be used to add gene description by gene name.
 # group.by="type". In a cluster, I want to compare columns with group name "type"
 # ident.1 = "ident_A". In this group, I want to compare "ident_A" with other "type"s
 ```

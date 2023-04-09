@@ -1,17 +1,29 @@
 suppressPackageStartupMessages(require(pacman))
 p_load(Seurat, tidyverse)
 
-cat("This scripts is in:", getwd(), "\n")
-
-
 script_path <- getwd()
+cat("This scripts is in:", script_path, "\n")
+
 source("./01_qc_by_seurat/sc_process.R")
 
 if (!exists("work_dir")) {
     warning("Variable 'work_dir' does not exist.")
 } else {
+    if (!dir.exists(work_dir)) {
+        warning("Directory 'work_dir' does not exist.")
+        create_dir <- readline(prompt = "Do you want to create a new directory with 'work_dir'? (y/n) ")
+        if (tolower(create_dir) == "y") {
+            dir.create(work_dir)
+            cat("Directory", work_dir, "created.\n")
+        }
+    }
     cat("Your work directory is in:", work_dir, "\n")
+    if (!endsWith(work_dir, "/")) {
+        warning("Make sure your directory name ends in a /, otherwise the file name will be wrong.")
+    }
 }
+
+
 
 if (!exists("project_name")) {
     warning("Variable 'project_name' does not exist.")
@@ -21,16 +33,17 @@ if (!exists("project_name")) {
 
 
 
-
 save_file <- function(
     file = NULL, data = NULL, fun = NULL, name_string = NULL, ...) {
     # determine file extension based on write function (if provided)
-
     defaultend <- switch(deparse(substitute(fun)),
         "saveRDS" = ".rds",
         "write.csv" = ".csv",
         "pdf" = ".pdf"
     )
+    name_file <- function(work_dir, project_name, name_string = NULL, defaultend = NULL) {
+        paste0(work_dir, project_name, "_", name_string, defaultend)
+    }
     # generate file name
     if (!is.null(file)) {
         filename <- file
@@ -50,9 +63,7 @@ save_file <- function(
 }
 
 
-name_file <- function(work_dir, project_name, name_string = NULL, defaultend = NULL) {
-    paste0(work_dir, project_name, "_", name_string, defaultend)
-}
+
 
 
 
@@ -80,11 +91,10 @@ read_refdata <- function(species, file_type) {
 }
 
 
-
 in_data_markers <- function(genes, dataset) {
     not_in_data_marker <- base::setdiff(genes, row.names(dataset))
     if (length(not_in_data_marker) != 0) {
-        cat(paste("The following genes are not in the", deparse(substitute(dataset)), ":\n", paste(not_in_data_marker, collapse = ", ")))
+        cat("The following genes are not in the", deparse(substitute(dataset)), ":\n", paste(not_in_data_marker, collapse = ", "), "\n")
         genes <- base::setdiff(genes, not_in_data_marker)
     }
     if (is.null(genes)) {
@@ -92,7 +102,6 @@ in_data_markers <- function(genes, dataset) {
     }
     return(genes)
 }
-
 
 
 
@@ -109,27 +118,33 @@ time_it <- function(f) {
 
 
 check_expression <- function(all_data = all_data, feats = NULL, ...) {
+    modi_fun <- function(mediate_result) {
+        mediate_result <- as.data.frame(mediate_result)
+        original_cols <- colnames(mediate_result)
+
+        mediate_result <- rowwise(mediate_result) %>%
+            mutate(
+                row_sum = sum(c_across(all_of(original_cols))),
+                row_sd = sd(c_across(all_of(original_cols))),
+                row_mean = mean(c_across(all_of(original_cols)))
+            ) %>%
+            ungroup() %>%
+            mutate(
+                across(all_of(original_cols), list(norm = ~ (.x - row_mean) / row_sd), .names = "norm_{col}")
+            )
+    }
+
     if (any(class(feats) == "data.frame") == TRUE) {
         classed_genes <- names(feats)
         result <- classed_genes %>%
             map(~ {
-                mediate_result <- AverageExpression(all_data, features = as.character(na.omit(feats[[.x]]), ...)) %>%
-                    as.data.frame() %>%
-                    mutate(row_sum = rowSums(.)) %>%
-                    rowwise() %>%
-                    mutate(row_var = var(c_across(dplyr::everything()))) %>%
-                    ungroup()
+                mediate_result <- AverageExpression(all_data, features = as.character(na.omit(feats[[.x]]), ...)) %>% modi_fun()
                 mediate_result$class <- .x
                 mediate_result
             }) %>%
             bind_rows()
     } else {
-        result <- AverageExpression(all_data, features = na.omit(feats), ...) %>%
-            as.data.frame() %>%
-            mutate(row_sum = rowSums(.)) %>%
-            rowwise() %>%
-            mutate(row_var = var(c_across(dplyr::everything()))) %>%
-            ungroup()
+        result <- AverageExpression(all_data, features = na.omit(feats), ...) %>% modi_fun()
     }
     return(result)
 }

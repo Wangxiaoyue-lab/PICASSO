@@ -152,8 +152,6 @@ qc_process_plot <- function(
     print(clustree(all_data@meta.data, prefix = paste0(assay_use, "_snn_res.")))
 }
 
-
-
 find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, species, ...) {
     assay_use <<- ifelse(exists("assay_use"), assay_use %||% DefaultAssay(all_data), DefaultAssay(all_data))
 
@@ -201,7 +199,6 @@ find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, sp
 
 select_markers <- function() {}
 
-
 plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_markers = 40, cluster = 10, feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal, ...) {
     assay_use <<- ifelse(exists("assay_use"), assay_use %||% DefaultAssay(all_data), DefaultAssay(all_data))
     plot_function <- function(markers, annotation) {
@@ -235,42 +232,12 @@ plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_marker
             }
         }
 
-        do_dot_plot <- function() {
-            # Calculate the number of markers and the number of plots
-            n_markers <- length(markers)
-            n_plots <- ceiling(n_markers / max_markers)
-            # Loop through each plot
-            for (i in 1:n_plots) {
-                # Calculate the start and end index for the markers
-                start <- (i - 1) * max_markers + 1
-                end <- min(i * max_markers, n_markers)
-                # Plot the dot plot
-                if (is.numeric(cluster)) {
-                    # Create a vector of markers that are present in the data
-                    scaled_markers <- switch(assay_use,
-                        "RNA" =  in_data_markers(markers, all_data[["RNA"]]@scale.data),
-                        "SCT" =  in_data_markers(markers, all_data[["SCT"]]@scale.data)
-                    )
-                    Clustered_DotPlot(all_data, features = scaled_markers[start:end], k = cluster, plot_km_elbow = FALSE, ...)
-                } else {
-                    p_dot <- DotPlot_scCustom(all_data, features = markers[start:end], flip_axes = TRUE, colors_use = col_dot, ...)
-                }
-                # Add annotation
-                if (annotation == TRUE) {
-                    print(p_dot + plot_annotation(paste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
-                } else {
-                    print(p_dot)
-                }
-            }
-        }
-
         # Create a function to plot features
         do_feature_plot <- function() {
             # For each marker
             for (j in markers) {
-                FeaturePlot_scCustom
                 # Plot the feature with FeaturePlot_scCustom
-                p_fea <- FeaturePlot_scCustom(all_data, features = j, colors_use = col_fea, max.cutoff = "q95", ...) & NoAxes()
+                p_fea <- FeaturePlot_scCustom(all_data, features = j, colors_use = col_fea, ...) & NoAxes()
                 # If annotation is true
                 if (annotation == TRUE) {
                     # Print the feature plot with the cell type as the title
@@ -303,12 +270,41 @@ plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_marker
         # Loop through the cell types
         for (cell_type in cell_types) {
             # Plot the marker genes for each cell type.
-            print(paste0("Ploting markers in ", cell_type, "..."))
-            plot_function(in_data_markers(marker[, cell_type] %>% na.omit() %>% unlist() %>% as.character(), all_data), annotation = TRUE)
+            cat("Ploting markers in ", cell_type, "...\n")
+            plot_function(in_data_markers(unfilterd_markers[, cell_type] %>% na.omit() %>% unlist() %>% as.character(), all_data), annotation = TRUE)
         }
     } else {
         # Otherwise, we have a single cell type, so just plot the marker genes.
-        print("Ploting markers...")
+        cat("Ploting markers...\n")
         plot_function(in_data_markers(na.omit(unfilterd_markers), all_data), annotation = FALSE)
+    }
+}
+
+
+plot_celltype_proportions <- function(seurat_object, celltype = NULL, group_var = NULL) {
+    # Extract the cell type data from the Seurat object
+    celltype_data <- seurat_object$celltype
+
+    # Calculate the proportions of each cell type
+    df <- data.frame(
+        clu = names(table(celltype_data)),
+        per = sprintf("%1.2f%%", 100 * table(celltype_data) / length(celltype_data))
+    )
+
+    # Add the proportion data to the Seurat object
+    seurat_object$per <- df[match(celltype_data, df$clu), 2]
+    seurat_object$celltypeper <- paste0(celltype_data, ": (", seurat_object$per, ")")
+
+    # Create the stacked bar plot
+    if (is.null(group_var)) {
+        ggplot(seurat_object, aes(x = "", fill = celltypeper)) +
+            geom_bar(width = 1) +
+            coord_polar("y") +
+            theme_void()
+    } else {
+        ggplot(seurat_object, aes(x = group_var, fill = celltypeper)) +
+            geom_bar(position = "fill") +
+            scale_y_continuous(labels = scales::percent) +
+            theme(axis.text.x = element_text(angle = 90))
     }
 }
