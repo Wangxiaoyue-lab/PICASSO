@@ -1,7 +1,7 @@
 # PICASSO: Pipeline, Code and Analysis for Scalable Single-cell Omics
 
 **Temporarily designed for single-cell learning**
-![PICASSO.png](https://raw.githubusercontent.com/Moloch0/PICASSO/main/PICASSO.png)
+![PICASSO.png](https://raw.githubusercontent.com/Moloch0/PICASSO/main/picture/PICASSO.png)
 
 ## Version
 
