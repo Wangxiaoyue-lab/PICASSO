@@ -7,6 +7,9 @@
 maybe you can insult gpt like new bing
 
 # 3 choose the suitable version and download
+sometimes the lib.so belongs to a complex software, so you should isntall the software which should be specified the version.
+And you can achieve the lib.so file in the `bin` or `lib` folder.
+What's more, maybe you can copy it from other's account.
 
 # 4 install it in the software path
 ```
