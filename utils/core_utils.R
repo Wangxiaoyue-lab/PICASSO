@@ -106,7 +106,3 @@ save_file <- function(file_name = NULL, data = NULL, fun = NULL, sub_dir = NULL,
         }
     }
 }
- 
-
-
- 
