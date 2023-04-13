@@ -1,8 +1,20 @@
 suppressPackageStartupMessages(require(pacman))
 p_load(Seurat, tidyverse)
 
+
+start_time <- Sys.time()
+cat("This job starts at:", format(start_time), "\n")
+
+done <- function() {
+    end_time <- Sys.time()
+    time_difference <- end_time - start_time
+    cat("This job ends at:", format(end_time), "\n")
+    cat("Total time:", format(time_difference), "\n")
+    print(sessionInfo())
+}
+
 script_path <- getwd()
-cat("This scripts is in:", script_path, "\n")
+cat("This script is in:", script_path, "\n")
 
 source("./01_qc_by_seurat/sc_process.R")
 
@@ -19,7 +31,7 @@ if (!exists("work_dir")) {
     }
     cat("Your work directory is in:", work_dir, "\n")
     if (!endsWith(work_dir, "/")) {
-        warning("Make sure your directory name ends in a /, otherwise the file name will be wrong.")
+        work_dir <<- paste0(work_dir, "/")
     }
 }
 
@@ -33,24 +45,34 @@ if (!exists("project_name")) {
 
 
 
-save_file <- function(
-    file = NULL, data = NULL, fun = NULL, name_string = NULL, ...) {
-    # determine file extension based on write function (if provided)
+save_file <- function(file = NULL, data = NULL, fun = NULL, sub_dir = NULL, name_string = NULL, ...) {
+    # Determine file extension based on write function (if provided)
     defaultend <- switch(deparse(substitute(fun)),
         "saveRDS" = ".rds",
         "write.csv" = ".csv",
         "pdf" = ".pdf"
     )
-    name_file <- function(work_dir, project_name, name_string = NULL, defaultend = NULL) {
-        paste0(work_dir, project_name, "_", name_string, defaultend)
+
+    # Create subdirectory if it doesn't exist
+    if (!is.null(sub_dir)) {
+        if (!dir.exists(sub_dir)) {
+            warning("'sub_dir' does not exist, creating a new directory.")
+            dir.create(paste0(work_dir, "/", sub_dir, "/"))
+        }
+        if (!endsWith(sub_dir, "/")) {
+            sub_dir <- paste0(sub_dir, "/")
+        }
     }
-    # generate file name
+
+
+    # Use provided file name or generate one
     if (!is.null(file)) {
         filename <- file
     } else {
-        filename <- name_file(work_dir, project_name, name_string, defaultend)
+        filename <- paste0(work_dir, sub_dir, project_name, "_", name_string, defaultend)
     }
-    # write data
+
+    # Write data to file
     if (!is.null(data)) {
         fun(data, filename, ...)
     } else {
@@ -61,11 +83,6 @@ save_file <- function(
         }
     }
 }
-
-
-
-
-
 
 
 find_assay <- function(all_data = NULL) {

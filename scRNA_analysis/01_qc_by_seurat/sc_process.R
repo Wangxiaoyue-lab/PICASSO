@@ -46,7 +46,10 @@ Find_doublet <- function(data) {
         as.character() %>%
         as.numeric()
     nExp_poi <- round(0.05 * ncol(data))
-    data <- doubletFinder_v3(data, PCs = 1:20, pN = 0.25, pK = p, nExp = nExp_poi, reuse.pANN = FALSE, sct = FALSE)
+    data <- doubletFinder_v3(data,
+        PCs = 1:20, pN = 0.25, pK = p, nExp = nExp_poi,
+        reuse.pANN = FALSE, sct = FALSE
+    )
     colnames(data@meta.data)[ncol(data@meta.data)] <- "doublet_info"
     c <- grep("pANN_", colnames(data@meta.data))
     data@meta.data <- data@meta.data[, -c]
@@ -54,7 +57,9 @@ Find_doublet <- function(data) {
 }
 
 
-qc_check_plot <- function(all_data, feature_scatter = TRUE, vln_group, dim_group, feats = NULL, colors = pal) {
+qc_check_plot <- function(
+    all_data, feature_scatter = TRUE, vln_group, dim_group,
+    feats = NULL, colors = pal) {
     lapply(vln_group, function(x) {
         print(VlnPlot(all_data,
             group.by = vln_group,
@@ -127,15 +132,14 @@ qc_process <- function(all_data,
 }
 
 
-#
-
 qc_process_plot <- function(
     all_data,
     dim_group = c("orig.ident", "type", "Phase"),
     feats = c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_hb"),
     colors = pal,
     resolutions = c(0.1, 0.2, 0.3, 0.5)) {
-    assay_use <<- ifelse(exists("assay_use"), assay_use %||% DefaultAssay(all_data), DefaultAssay(all_data))
+    assay_use <<- ifelse(exists("assay_use"), assay_use %||%
+        DefaultAssay(all_data), DefaultAssay(all_data))
     lapply(dim_group, function(x) {
         print(DimPlot_scCustom(all_data, group.by = x, ggplot_default_colors = TRUE, figure_plot = TRUE))
     })
@@ -153,7 +157,8 @@ qc_process_plot <- function(
 }
 
 find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, species, ...) {
-    assay_use <<- ifelse(exists("assay_use"), assay_use %||% DefaultAssay(all_data), DefaultAssay(all_data))
+    assay_use <<- ifelse(exists("assay_use"), assay_use %||%
+        DefaultAssay(all_data), DefaultAssay(all_data))
 
     modi_fun <- function(marker_genes) {
         annotations <- read_refdata(species, "annotations")
@@ -197,10 +202,13 @@ find_markers <- function(all_data, all = TRUE, ident = NULL, loop_var = NULL, sp
     return(marker_genes)
 }
 
-select_markers <- function() {}
 
-plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_markers = 40, cluster = 10, feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal, ...) {
-    assay_use <<- ifelse(exists("assay_use"), assay_use %||% DefaultAssay(all_data), DefaultAssay(all_data))
+
+plot_makers <- function(
+    unfilterd_markers, all_data, dot_plot = TRUE, max_markers = 40, cluster = 10,
+    feature_plot = TRUE, col_dot = viridis_plasma_dark_high, col_fea = pal, ...) {
+    assay_use <<- ifelse(exists("assay_use"), assay_use %||%
+        DefaultAssay(all_data), DefaultAssay(all_data))
     plot_function <- function(markers, annotation) {
         # Create a function to plot the dot plot
         do_dot_plot <- function() {
@@ -219,13 +227,18 @@ plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_marker
                         "RNA" =  in_data_markers(markers, all_data[["RNA"]]@scale.data),
                         "SCT" =  in_data_markers(markers, all_data[["SCT"]]@scale.data)
                     )
-                    Clustered_DotPlot(all_data, features = scaled_markers[start:end], k = cluster, plot_km_elbow = FALSE, ...)
+                    Clustered_DotPlot(all_data,
+                        features = scaled_markers[start:end], k = cluster,
+                        plot_km_elbow = FALSE, ...
+                    )
                 } else {
                     p_dot <- DotPlot_scCustom(all_data, features = markers[start:end], flip_axes = TRUE, colors_use = col_dot, ...)
                 }
                 # Add annotation
                 if (annotation == TRUE) {
-                    print(p_dot + plot_annotation(paste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
+                    print(p_dot + plot_annotation(paste0(cell_type), theme = theme(
+                        plot.title = element_text(size = 18, face = "bold")
+                    )))
                 } else {
                     print(p_dot)
                 }
@@ -237,11 +250,16 @@ plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_marker
             # For each marker
             for (j in markers) {
                 # Plot the feature with FeaturePlot_scCustom
-                p_fea <- FeaturePlot_scCustom(all_data, features = j, colors_use = col_fea, ...) & NoAxes()
+                p_fea <- FeaturePlot_scCustom(all_data,
+                    features = j, colors_use = col_fea,
+                    ...
+                ) & NoAxes()
                 # If annotation is true
                 if (annotation == TRUE) {
                     # Print the feature plot with the cell type as the title
-                    print(p_fea + plot_annotation(paste0(cell_type), theme = theme(plot.title = element_text(size = 18, face = "bold"))))
+                    print(p_fea + plot_annotation(paste0(cell_type), theme = theme(
+                        plot.title = element_text(size = 18, face = "bold")
+                    )))
                 } else {
                     # Print the feature plot without annotation
                     print(p_fea)
@@ -271,7 +289,8 @@ plot_makers <- function(unfilterd_markers, all_data, dot_plot = TRUE, max_marker
         for (cell_type in cell_types) {
             # Plot the marker genes for each cell type.
             cat("Ploting markers in ", cell_type, "...\n")
-            plot_function(in_data_markers(unfilterd_markers[, cell_type] %>% na.omit() %>% unlist() %>% as.character(), all_data), annotation = TRUE)
+            plot_function(in_data_markers(unfilterd_markers[, cell_type] %>%
+                na.omit() %>% unlist() %>% as.character(), all_data), annotation = TRUE)
         }
     } else {
         # Otherwise, we have a single cell type, so just plot the marker genes.
@@ -306,5 +325,75 @@ plot_celltype_proportions <- function(seurat_object, celltype = NULL, group_var 
             geom_bar(position = "fill") +
             scale_y_continuous(labels = scales::percent) +
             theme(axis.text.x = element_text(angle = 90))
+    }
+}
+
+
+# do GO
+profile_cluster <- function(genes = NULL, enrich_fun = "GO", species = "mm", ...) {
+    p_load(clusterProfiler)
+    Org <- switch(species,
+        "mm" = "org.Mm.eg.db" %>% p_load(char = .),
+        "hs" = "org.Hs.eg.db" %>% p_load(char = .)
+    )
+    data <- switch(enrich_fun,
+        "GO" = enrichGO(gene = genes, OrgDb = names(Org), keyType = "SYMBOL", ont = "BP", ...) %>%
+            .@result,
+        "KEGG" = enrichKEGG(gene = genes, organism = switch(species,
+            "mm" = "mmu",
+            "hs" = "hsa"
+        ), ...) %>%
+            setReadable(OrgDb = names(Org), keyType = "ENTREZID") %>% .@result,
+        "Reactome" = Reactome_function(),
+        "WikiPathways" = WikiPathways_function()
+    )
+}
+
+GO_plot <- function(df, group = NULL, class = NULL, n = 10) {
+    # create plot function
+    plot_func <- function(sub_df) {
+        if (!is.null(class)) {
+            sub_df <- sub_df %>%
+                group_by(.[[class]]) %>%
+                top_n(n, -p.adjust) %>%
+                ungroup()
+        } else {
+            sub_df <- sub_df %>%
+                top_n(n, -p.adjust)
+        }
+        sub_df <- sub_df %>%
+            distinct(ID, .keep_all = TRUE) %>%
+            mutate(log_p_adjust = ifelse(!is.null(class) & .data[[class]] == "down",
+                log10(p.adjust), -log10(p.adjust)
+            ))
+        p <- ggplot(sub_df, aes(
+            x = log_p_adjust,
+            y = reorder(Description, log_p_adjust),
+        )) +
+            geom_col() +
+            theme_bw() +
+            scale_y_discrete(labels = function(x) {
+                str_wrap(x, width = quantile(nchar(sub_df$Description), 0.75))
+            })
+        if (!is.null(class)) {
+            p <- p + geom_col(aes(fill = .data[[class]])) +
+                scale_fill_manual(values = c("red", "blue"), breaks = c("up", "down"))
+        } else {
+            p <- p + geom_col()
+            +scale_fill_gradient(high = "red", low = "blue")
+        }
+        if (!is.null(group)) {
+            p <- p + ggtitle(unique(sub_df[[group]]))
+        }
+        print(p + ylab("Description"))
+    }
+
+    # apply plot function
+    if (is.null(group)) {
+        plot_func(df)
+    } else {
+        df %>%
+            group_by(df[[group]]) %>%
+            group_map(~ plot_func(.x))
     }
 }
