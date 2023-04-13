@@ -1,4 +1,4 @@
-p_load(scCustomize)
+library(scCustomize)
 
 
 
