@@ -1,7 +1,7 @@
 # summarise
 ## summarise the expression of pseudobulk group
 summarise_pseudobulk <- function(object, features = NULL, ...) {
-    #@ features: should be `list`
+    # @ features: should be `list`
     stat_fun <- function(AE_result) {
         AE_result <- as.data.frame(AE_result)
         raw_cols <- colnames(AE_result)

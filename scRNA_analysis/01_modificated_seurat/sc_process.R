@@ -1,14 +1,12 @@
-
-
 process_process <- function(object,
-                       npcs = 20,
-                       resolutions = c(0.1, 0.2, 0.3, 0.5),
-                       future = FALSE,
-                       run_harmony = TRUE,
-                       run_sctransform = TRUE,
-                       group_in_harmony = "orig.ident",
-                       vars_to_regress = c("percent_mito", "S.Score", "G2M.Score")) {
-    if(future){
+                            npcs = 20,
+                            resolutions = c(0.1, 0.2, 0.3, 0.5),
+                            future = FALSE,
+                            run_harmony = TRUE,
+                            run_sctransform = TRUE,
+                            group_in_harmony = "orig.ident",
+                            vars_to_regress = c("percent_mito", "S.Score", "G2M.Score")) {
+    if (future) {
         options(future.globals.maxSize = 1e9)
         plan("multisession")
     }
@@ -23,7 +21,7 @@ process_process <- function(object,
     } else {
         object <- NormalizeData(object) %>%
             FindVariableFeatures() %>%
-            ScaleData(features=row.names(object),vars.to.regress = vars_to_regress) %>%
+            ScaleData(features = row.names(object), vars.to.regress = vars_to_regress) %>%
             RunPCA()
     }
 
@@ -46,20 +44,20 @@ process_process <- function(object,
 }
 
 
-#process_integration
+# process_integration
 
 
 
-process_find_markers <- function(object, 
+process_find_markers <- function(object,
                                  is_all = TRUE,
-                                 future = FALSE, 
-                                 ident = NULL, 
-                                 loop_var = NULL, 
+                                 future = FALSE,
+                                 ident = NULL,
+                                 loop_var = NULL,
                                  species, ...) {
-    #@is_all：FindAllMarkers or FindMarkers
-    #@loop_var: compare conditions within some idents                    
+    # @is_all：FindAllMarkers or FindMarkers
+    # @loop_var: compare conditions within some idents
 
-    if(future){
+    if (future) {
         options(future.globals.maxSize = 1e9)
         plan("multicore")
     }
@@ -109,7 +107,7 @@ process_find_markers <- function(object,
 }
 
 
-#process_celltype
+# process_celltype
 
 
-#process_individual_deg
+# process_individual_deg

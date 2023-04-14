@@ -1,22 +1,20 @@
 # core packages
 libraries <- c("scCustomize", "Seurat")
-lapply(libraries, 
-    function(x){
+lapply(
+    libraries,
+    function(x) {
         suppressPackageStartupMessages(library(x, character.only = TRUE))
     }
 )
 
-source('../utils/load_ref.R')
+source("../utils/load_ref.R")
 
- 
+
 ## check the assays
 check_assay <- function(object = NULL) {
     cat("The current assay used for the analysis is:", DefaultAssay(object), "\n")
     cat("All assays in this object:", Assays(object), "\n")
 }
-
-
-
 
 
 
@@ -36,23 +34,25 @@ check_markers <- function(genes, object) {
 
 # This function checks the quality of the data
 check_pre <- function(
-    object, 
-    species = c("hs","mm"),
-    cell_cycle_source=c('seurat','local'),
-    npcs=20,
+    object,
+    species = c("hs", "mm"),
+    cell_cycle_source = c("seurat", "local"),
+    npcs = 20,
     check_doublet = TRUE) {
     hb_pattern <- switch(species,
         "mm" = "^Hb[^(p)]",
         "hs" = "^HB[^(P)]"
     )
-    if(cell_cycle_source=='seurat'){
+    if (cell_cycle_source == "seurat") {
         s_genes <- switch(species,
-            'hs' = cc.genes$s.genes,
-            'mm' = cc.genes$s.genes %>% str_to_tittle)
+            "hs" = cc.genes$s.genes,
+            "mm" = cc.genes$s.genes %>% str_to_tittle()
+        )
         g2m_genes <- switch(species,
-            'hs' = cc.genes$g2m.genes,
-            'mm' = cc.genes$g2m.genes %>% str_to_tittle)
-    }else{
+            "hs" = cc.genes$g2m.genes,
+            "mm" = cc.genes$g2m.genes %>% str_to_tittle()
+        )
+    } else {
         # Get gene names for Ensembl IDs for each gene
         cell_cycle_markers <- left_join(read_refdata(species, "cell_cycle_markers"),
             read_refdata(species, "annotations"),
@@ -75,13 +75,13 @@ check_pre <- function(
         RunPCA(verbose = F, npcs = npcs) %>%
         RunUMAP(dims = 1:npcs)
     if (check_doublet) {
-        object <- check_doublet(object,npcs)
+        object <- check_doublet(object, npcs)
     }
 }
 
 
 # check whether doublets exist
-check_doublet <- function(object,npcs) {
+check_doublet <- function(object, npcs) {
     library(DoubletFinder)
     sweep.res.list <- paramSweep_v3(object, PCs = 1:npcs, sct = FALSE)
     sweep.stats <- summarizeSweep(sweep.res.list, GT = FALSE)
@@ -99,7 +99,3 @@ check_doublet <- function(object,npcs) {
     object@meta.data <- object@meta.data[, -c]
     return(object)
 }
-
-
- 
-
