@@ -37,12 +37,17 @@
 ## software
 1.fastgithub：由于潜在的网络限制，可能需要工具辅助。
 
+# 版本控制 git
+
 # 文件存储 → 坚果云
 
 # 文献管理
-→ zotero
+## → zotero
+### tips
 
-→ endnote
+### plug-in
+
+## → endnote
 
 # 图片编辑
 → illuminator
@@ -66,6 +71,6 @@
 
 # 其他必备软件
 ## spss
-## citoscape
+## cytoscape
 ## GSEA
 ## IGV
