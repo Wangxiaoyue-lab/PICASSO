@@ -1,6 +1,5 @@
 # packages and scripts
 
-script_path <- getwd()
 
 
 source("../utils/core_utils.R")
@@ -14,4 +13,4 @@ getwd() %>%
 
 # pal
 
-log_start()
+
