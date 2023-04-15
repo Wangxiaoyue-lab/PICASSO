@@ -1,22 +1,23 @@
 # core packages
 libraries <- c("scCustomize", "Seurat")
-lapply(libraries, 
-    function(x){
+lapply(
+    libraries,
+    function(x) {
         suppressPackageStartupMessages(library(x, character.only = TRUE))
     }
 )
 
 
 plot_check_pre <- function(
-    object, 
+    object,
     feature_scatter = TRUE,
-    vln_group, 
+    vln_group,
     dim_group,
-    feats = NULL, 
+    feats = NULL,
     colors = pal) {
-    #@vln_group = "type"
-    #@dim_group = c("orig.ident", "type", "doublet_info", "Phase")
-    #@feats = c("nCount_RNA", "nFeature_RNA", "percent_mito", "percent_ribo", "percent_hb")  
+    # @vln_group = "type"
+    # @dim_group = c("orig.ident", "type", "doublet_info", "Phase")
+    # @feats = c("nCount_RNA", "nFeature_RNA", "percent_mito", "percent_ribo", "percent_hb")
     lapply(vln_group, function(x) {
         print(VlnPlot(object,
             group.by = vln_group,
@@ -25,7 +26,7 @@ plot_check_pre <- function(
             ncol = 3
         ) + NoLegend())
     })
-    message('plot the VlnPlot')
+    message("plot the VlnPlot")
     if (feature_scatter == TRUE) {
         print(QC_Plot_UMIvsGene(object,
             meta_gradient_name = "percent_mito",
@@ -36,20 +37,18 @@ plot_check_pre <- function(
             scale_x_log10() +
             scale_y_log10())
     }
-    message('plot the UMIvsGene scatter plot')
+    message("plot the UMIvsGene scatter plot")
     print(ElbowPlot(object))
-    message('plot the ElbowPlot of PCA')
+    message("plot the ElbowPlot of PCA")
     lapply(dim_group, function(x) {
         print(DimPlot(object, group.by = x))
     })
-    message('plot the DimPlot of specified factor')
+    message("plot the DimPlot of specified factor")
     lapply(feats, function(x) {
         FeaturePlot_scCustom(object, colors_use = colors, features = x)
     })
-    message('plot the FeaturePlot of specified continuous variable')
+    message("plot the FeaturePlot of specified continuous variable")
 }
-
-
 
 plot_processed <- function(
     object,
@@ -76,13 +75,13 @@ plot_processed <- function(
 
 
 plot_makers <- function(
-    markers, 
-    object, 
+    markers,
+    object,
     dot_plot = TRUE,
-    max_markers = 40, 
+    max_markers = 40,
     cluster = 10,
-    feature_plot = TRUE, 
-    col_dot = viridis_plasma_dark_high, 
+    feature_plot = TRUE,
+    col_dot = viridis_plasma_dark_high,
     col_fea = pal, ...) {
     assay_use <<- ifelse(exists("assay_use"), assay_use %||%
         DefaultAssay(object), DefaultAssay(object))
@@ -157,7 +156,7 @@ plot_makers <- function(
     }
 
     # If the unfiltered_markers is a data frame, we have multiple cell types, so we'll loop through them.
-    if ( class(markers) == "list" ) {
+    if (class(markers) == "list") {
         # Load the patchwork package so we can annotate plots
         library(patchwork)
         # Get the cell type names from the column names.
