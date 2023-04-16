@@ -1,5 +1,5 @@
 require(ggplot2)
-require(pathwork)
+require(patchwork)
 require(cowplot)
 require(aplot)
 require(gridExtra)
