@@ -1,5 +1,9 @@
 require(dplyr, quietly = T)
+require(magrittr, quietly = T)
 require(rlang, quietly = T)
+
+
+
 picasso_path <- getwd()
 
 choose_pipeline <- function(pipeline = NULL,
@@ -13,26 +17,21 @@ choose_pipeline <- function(pipeline = NULL,
         list.files(path = picasso_path, recursive = F, full = T) %>%
             lapply(., function(ls) {
                 pipe <- list.files(path = ls, recursive = F, full = T) %>% grep(., pattern = p, value = T)
-                if (is.null(module)) {
-                    pipe <- pipe
-                } else {
+                if (!is.null(module)) {
                     pipe <- lapply(module, function(m) {
                         list.dirs(path = pipe, recursive = F, full = T) %>% grep(., pattern = m, value = T)
-                    }) %>% unlist()
+                    })
                 }
-                return(pipe)
-            }) %>%
-            unlist()
+            })
     }) %>%
-        unlist() %>%
+        unlist(., recursive = T) %>%
         stringr::str_split(., pattern = "PICASSO/", simplify = T, n = 2) %>%
         .[, 2] %>%
         lapply(., function(rs) {
-            load_script(dir = rs, script = "\\.R")
+            rs %>% load_script(dir = .)
         })
-    return("successed to load")
+    cat(paste("Succeed to load script:", pipeline, collapse = "\n"), "\n")
 }
-
 
 
 list_pipeline <- function(pipeline = NULL, module = F) {
@@ -41,7 +40,7 @@ list_pipeline <- function(pipeline = NULL, module = F) {
     dir_1 <- dir_1[!grepl(dir_1, pattern = paste(black_list, collapse = "|"))]
     for (d in dir_1) { # total class
         total_class <- stringr::str_split(d, pattern = "PICASSO/", simplify = T, n = 2)[, 2]
-        cat("#----", total_class, "----#\n")
+        cat("\n#----", total_class, "----#\n")
         dir_2 <- list.dirs(path = d, recursive = F)
         for (p in dir_2) { # pipeline
             pipe_exist <- stringr::str_split(p, pattern = paste0(total_class, "/"), simplify = T, n = 2)[, 2]
@@ -86,13 +85,12 @@ load_necessary <- function(...) {
 
 
 # load the specified script
-load_script <- function(dir, script) {
-    scripts <- list.files(
+load_script <- function(dir, script = "\\.R") {
+    list.files(
         path = paste0(picasso_path, "/", dir),
         pattern = paste(script, collapse = "|"),
         recursive = T, full = T
-    ) %>% grep(., pattern = "\\.R", value = T)
-    for (s in scripts) {
-        source(s)
-    }
+    ) %>%
+        grep(., pattern = "\\.R", value = T) %>%
+        lapply(., source)
 }
