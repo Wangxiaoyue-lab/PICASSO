@@ -1,5 +1,5 @@
-library(dplyr)
-library(rlang)
+require(dplyr)
+require(rlang)
 
 #library(pbapply)  #verbose for lapply
 #library(parallel)
@@ -11,7 +11,7 @@ library(rlang)
 #library(furrr)
 
 # for Seurat
-para_for_seurat=T
+para_for_seurat=F
 if(para_for_seurat){
     library(future)
     plan("multisession")

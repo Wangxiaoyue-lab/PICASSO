@@ -1,9 +1,9 @@
 
-library(viridis)
-library(RColorBrewer)
-library(paletteer)
-library(rPlotter)
-library(tidyverse)
+ suppressPackageStartupMessages(library(viridis))
+#library(RColorBrewer)
+ suppressPackageStartupMessages(library(paletteer))
+#library(rPlotter)
+ suppressPackageStartupMessages(library(tidyverse))
 # 1 主题色提供
 
 pal_palette <- function(n,source,name)
