@@ -57,7 +57,7 @@ list_module <- function(pipeline){
            '--> matrix decomposition\n',
            '--> ...\n') %>% cat
     }else{
-        cat('the module should be just the pipeline. Or the module has not been designed.')
+        stop('the module should be just the pipeline. Or the module has not been designed.')
     }
 
 }
