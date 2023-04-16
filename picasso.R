@@ -30,7 +30,7 @@ choose_pipeline <- function(pipeline = NULL,
         lapply(., function(rs) {
             load_script(dir = rs, script = "\\.R")
         })
-    return("succed to load")
+    return("successed to load")
 }
 
 
@@ -95,5 +95,5 @@ load_script <- function(dir, script) {
     for (s in scripts) {
         source(s)
     }
-    return(paste0("succed to load ", dir))
+    return(paste0("successed to load ", dir))
 }
