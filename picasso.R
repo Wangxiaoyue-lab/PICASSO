@@ -8,7 +8,7 @@ choose_pipeline <- function(pipeline = NULL,
         list_pipeline()
         stop("Please specify a pipeline.")
     }
-    # load_necessary()
+    load_necessary()
     lapply(pipeline, function(p) {
         list.files(path = picasso_path, recursive = F, full = T) %>%
             lapply(., function(ls) {
@@ -91,9 +91,8 @@ load_script <- function(dir, script) {
         path = paste0(picasso_path, "/", dir),
         pattern = paste(script, collapse = "|"),
         recursive = T, full = T
-    )
+    ) %>% grep(., pattern = "\\.R", value = T)
     for (s in scripts) {
         source(s)
     }
-    return(paste0("successed to load ", dir))
 }
