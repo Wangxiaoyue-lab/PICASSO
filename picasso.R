@@ -10,24 +10,30 @@ choose_pipeline <- function(pipeline=NULL,
         list_module(pipeline) %>% return
     }
     load_necessary()
-    switch(pipeline,
-        plot = ifesle(module==plot,
+    lapply(pipeline,function(p){
+        switch(p,
+            'plot' = ifesle(module=='plot',
                     load_script(dir='visualization/plot',script='\\.R'),
                     list_module(pipeline)),
-        scrnaseq = switch(module,
-                        upstream = load_script(dir='sc_omics/scRNA_analysis/00_upstream',script='\\.R'),
-                        downstream = load_script(dir='sc_omics/scRNA_analysis/01_modificated_seurat',script='\\.R'),
-                        pseudotime = load_script(dir='sc_omics/scRNA_analysis/02_pseudotime',script='\\.R'),
-                        grn = load_script(dir='sc_omics/scRNA_analysis/03_GRN',script='\\.R'),
-                        sccs = load_script(dir='sc_omics/scRNA_analysis/04_sccs',script='\\.R'),
-                        cnv = load_script(dir='sc_omics/scRNA_analysis/05_cnv',script='\\.R'),
-                        scoring = load_script(dir='sc_omics/scRNA_analysis/06_scoring',script='\\.R'),
-                        chat = load_script(dir='sc_omics/scRNA_analysis/07_chat',script='\\.R')
-                        ),
-        bulkrnaseq = ifesle(module==plot,
+            'scrnaseq' = lapply(module,function(m){
+                    switch(m,
+                        'all' = load_script(dir='sc_omics/scRNA_analysis',script='\\.R'),
+                        'upstream' = load_script(dir='sc_omics/scRNA_analysis/00_upstream',script='\\.R'),
+                        'downstream' = load_script(dir='sc_omics/scRNA_analysis/01_modificated_seurat',script='\\.R'),
+                        'pseudotime' = load_script(dir='sc_omics/scRNA_analysis/02_pseudotime',script='\\.R'),
+                        'grn' = load_script(dir='sc_omics/scRNA_analysis/03_GRN',script='\\.R'),
+                        'sccs' = load_script(dir='sc_omics/scRNA_analysis/04_sccs',script='\\.R'),
+                        'cnv' = load_script(dir='sc_omics/scRNA_analysis/05_cnv',script='\\.R'),
+                        'scoring' = load_script(dir='sc_omics/scRNA_analysis/06_scoring',script='\\.R'),
+                        'chat' = load_script(dir='sc_omics/scRNA_analysis/07_chat',script='\\.R')
+                        )
+            })
+                ,
+            'bulkrnaseq' = ifesle(module=='bulkrnaseq',
                         load_script(dir='bulk_omics/bulk_rnaseq',script='\\.R'),
                         list_module(pipeline))
         )
+    })
 }
 
 list_module <- function(pipeline){
