@@ -22,7 +22,7 @@ choose_pipeline <- function(pipeline=NULL,
                 return(pipe)
             })  %>% unlist 
     })%>% unlist %>% stringr::str_split(.,pattern='PICASSO/',simplify=T,n=2) %>% 
-        load_script(dir=.,script='\\.R')
+        lapply(.,function(rs){load_script(dir=rs,script='\\.R')})
 }
 
 
