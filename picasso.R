@@ -1,4 +1,4 @@
-libraries <- c("dplyr", "magrittr")
+libraries <- c("dplyr")
 lapply(
     libraries,
     function(x) {
