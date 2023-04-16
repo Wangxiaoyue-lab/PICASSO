@@ -1,13 +1,3 @@
-# core packages
-libraries <- c("scCustomize", "Seurat")
-lapply(
-    libraries,
-    function(x) {
-        suppressPackageStartupMessages(library(x, character.only = TRUE))
-    }
-)
-
-
 plot_check_pre <- function(
     object,
     feature_scatter = TRUE,

@@ -8,16 +8,16 @@ choose_pipeline <- function(pipeline = NULL,
         list_pipeline()
         stop("Please specify a pipeline.")
     }
-    load_necessary()
+    # load_necessary()
     lapply(pipeline, function(p) {
-        list.files(path = picasso_path, recursive = F) %>%
+        list.files(path = picasso_path, recursive = F, full = T) %>%
             lapply(., function(ls) {
-                pipe <- list.files(path = ls, recursive = F) %>% grep(., pattern = p, value = T)
+                pipe <- list.files(path = ls, recursive = F, full = T) %>% grep(., pattern = p, value = T)
                 if (is.null(module)) {
                     pipe <- pipe
                 } else {
                     pipe <- lapply(module, function(m) {
-                        list.files(path = paste0(pipe, "/", m), recursive = F)
+                        list.dirs(path = pipe, recursive = F, full = T) %>% grep(., pattern = m, value = T)
                     }) %>% unlist()
                 }
                 return(pipe)
@@ -26,6 +26,7 @@ choose_pipeline <- function(pipeline = NULL,
     }) %>%
         unlist() %>%
         stringr::str_split(., pattern = "PICASSO/", simplify = T, n = 2) %>%
+        .[, 2] %>%
         lapply(., function(rs) {
             load_script(dir = rs, script = "\\.R")
         })
@@ -43,19 +44,23 @@ list_pipeline <- function(pipeline = NULL, module = F) {
         dir_2 <- list.dirs(path = d, recursive = F)
         for (p in dir_2) { # pipeline
             pipe_exist <- stringr::str_split(p, pattern = paste0(total_class, "/"), simplify = T, n = 2)[, 2]
-             if(is.na(pipe_exist)){next}
-             if (is.null(pipeline)) {
-                pipe_exist <- pipe_exist
-            } else {
-                pipe_exist <- grep(pipe_exist, pattern = pipeline, value = T)
+            if (is.null(pipe_exist)) {
+                next
             }
-            if(is.na(pipe_exist)){next}
+            if (!is.null(pipeline)) {
+                pipe_exist_bool <- grepl(pipe_exist, pattern = pipeline)
+                if (!pipe_exist_bool) {
+                    next
+                }
+            }
             cat("-->", pipe_exist, "\n")
             dir_3 <- list.dirs(path = grep(p, pattern = pipe_exist, value = T), recursive = F)
             if (module == T) {
                 for (m in dir_3) { # module
                     modules <- stringr::str_split(m, pattern = paste0(pipe_exist, "/"), simplify = T, n = 2)[, 2]
-                    if(is.na(modules)){next}
+                    if (is.null(modules)) {
+                        next
+                    }
                     cat("--> -->", modules, "\n")
                 }
             }
@@ -86,5 +91,7 @@ load_script <- function(dir, script) {
         pattern = paste(script, collapse = "|"),
         recursive = T, full = T
     )
-    lapply(scripts, source)
+    for (s in scripts) {
+        source(s)
+    }
 }
