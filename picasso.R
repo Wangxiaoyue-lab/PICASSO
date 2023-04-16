@@ -1,4 +1,4 @@
-require(dplyr)
+require(dplyr, quietly = T)
 require(rlang, quietly = T)
 picasso_path <- getwd()
 
@@ -30,6 +30,7 @@ choose_pipeline <- function(pipeline = NULL,
         lapply(., function(rs) {
             load_script(dir = rs, script = "\\.R")
         })
+    return("succed to load")
 }
 
 
@@ -94,4 +95,5 @@ load_script <- function(dir, script) {
     for (s in scripts) {
         source(s)
     }
+    return(paste0("succed to load ", dir))
 }
