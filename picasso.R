@@ -49,6 +49,7 @@ list_pipeline <- function(pipeline = NULL, module = F) {
             } else {
                 pipe_exist <- grep(pipe_exist, pattern = pipeline, value = T)
             }
+            if(is.na(pipe_exist)){next}
             cat("-->", pipe_exist, "\n")
             dir_3 <- list.dirs(path = grep(p, pattern = pipe_exist, value = T), recursive = F)
             if (module == T) {
