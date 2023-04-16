@@ -1,4 +1,5 @@
 require(dplyr,quietly=T)
+require(rlang,quietly=T)
 picasso_path <- getwd()
 
 choose_pipeline <- function(pipeline=NULL,
@@ -6,95 +7,53 @@ choose_pipeline <- function(pipeline=NULL,
     if(pipeline=NULL){
         list_pipeline() %>% return
     }
-    if(module=NULL){
-        list_module(pipeline) %>% return
-    }
     load_necessary()
     lapply(pipeline,function(p){
-        switch(p,
-            'plot' = ifesle(module=='plot',
-                    load_script(dir='visualization/plot',script='\\.R'),
-                    list_module(pipeline)),
-            'scrnaseq' = lapply(module,function(m){
-                    switch(m,
-                        'all' = load_script(dir='sc_omics/scRNA_analysis',script='\\.R'),
-                        'upstream' = load_script(dir='sc_omics/scRNA_analysis/00_upstream',script='\\.R'),
-                        'downstream' = load_script(dir='sc_omics/scRNA_analysis/01_modificated_seurat',script='\\.R'),
-                        'pseudotime' = load_script(dir='sc_omics/scRNA_analysis/02_pseudotime',script='\\.R'),
-                        'grn' = load_script(dir='sc_omics/scRNA_analysis/03_GRN',script='\\.R'),
-                        'sccs' = load_script(dir='sc_omics/scRNA_analysis/04_sccs',script='\\.R'),
-                        'cnv' = load_script(dir='sc_omics/scRNA_analysis/05_cnv',script='\\.R'),
-                        'scoring' = load_script(dir='sc_omics/scRNA_analysis/06_scoring',script='\\.R'),
-                        'chat' = load_script(dir='sc_omics/scRNA_analysis/07_chat',script='\\.R')
-                        )
-            })
-                ,
-            'bulkrnaseq' = ifesle(module=='bulkrnaseq',
-                        load_script(dir='bulk_omics/bulk_rnaseq',script='\\.R'),
-                        list_module(pipeline))
-        )
-    })
+        list.files(path = picasso_path,recursive=F) %>% 
+            lapply(.,function(ls){
+                pipe <- list.files(path = ls,recursive=F) %>% grep(.,pattern=p,value=T)
+                if(module==NULL){
+                    pipe <- pipe
+                }else{
+                    pipe <- lapply(module,function(m){
+                        list.files(path = paste0(pipe,'/',m),recursive=F)
+                    }) %>% unlist
+                }
+                return(pipe)
+            })  %>% unlist 
+    })%>% unlist %>% stringr::str_split(.,pattern='PICASSO/',simplify=T,n=2) %>% 
+        load_script(dir=.,script='\\.R')
 }
 
-list_module <- function(pipeline){
-    if(pipeline=='scrnaseq'){
-        cat('#----scrnaseq----#\n')
-        c(' --> upstream\n',
-           '--> downstream\n',
-           '--> pseudotime\n',
-           '--> grn\n',
-           '--> sccs\n',
-           '--> cnv\n',
-           '--> scoring\n',
-           '--> chat\n',
-           '--> ...\n') %>% cat
-    }elseif(pipeline=='machine learning') {
-        cat('#----machine learning----#\n')
-        c(' --> classification\n',
-           '--> regression\n',
-           '--> clustering\n',
-           '--> dimensionality reduction\n',
-           '--> matrix decomposition\n',
-           '--> ...\n') %>% cat
-    }else{
-        stop('the module should be just the pipeline. Or the module has not been designed.')
+
+
+list_pipeline <- function(pipeline=NULL,module=F){
+    dir_1 <- list.dirs(path = picasso_path,recursive=F)
+    for(d in dir_1){  # total class
+        total_class <- stringr::str_split(d,pattern='PICASSO/',simplify=T,n=2)
+        cat("#----",total_class,"#----\n")
+        dir_2 <- list.dirs(path = d,recursive=F)
+        for(p in dir_2){  # pipeline
+            pipe_exist <- stringr::str_split(p,pattern=paste0(total_class,'/'),simplify=T,n=2) 
+            if(pipeline==NULL){
+                pipe_exist <- pipe_exist 
+            }else {
+                pipe_exist <- grep(pipe_exist,pattern=pipeline,value=T) 
+            }
+            cat("--> ",pipe_exist,"\n")
+            dir_3 <-  list.dirs(path = grep(p,pattern=pipe_exist,value=T),recursive=F)
+            if(module==T){
+                for(m in dir_3){ #module
+                    modules <- stringr::str_split(m,pattern=paste0(pipe_exist,'/'),simplify=T,n=2)
+                    cat("--> --> ",modules,"\n")
+                }
+            }
+        }
     }
-
 }
 
-list_pipeline <- function(...){
-    cat('#----BASE----#\n')
-    c(' --> plot\n',
-       '--> ...\n',
-       '--> ...\n',
-       '--> ...\n',
-       '--> ...\n') %>% cat 
-    cat('#----sc_omics----#\n')
-    c(' --> scrnaseq\n',
-       '--> smartseq\n',
-       '--> scatacseq\n',
-       '--> spatial\n',
-       '--> vdj\n') %>% cat
-    cat('#----bulk_omics----#\n')
-    c(' --> bulkrnaseq\n',
-       '--> chipseq\n',
-       '--> wes\n',
-       '--> ...\n',
-       '--> ...\n') %>% cat
-    cat('#----stastics----#\n')
-    c(' --> machine learning\n',
-       '--> deep learning\n',
-       '--> clinical analysis\n',
-       '--> experiment analysis\n',
-       '--> ...\n') %>% cat
-    cat('#----other_bioinfo----#\n')
-    c(' --> enrichment analysis\n',
-       '--> sequence analysis\n',
-       '--> annotation\n',
-       '--> ...\n',
-       '--> ...\n') %>% cat
-}
- 
+
+
 # load necessary
 load_necessary <- function(...){
     ## basical utils
@@ -102,9 +61,9 @@ load_necessary <- function(...){
     load_script(dir='utils/parallel',script='parallel')
     load_script(dir='utils/input_your_parameter',script='parameter')
     ## color
-    load_script(dir='visualization/colour',script='palette')
+    #load_script(dir='visualization/colour',script='palette')
     ## picture
-    load_script(dir='visualization/plot',script='themes')
+    #load_script(dir='visualization/plot',script='themes')
 }
 
 
@@ -115,6 +74,7 @@ load_script <- function(dir,script){
                recursive=T,full=T)
     lapply(scripts,source)
 }
+
 
 
 
