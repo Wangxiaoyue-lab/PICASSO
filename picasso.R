@@ -4,7 +4,7 @@ picasso_path <- getwd()
 
 choose_pipeline <- function(pipeline=NULL,
                             module=NULL) {
-    if(pipeline=NULL){
+    if(pipeline==NULL){
         list_pipeline() %>% return
     }
     load_necessary()
