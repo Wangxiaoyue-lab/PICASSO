@@ -1,4 +1,10 @@
-libraries <- c("dplyr")
+#################################
+#@ AIM:The launcher of picasso
+#@ DATE:2023.04.16
+#@ AUTHOR:C, J; L, LH
+#################################
+# 1 core packages
+libraries <- c("tidyverse","rlang","magrittr")
 lapply(
     libraries,
     function(x) {
@@ -6,9 +12,31 @@ lapply(
     }
 )
 
+# 2 set important variable
 picasso_path <- getwd()
+black_list <- c("\\.git", "\\.vscode", "picture", "knowledge_base", "utils")
 
-# file management system functions: choose_pipeline, list_pipeline, load_necessary and load_script
+
+
+
+# 3 file management system functions: 
+#@load_necessary
+#@choose_pipeline 
+#@list_pipeline
+#@load_script
+
+# load necessary
+load_necessary <- function(...) {
+    ## basical utils
+    load_script(dir = "utils", script = "utils_log")
+    load_script(dir = "utils/parallel", script = "utils_parallel")
+    # load_script(dir = "utils/input_your_parameter", script = "parameter")
+    ## color
+    # load_script(dir='visualization/colour',script='palette')
+    ## picture
+    # load_script(dir='visualization/plot',script='themes')
+}
+
 
 # choose the pipeline
 choose_pipeline <- function(pipeline = NULL,
@@ -51,7 +79,6 @@ choose_pipeline <- function(pipeline = NULL,
 list_pipeline <- function(pipeline = NULL, module = F) {
     # Get all of the pipelines
     dir_1 <- list.dirs(path = picasso_path, recursive = F)
-    black_list <- c("\\.git", "\\.vscode", "picture", "knowledge_base", "utils")
     dir_1 <- dir_1[!grepl(dir_1, pattern = paste(black_list, collapse = "|"))]
     for (d in dir_1) {
         # Get the name of the total class
@@ -91,17 +118,7 @@ list_pipeline <- function(pipeline = NULL, module = F) {
 
 
 
-# load necessary
-load_necessary <- function(...) {
-    ## basical utils
-    load_script(dir = "utils", script = "core_utils")
-    load_script(dir = "utils/parallel", script = "parallel")
-    # load_script(dir = "utils/input_your_parameter", script = "parameter")
-    ## color
-    # load_script(dir='visualization/colour',script='palette')
-    ## picture
-    # load_script(dir='visualization/plot',script='themes')
-}
+
 
 
 # load the specified script
