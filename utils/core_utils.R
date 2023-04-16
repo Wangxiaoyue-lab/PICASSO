@@ -37,11 +37,14 @@ if (!exists("project_name")) {
 log_start <- function(...){
     start_time <<- Sys.time()
     cat("This job starts at:", format(start_time), "\n")
-    script_path <- getwd()
+    script_path <<- getwd()
     cat("This script is in:", script_path, "\n")
 }
-#log_start()
 
+# 3 start the log
+log_start()
+
+# 4 end the log 
 log_done <- function(...){
     end_time <- Sys.time()
     time_difference <- end_time - start_time
@@ -49,6 +52,7 @@ log_done <- function(...){
     cat("Total time:", format(time_difference), "\n")
     print(sessionInfo())
 }
+
 ## when you report a code block
 #expr <- expression({...})
 log_report <- function(expr,report=T) {
@@ -63,7 +67,7 @@ log_report <- function(expr,report=T) {
 }
  
 
-
+# 5 file source system
 
 # save your file including rds,csv and pdf
 save_file <- function(file_name = NULL, data = NULL, fun = NULL, sub_dir = NULL, name_string = NULL, ...) {
@@ -106,3 +110,5 @@ save_file <- function(file_name = NULL, data = NULL, fun = NULL, sub_dir = NULL,
         }
     }
 }
+
+
