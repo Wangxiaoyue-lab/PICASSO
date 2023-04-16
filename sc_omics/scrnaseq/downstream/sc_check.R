@@ -1,11 +1,11 @@
 # core packages
-# libraries <- c("scCustomize", "Seurat")
-# lapply(
-#   libraries,
-#    function(x) {
-#        suppressPackageStartupMessages(library(x, character.only = TRUE))
-#    }
-# )
+libraries <- c("scCustomize", "Seurat")
+lapply(
+    libraries,
+    function(x) {
+        suppressPackageStartupMessages(library(x, character.only = TRUE))
+    }
+)
 
 # source("../utils/load_ref.R")
 

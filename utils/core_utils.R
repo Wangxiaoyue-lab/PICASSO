@@ -1,5 +1,5 @@
 # 1 core packages
-libraries <- c("tidyverse", "data.table")
+libraries <- c("data.table")
 lapply(
     libraries,
     function(x) {

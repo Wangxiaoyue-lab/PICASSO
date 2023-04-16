@@ -1,9 +1,12 @@
-require(dplyr, quietly = T)
-require(magrittr, quietly = T)
-require(rlang, quietly = T)
+libraries <- c("tidyverse")
+lapply(
+    libraries,
+    function(x) {
+        suppressPackageStartupMessages(library(x, character.only = TRUE))
+    }
+)
 
 picasso_path <- getwd()
-
 
 # choose the pipeline
 choose_pipeline <- function(pipeline = NULL,
@@ -91,7 +94,7 @@ load_necessary <- function(...) {
     ## basical utils
     load_script(dir = "utils", script = "core_utils")
     load_script(dir = "utils/parallel", script = "parallel")
-    load_script(dir = "utils/input_your_parameter", script = "parameter")
+    # load_script(dir = "utils/input_your_parameter", script = "parameter")
     ## color
     # load_script(dir='visualization/colour',script='palette')
     ## picture
