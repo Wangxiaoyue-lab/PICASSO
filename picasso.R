@@ -43,7 +43,8 @@ list_pipeline <- function(pipeline = NULL, module = F) {
         dir_2 <- list.dirs(path = d, recursive = F)
         for (p in dir_2) { # pipeline
             pipe_exist <- stringr::str_split(p, pattern = paste0(total_class, "/"), simplify = T, n = 2)[, 2]
-            if (is.null(pipeline)) {
+             if(is.na(pipe_exist)){next}
+             if (is.null(pipeline)) {
                 pipe_exist <- pipe_exist
             } else {
                 pipe_exist <- grep(pipe_exist, pattern = pipeline, value = T)
@@ -52,8 +53,8 @@ list_pipeline <- function(pipeline = NULL, module = F) {
             dir_3 <- list.dirs(path = grep(p, pattern = pipe_exist, value = T), recursive = F)
             if (module == T) {
                 for (m in dir_3) { # module
-
                     modules <- stringr::str_split(m, pattern = paste0(pipe_exist, "/"), simplify = T, n = 2)[, 2]
+                    if(is.na(modules)){next}
                     cat("--> -->", modules, "\n")
                 }
             }
