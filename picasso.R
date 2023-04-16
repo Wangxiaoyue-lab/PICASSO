@@ -1,4 +1,4 @@
-libraries <- c("tidyverse")
+libraries <- c("dplyr", "magrittr")
 lapply(
     libraries,
     function(x) {
@@ -7,6 +7,8 @@ lapply(
 )
 
 picasso_path <- getwd()
+
+# file management system functions: choose_pipeline, list_pipeline, load_necessary and load_script
 
 # choose the pipeline
 choose_pipeline <- function(pipeline = NULL,
