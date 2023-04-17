@@ -61,17 +61,17 @@ choose_pipeline <- function(pipeline = NULL,
                             grep(., pattern = m, value = T)
                     })
                 }
+                pipe
             })
     }) %>%
         unlist(., recursive = T) %>%
         stringr::str_split(., pattern = "PICASSO/", simplify = T, n = 2) %>%
-        .[, 2] %>%
+        .[, 2] %T>%
+        cat(paste0("is successfully loaded.", collapse = "\n"), "\n") %>%
         lapply(., function(rs) {
             rs %>% load_script(dir = .)
         })
-
-    # Print a message indicating the pipeline has been loaded
-    cat(paste("Succeed to load script:", pipeline, collapse = "\n"), "\n")
+    invisible(NULL)
 }
 
 # list all pipelines
@@ -129,4 +129,5 @@ load_script <- function(dir, script = "\\.R") {
     ) %>%
         grep(., pattern = "\\.R", value = T) %>%
         lapply(., source)
+    invisible(NULL)
 }
