@@ -1,5 +1,3 @@
-
-
 if (!exists("work_dir")) {
     warning("Variable 'work_dir' does not exist.")
 } else {
@@ -30,7 +28,7 @@ if (!exists("project_name")) {
 log_start <- function(...) {
     start_time <<- Sys.time()
     cat("This job starts at:", format(start_time), "\n")
-    cat("This script is in:", picasso_path, "\n")
+    cat("The PICASSO path is:", picasso_path, "\n")
 }
 
 # 3 start the log
@@ -56,5 +54,3 @@ log_report <- function(expr, report = T) {
         return(result)
     }
 }
-
-

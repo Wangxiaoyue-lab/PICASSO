@@ -1,10 +1,10 @@
 #################################
-#@ AIM:The launcher of picasso
-#@ DATE:2023.04.16
-#@ AUTHOR:C, J; L, LH
+# @ AIM:The launcher of picasso
+# @ DATE:2023.04.16
+# @ AUTHOR:C, J; L, LH
 #################################
 # 1 core packages
-libraries <- c("tidyverse","rlang","magrittr")
+libraries <- c("tidyverse", "rlang", "magrittr")
 lapply(
     libraries,
     function(x) {
@@ -19,14 +19,14 @@ black_list <- c("\\.git", "\\.vscode", "picture", "knowledge_base", "utils")
 
 
 
-# 3 file management system functions: 
-#@load_necessary
-#@choose_pipeline 
-#@list_pipeline
-#@load_script
+# 3 file management system functions:
+# @load_necessary
+# @choose_pipeline
+# @list_pipeline
+# @load_script
 
 # load necessary
-load_necessary <- function(...) {
+load_necessary <- function() {
     ## basical utils
     load_script(dir = "utils", script = "utils_log")
     load_script(dir = "utils/parallel", script = "utils_parallel")
@@ -36,7 +36,6 @@ load_necessary <- function(...) {
     ## picture
     # load_script(dir='visualization/plot',script='themes')
 }
-
 
 # choose the pipeline
 choose_pipeline <- function(pipeline = NULL,
