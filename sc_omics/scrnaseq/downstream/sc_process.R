@@ -16,7 +16,7 @@ process_read <- function(
                 str_c(.,'seurat'))
     }
     read_10x <- function(filename){
-        Read10x(filename) %>%
+        Read_10x(filename) %>%
             CreateSeuratObject(project=project,min.cells=min.cells,...)
     }
     read_loom <- function(filename){
