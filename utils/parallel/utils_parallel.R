@@ -65,7 +65,7 @@ lapply_par <- function(x, fun,
     if (parallel == "future.apply") {
         library(future)
         library(future.apply)
-        options(future.globals.maxSize= 1e9)
+        options(future.globals.maxSize= 1e10)
         plan("multisession", workers = ncores, future.seed = NULL)
         return(future.apply::future_lapply(X = x, FUN = fun))
     }
