@@ -5,7 +5,7 @@
 #SBATCH --exclusive
 #SBATCH -o /public/home/caojun/project/OSCAR/small_bench_20230316/script/2_other_data_to_seurat/log.out/oscar_scenic.out
 #SBATCH -e /public/home/caojun/project/OSCAR/small_bench_20230316/script/2_other_data_to_seurat/log.out/oscar_scenic.err
- 
+
 echo 'start'
 srun --exclusive <script> &
 echo 'start   1'
