@@ -111,20 +111,18 @@ process_add_meta.data <- function(object,
                                   by.o = NULL, # old/object
                                   by.n, # new
                                   type = c("sample", "cell"),
-                                  filter = F) {
+                                  filter = FALSE) {
+    join_=switch(filter,FALSE=left_join,TRUE=inner_join)
+    object@meta.data$cell_names <- row.names(object@meta.data)
     if (type == "cell") {
-        object@meta.data$cell_names <- row.names(object@meta.data)
         by.o <- "cell_names"
-    }
-
-    if (filter == F) {
-        object@meta.data %<>%
-            left_join(., new.meta, join_by(by.o == by.n))
-    } else {
         meta.filt <- object@meta.data %>%
-            inner_join(., new.meta, join_by(by.o == by.n))
-        object <- object[, row.names(meta.filt)]
+            join_(., new.meta, join_by(cell_names == by.n))
+    }else{
+        meta.filt <- object@meta.data %>%
+            join_(., new.meta, join_by(by.o == by.n))
     }
+    object <- object[, row.names(meta.filt)]
     return(object)
 }
 
