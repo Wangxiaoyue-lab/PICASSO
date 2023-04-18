@@ -1,8 +1,6 @@
-
- 
-# CRAN和bioconductor
-pkgs <- c('Seurat', 'tidyverse', 'signac', 'devtools', 'DropletUtils','',
-          '','',''
+# CRAN and bioconductor
+pkgs <- c('Seurat', 'tidyverse', 'signac', 'devtools', 'DropletUtils','DoubletFinder',
+          'clustree','rlang',''
           )
 
 #devtools::install_local(package_name,force = T,quiet = F)
@@ -18,11 +16,17 @@ check_pkgs <- function(pkgs) {
     }
   }
   if (length(unavail) > 0) {
-    message("These packages are required but not installed: \n", paste(strwrap(paste(unavail, collapse = ", ")), collapse = "\n"))
+    message(
+      "These packages are required but not installed: \n",
+      paste(strwrap(paste(unavail, collapse = ", ")), collapse = "\n")
+    )
       for (pkg in unavail) {
         tryCatch(install.packages(pkg),
                  error = function(e) {
-                   message("Installation from CRAN failed: \n", e$message, "\nTry to install ", pkg, " from Bioconductor")
+                   message(
+                     "Installation from CRAN failed: \n", e$message,
+                     "\nTry to install ", pkg, " from Bioconductor"
+                   )
                    if(!requireNamespace("BiocManager", quietly = TRUE)) {
                      install.packages("BiocManager")
                    }
@@ -40,5 +44,4 @@ check_pkgs <- function(pkgs) {
 #github
 github_list=c('samuel-marsh/scCustomize',
                 'mojaveazure/seurat-disk',
-                '' 
-            )
+                ''            )
