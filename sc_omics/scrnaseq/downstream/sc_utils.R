@@ -8,5 +8,5 @@ utils_add_cell_id <- function(object,string=NULL){
 }
 
 seurat_list_merge <- function(seurat_list){
-    merge(object_list[[1]],object_list[-1])
+    merge(seurat_list[[1]],seurat_list[-1])
 }
