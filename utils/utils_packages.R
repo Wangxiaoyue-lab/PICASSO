@@ -40,5 +40,5 @@ check_pkgs <- function(pkgs) {
 #github
 github_list=c('samuel-marsh/scCustomize',
                 'mojaveazure/seurat-disk',
-                '' 
+                'chris-mcginnis-ucsf/DoubletFinder' 
             )

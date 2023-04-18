@@ -58,3 +58,15 @@ log_report <- function(expr, report = T) {
 log_today <- function(...){
     Sys.Date() %>% format("%Y%m%d")
 }
+
+
+log_seed <- function(seed=NULL){
+    require(rlang)
+    seed <- seed %||% 123 # please don't modify 123!
+    log_message(stringr::str_c('The current seed is ',seed))
+    set.seed(seed)
+}
+
+log_message <- function(...,verbose=T){
+    message(...)
+}
