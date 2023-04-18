@@ -109,30 +109,28 @@ process_process <- function(object,
 
 
 
-process_meta.data <- function(object,
+process_add_meta.data <- function(object,
                                 new.meta,
-                                by.o,
-                                by.n,
+                                by.o, #old/object
+                                by.n, #new
+                                type=c('sample','cell'),
                                 filter=F){
+    if(type=='cell'){
+        object@meta.data$cell_names <- row.names(object@meta.data)
+        by.o='cell_names'
+    }
     if(filter==F){
         object@meta.data %<>% 
             left_join(.,new.meta,by=c(by.o=by.n))
     }else{
-        meta.filt  <- object@meta.data %>% 
+        meta.filt <- object@meta.data %>% 
             inner_join(.,new.meta,by=c(by.o=by.n))
-        object[['RNA']]@counts %<>% [,row.names(meta.filt)]
+        object <- object[,row.names(meta.filt)]
     }
     return(object)
 }
 
-process_cell_meta.data <- function(object,
-                                   new.meta,
-                                   by.o,
-                                   by.n,
-                                   filter){
-
-}
-
+ 
 # process_integration
 
 process_find_markers <- function(object,
