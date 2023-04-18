@@ -6,3 +6,7 @@ utils_add_cell_id <- function(object,string=NULL){
     object %<>% RenameCells(new.names=new.names)
     return(object)
 }
+
+seurat_list_merge <- function(seurat_list){
+    merge(object_list[[1]],object_list[-1])
+}
