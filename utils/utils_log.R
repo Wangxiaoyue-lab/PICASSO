@@ -54,3 +54,7 @@ log_report <- function(expr, report = T) {
         return(result)
     }
 }
+
+log_today <- function(...){
+    Sys.Date() %>% format("%Y%m%d")
+}

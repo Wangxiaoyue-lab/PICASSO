@@ -1,3 +1,67 @@
+process_read <- function(
+                        filename,
+                        type,
+                        project,
+                        min.cells=3,...
+){
+    read_h5 <- function(filename) {
+        Seurat::Read10X_h5(filename=filename,use.names=T) %>%
+            CreateSeuratObject(project=project,min.cells=min.cells,...)
+    }
+    read_h5ad <- function(filename){
+        library(SeuratDisk)
+        Convert(filename,'h5seurat',overwrite=T,assay='RNA')
+        LoadH5Seurat(filename %>% 
+            str_sub(.,1,nchar(.)-2) %>%
+                str_c(.,'seurat'))
+    }
+    read_10x <- function(filename){
+        Read10X(filename) %>%
+            CreateSeuratObject(project=project,min.cells=min.cells,...)
+    }
+    read_loom <- function(filename){
+        library(SeuratDisk)
+        library(SeuratObject)
+        Connect(filename,mode='r+') %>% 
+            .[[matrix]] %>%
+                as.Seurat
+
+    }
+    #read_mtx <- function(filename){
+    #    readMM(filename)
+    #}
+    read_table <- function(filename){
+        library(Matrix)
+        as.matrix(filename) %>% as(.,'dgCMatrix') %>%
+            CreateSeuratObject(project=project,min.cells=min.cells,...)
+    }
+    read_seurat <- switch(type,
+            'h5'=read_h5,
+            'h5ad'=read_h5ad,
+            '10x'=read_10x,
+            'loom'=read_loom,
+            #'mtx'=read_mtx,
+            'table'=read_table
+    )
+    read_seurat(filename)
+}
+
+
+
+
+process_to3files <- function(object,
+                            output
+                    ){
+    if(!requireNamespace("DropletUtils", quietly = TRUE)) {
+        BiocManager::install("DropletUtils")
+        }
+    library(DropletUtils)
+    write10xCounts(output,object[["RNA"]]@counts,version=3)
+}
+
+
+
+
 process_process <- function(object,
                             npcs = 20,
                             resolutions = c(0.1, 0.2, 0.3, 0.5),
