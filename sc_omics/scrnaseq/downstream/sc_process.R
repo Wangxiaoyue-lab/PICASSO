@@ -1,47 +1,45 @@
-process_read <- function(
-                        filename,
-                        type,
-                        project,
-                        min.cells=3,...
-){
+process_read <- function(filename,
+                         type,
+                         project,
+                         min.cells = 3, ...) {
     read_h5 <- function(filename) {
-        Seurat::Read10X_h5(filename=filename,use.names=T) %>%
-            CreateSeuratObject(project=project,min.cells=min.cells,...)
+        Seurat::Read10X_h5(filename = filename, use.names = T) %>%
+            CreateSeuratObject(project = project, min.cells = min.cells, ...)
     }
-    read_h5ad <- function(filename){
+    read_h5ad <- function(filename) {
         library(SeuratDisk)
-        Convert(filename,'h5seurat',overwrite=T,assay='RNA')
-        LoadH5Seurat(filename %>% 
-            str_sub(.,1,nchar(.)-2) %>%
-                str_c(.,'seurat'))
+        Convert(filename, "h5seurat", overwrite = T, assay = "RNA")
+        LoadH5Seurat(filename %>%
+            str_sub(., 1, nchar(.) - 2) %>%
+            str_c(., "seurat"))
     }
-    read_10x <- function(filename){
+    read_10x <- function(filename) {
         Read10X(filename) %>%
-            CreateSeuratObject(project=project,min.cells=min.cells,...)
+            CreateSeuratObject(project = project, min.cells = min.cells, ...)
     }
-    read_loom <- function(filename){
+    read_loom <- function(filename) {
         library(SeuratDisk)
         library(SeuratObject)
-        Connect(filename,mode='r+') %>% 
+        Connect(filename, mode = "r+") %>%
             .[[matrix]] %>%
-                as.Seurat
-
+            as.Seurat()
     }
-    #read_mtx <- function(filename){
+    # read_mtx <- function(filename){
     #    readMM(filename)
-    #}
-    read_table <- function(filename){
+    # }
+    read_table <- function(filename) {
         library(Matrix)
-        as.matrix(filename) %>% as(.,'dgCMatrix') %>%
-            CreateSeuratObject(project=project,min.cells=min.cells,...)
+        as.matrix(filename) %>%
+            as(., "dgCMatrix") %>%
+            CreateSeuratObject(project = project, min.cells = min.cells, ...)
     }
     read_seurat <- switch(type,
-            'h5'=read_h5,
-            'h5ad'=read_h5ad,
-            '10x'=read_10x,
-            'loom'=read_loom,
-            #'mtx'=read_mtx,
-            'table'=read_table
+        "h5" = read_h5,
+        "h5ad" = read_h5ad,
+        "10x" = read_10x,
+        "loom" = read_loom,
+        #' mtx'=read_mtx,
+        "table" = read_table
     )
     read_seurat(filename)
 }
@@ -50,13 +48,12 @@ process_read <- function(
 
 
 process_to3files <- function(object,
-                            output
-                    ){
-    if(!requireNamespace("DropletUtils", quietly = TRUE)) {
+                             output) {
+    if (!requireNamespace("DropletUtils", quietly = TRUE)) {
         BiocManager::install("DropletUtils")
-        }
+    }
     library(DropletUtils)
-    write10xCounts(output,object[["RNA"]]@counts,version=3)
+    write10xCounts(output, object[["RNA"]]@counts, version = 3)
 }
 
 
@@ -110,27 +107,28 @@ process_process <- function(object,
 
 
 process_add_meta.data <- function(object,
-                                new.meta,
-                                by.o, #old/object
-                                by.n, #new
-                                type=c('sample','cell'),
-                                filter=F){
-    if(type=='cell'){
+                                  new.meta,
+                                  by.o = NULL, # old/object
+                                  by.n, # new
+                                  type = c("sample", "cell"),
+                                  filter = F) {
+    if (type == "cell") {
         object@meta.data$cell_names <- row.names(object@meta.data)
-        by.o='cell_names'
+        by.o <- "cell_names"
     }
-    if(filter==F){
-        object@meta.data %<>% 
-            left_join(.,new.meta,by=c(by.o=by.n))
-    }else{
-        meta.filt <- object@meta.data %>% 
-            inner_join(.,new.meta,by=c(by.o=by.n))
-        object <- object[,row.names(meta.filt)]
+
+    if (filter == F) {
+        object@meta.data %<>%
+            left_join(., new.meta, join_by(by.o == by.n))
+    } else {
+        meta.filt <- object@meta.data %>%
+            inner_join(., new.meta, join_by(by.o == by.n))
+        object <- object[, row.names(meta.filt)]
     }
     return(object)
 }
 
- 
+
 # process_integration
 
 process_find_markers <- function(object,
