@@ -1,7 +1,8 @@
 # CRAN and bioconductor
 pkgs <- c(
-  "Seurat", "tidyverse","readxl","magrittr", "signac", "devtools", "DropletUtils", "DoubletFinder",
-  "clustree", "rlang", ""
+  "Seurat", "tidyverse","readxl","magrittr", "signac", 
+  "devtools", "DropletUtils", "EdgeR",
+  "clustree", "rlang", "monocle","DESeq2",""
 )
 
 # devtools::install_local(package_name,force = T,quiet = F)
@@ -45,7 +46,8 @@ check_pkgs <- function(pkgs) {
 github_list <- c(
   "samuel-marsh/scCustomize",
   "mojaveazure/seurat-disk",
-  "chris-mcginnis-ucsf/DoubletFinder"
+  "chris-mcginnis-ucsf/DoubletFinder",
+  "Sun-lab/ideas"
 )
 
 check_github <- function(github_list){

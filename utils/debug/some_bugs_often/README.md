@@ -1,6 +1,8 @@
-Yes, you look like the barefoot girl when you suffer those haunted bugs.
 
+# install
 
-![the-barefoot-girl-1895.jpg!Large.jpg](https://raw.githubusercontent.com/Moloch0/PICASSO/main/picture/the-barefoot-girl-1895.jpg!Large.jpg)
+## monocle
 
- 
+monocle 安装容易失败，因为缺少软件icu里的库文件
+
+解决方案是安装icu，将里面的lib文件夹添加到LD_LIBRARY_PATH里去
