@@ -120,10 +120,11 @@ process_add_meta.data <- function(object,
     if (type == "cell") {
         by.o <- "cell_names"
     }
-    paste0("meta.filt <- object@meta.data %>%", join_, "(., new.meta, join_by(", by.o, "==", by.n, "))") %>%
+    meta.filt <- paste0(" object@meta.data %>%", join_, "(., new.meta, join_by(", by.o, "==", by.n, "))") %>%
         parse(text = .) %>%
         eval()
     object <- object[, meta.filt$cell_names]
+    object@meta.data <- meta.filt
     return(object)
 }
 
