@@ -83,12 +83,11 @@ check_pre <- function(
 # check whether doublets exist
 check_doublet <- function(object, npcs) {
     library(DoubletFinder)
-    sweep.res.list <- paramSweep_v3(object, PCs = 1:npcs, sct = FALSE)
-    sweep.stats <- summarizeSweep(sweep.res.list, GT = FALSE)
-    bcmvn <- find.pK(sweep.stats)
-    p <- bcmvn$pK[which.max(bcmvn$BCmetric)] %>%
-        as.character() %>%
-        as.numeric()
+    p <- object %>% paramSweep_v3(., PCs = 1:npcs, sct = FALSE) %>%
+         summarizeSweep(.,GT = FALSE) %>% find.pK %>%
+            .$pK[which.max(.$BCmetric)] %>%
+                as.character() %>%
+                    as.numeric()
     nExp_poi <- round(0.05 * ncol(object))
     object <- doubletFinder_v3(object,
         PCs = 1:npcs, pN = 0.25, pK = p, nExp = nExp_poi,
@@ -99,3 +98,21 @@ check_doublet <- function(object, npcs) {
     object@meta.data <- object@meta.data[, -c]
     return(object)
 }
+#check_doublet <- function(object, npcs) {
+#    library(DoubletFinder)
+#    sweep.res.list <- paramSweep_v3(object, PCs = 1:npcs, sct = FALSE)
+#    sweep.stats <- summarizeSweep(sweep.res.list, GT = FALSE)
+#    bcmvn <- find.pK(sweep.stats)
+#    p <- bcmvn$pK[which.max(bcmvn$BCmetric)] %>%
+#        as.character() %>%
+#        as.numeric()
+#    nExp_poi <- round(0.05 * ncol(object))
+#    object <- doubletFinder_v3(object,
+#        PCs = 1:npcs, pN = 0.25, pK = p, nExp = nExp_poi,
+#        reuse.pANN = FALSE, sct = FALSE
+#    )
+#    colnames(object@meta.data)[ncol(object@meta.data)] <- "doublet_info"
+#    c <- grep("pANN_", colnames(object@meta.data))
+#    object@meta.data <- object@meta.data[, -c]
+#    return(object)
+#}

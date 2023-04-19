@@ -52,6 +52,7 @@ choose_pal <- function(n,
   choose_pal_cycle <- function(name,n){
     NULL
   }
+  
   switch(source,'viridis'=choose_pal_viridis,
                 'paletteer'=choose_pal_all,
                 'picture'=choose_pal_picture,
