@@ -1,8 +1,10 @@
 # CRAN and bioconductor
 pkgs <- c(
-  "Seurat", "tidyverse","readxl","magrittr", "signac", 
-  "devtools", "DropletUtils", "EdgeR",
-  "clustree", "rlang", "monocle","DESeq2",""
+  "Seurat", "scater","scran","tidyverse","readxl","magrittr", 
+  "signac", "devtools", "DropletUtils", "EdgeR","limma","chromVAR",
+  "clustree", "rlang", "monocle","DESeq2","GSVA","org.Mm.eg.db",
+  "org.Hs.eg.db","clusterProfiler","scCustomize","scMAGeCK","biomaRt",
+  "WGCNA","GENIE3", "AUCell", "RcisTarget","",""
 )
 
 # devtools::install_local(package_name,force = T,quiet = F)
@@ -47,7 +49,9 @@ github_list <- c(
   "samuel-marsh/scCustomize",
   "mojaveazure/seurat-disk",
   "chris-mcginnis-ucsf/DoubletFinder",
-  "Sun-lab/ideas"
+  "Sun-lab/ideas",
+  "aertslab/SCopeLoomR",
+  "aertslab/SCENIC"
 )
 
 check_github <- function(github_list){
