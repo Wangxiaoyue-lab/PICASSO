@@ -9,13 +9,6 @@ require(rlang)
 # library(snowfall)
 # library(furrr)
 
-# for Seurat
-para_for_seurat <- F
-if (para_for_seurat) {
-    library(future)
-    plan("multisession")
-}
-
 # implement a function of one variable in parallel
 lapply_par <- function(x, fun,
                        parallel = c("foreach", "parallel", "snowfall", "future.apply", "None"),
