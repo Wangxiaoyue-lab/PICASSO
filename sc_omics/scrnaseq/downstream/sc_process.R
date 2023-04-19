@@ -130,7 +130,7 @@ process_add_meta.data <- function(object,
 process_annotation <- function(object,
                                 col.id,
                                 col.new,
-                                subset=F,...){
+                                split=F,...){
     ident.pairs <- tryCatch(expr = as.list(x = ...), 
         error = function(e) {
         return(list(...))
@@ -152,7 +152,7 @@ process_annotation <- function(object,
                 ident.pairs[as.character(.x)]
      }))) %>% rename(!!col.new := col_) 
    
-    if(subset==F){
+    if(split==F){
         return(object)
     }else{
         return(SplitObject(object,split.by=col.new))
