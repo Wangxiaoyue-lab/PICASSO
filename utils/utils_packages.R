@@ -1,6 +1,6 @@
 # CRAN and bioconductor
 pkgs <- c(
-  "Seurat", "tidyverse", "signac", "devtools", "DropletUtils", "DoubletFinder",
+  "Seurat", "tidyverse","readxl","magrittr", "signac", "devtools", "DropletUtils", "DoubletFinder",
   "clustree", "rlang", ""
 )
 
