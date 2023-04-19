@@ -121,7 +121,7 @@ process_add_meta.data <- function(object,
         parse(text = .) %>%
         eval()
     object <- subset(object, subset = cell_names %in% meta.filt$cell_names)
-    object <- AddMetaData(object, metadata = meta.filt, col.name = "new_col")
+    object <- AddMetaData(object, metadata = meta.filt)
     return(object)
 }
 
