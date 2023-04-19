@@ -5,7 +5,7 @@ pkgs <- c(
 )
 
 # devtools::install_local(package_name,force = T,quiet = F)
-check_pkgs(pkgs)
+#check_pkgs(pkgs)
 
 # from https://github.com/compbioNJU/scPlant/blob/master/R/load_shinyApp.R
 check_pkgs <- function(pkgs) {
@@ -47,3 +47,19 @@ github_list <- c(
   "mojaveazure/seurat-disk",
   "chris-mcginnis-ucsf/DoubletFinder"
 )
+
+check_github <- function(github_list){
+  lapply(github_list,function(g){
+    pk <- g %>% str_split(.,pattern = '/',simplify = T) %>%
+      .[,2]
+    if (!requireNamespace("devtools", quietly = TRUE)) {
+            install.packages("devtools")
+          }
+    if (!requireNamespace(pk, quietly = TRUE)) {
+            devtools::install_github(g)
+          }
+
+  })
+}
+
+
