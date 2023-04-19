@@ -121,8 +121,43 @@ process_add_meta.data <- function(object,
         parse(text = .) %>%
         eval()
     object <- subset(object, subset = cell_names %in% meta.filt$cell_names)
-    object <- AddMetaData(object, metadata = meta.filt)
+    object[[colnames(meta.filt)]] <- meta.filt
+    #object <- AddMetaData(object, metadata = meta.filt)
     return(object)
+}
+
+
+process_annotation <- function(object,
+                                col.id,
+                                col.new,
+                                subset=F,...){
+    ident.pairs <- tryCatch(expr = as.list(x = ...), 
+        error = function(e) {
+        return(list(...))
+        }) %>% unlist
+    col.old <- object@meta.data %>% pull(col.id) %>% unique   
+    new_minus_old <- setdiff(names(ident.pairs),col.old)
+    if(length(new_minus_old)>0){
+        stop(paste('The identities',
+            paste0(new_minus_old,collapse=","),'do not exist'))
+    }
+    old_minus_new <- setdiff(col.old,names(ident.pairs))
+    if(length(old_minus_new)>0){
+        ident.pairs[[old_minus_new]] <- "unknown"
+        warning(paste('The identities',
+            paste0(old_minus_new,collapse=","),'do not provide the clear celltype'))
+    }
+    object@meta.data %<>% mutate(
+             col_ = map(!!sym(col.id,~{
+                ident.pairs[as.character(.x)]
+     }))) %>% rename(!!col.new := col_) 
+   
+    if(subset==F){
+        return(object)
+    }else{
+        return(SplitObject(object,split.by=col.new))
+    }
+
 }
 
 
