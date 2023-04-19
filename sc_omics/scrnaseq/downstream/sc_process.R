@@ -112,7 +112,7 @@ process_add_meta.data <- function(object,
                                   by.n, # new
                                   type = c("sample", "cell"),
                                   filter = FALSE) {
-    join_ <- ifelse(filter,"inner_join","left_join")
+    join_ <- ifelse(filter, "inner_join", "left_join")
     object@meta.data$cell_names <- row.names(object@meta.data)
     if (type == "cell") {
         by.o <- "cell_names"
@@ -120,8 +120,8 @@ process_add_meta.data <- function(object,
     meta.filt <- paste0(" object@meta.data %>%", join_, "(., new.meta, join_by(", by.o, "==", by.n, "))") %>%
         parse(text = .) %>%
         eval()
-    object <- object[, meta.filt$cell_names]
-    object@meta.data <- meta.filt
+    object <- subset(object, subset = cell_names %in% meta.filt$cell_names)
+    object <- AddMetaData(object, metadata = meta.filt, col.name = "new_col")
     return(object)
 }
 
