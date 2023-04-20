@@ -43,11 +43,8 @@ please notice that the code can search the sub directionary
 source ~/.bashrc
 ```
 
-
 # 7 some important so
 
 monole →libicuuc.so.58→ icu
 
-SCopeLoomR→libhdf5_hl.so.100→hdf5_1.10
-
-Rcistaregt→arrow.so→
+SCopeLoomR→libhdf5_hl.so.100→hdf5_1.10.6

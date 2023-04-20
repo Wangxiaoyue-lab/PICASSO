@@ -1,10 +1,14 @@
 # CRAN and bioconductor
 pkgs <- c(
   "Seurat", "scater","scran","tidyverse","readxl","magrittr", 
-  "signac", "devtools", "DropletUtils", "EdgeR","limma","chromVAR",
+  "Signac", "devtools", "DropletUtils", "EdgeR","limma","chromVAR",
   "clustree", "rlang", "monocle","DESeq2","GSVA","org.Mm.eg.db",
   "org.Hs.eg.db","clusterProfiler","scCustomize","scMAGeCK","biomaRt",
-  "WGCNA","GENIE3", "AUCell", "RcisTarget","",""
+  "WGCNA","GENIE3", "AUCell", "RcisTarget","glmnetUtils","Matrix.utils",
+  "tximport","RobustRankAggreg","randomForest","enrichplot","e1071","VennDiagram",
+  "survival","survivalROC","factoextra","FactoMineR","survminer","survMisc",
+  "UpSetR","ConsensusClusterPlus","JASPAR2020",#"caret",
+  "circlize",""
 )
 
 # devtools::install_local(package_name,force = T,quiet = F)
@@ -51,7 +55,8 @@ github_list <- c(
   "chris-mcginnis-ucsf/DoubletFinder",
   "Sun-lab/ideas",
   "aertslab/SCopeLoomR",
-  "aertslab/SCENIC"
+  "aertslab/SCENIC",
+  "immunogenomics/harmony"
 )
 
 check_github <- function(github_list){

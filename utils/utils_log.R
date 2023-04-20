@@ -1,3 +1,4 @@
+# report the key common variable
 if (!exists("work_dir")) {
     warning("Variable 'work_dir' does not exist.")
 } else {
@@ -60,6 +61,18 @@ log_today <- function(...){
 }
 
 
+# report the memory
+log_memory <- function(){
+    library(magrittr)
+    mem_list <- system("free -m",intern=T) %>% 
+        stringr::str_split(pattern='\\s') %>% 
+            lapply(function(s){s[nchar(s)>0]})
+    mem <- mem_list[[2]][2:4] %>% as.numeric %>% (function(x) x/1024) %>%round(.,0)
+    names(mem) <- mem_list[[1]][1:3]   
+    return(mem)
+}
+
+# repory the random seed
 log_seed <- function(seed=NULL){
     require(rlang)
     seed <- seed %||% 123 # please don't modify 123!

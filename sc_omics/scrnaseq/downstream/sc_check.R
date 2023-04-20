@@ -41,7 +41,7 @@ check_pre <- function(
     check_doublet = TRUE) {
     hb_pattern <- switch(species,
         "mm" = "^Hb[^(p)]",
-        "hs" = "^HB[^(P)]"
+        "hs" = "^HB[^(P)]",verbose=F,...
     )
     if (cell_cycle_source == "seurat") {
         s_genes <- switch(species,
@@ -69,14 +69,15 @@ check_pre <- function(
     object <- Add_Mito_Ribo_Seurat(object, species = species) %>%
         PercentageFeatureSet(hb_pattern, col.name = "percent_hb") %>%
         CellCycleScoring(g2m.features = g2m_genes, s.features = s_genes) %>%
-        NormalizeData() %>%
-        ScaleData(features = rownames(object)) %>%
-        FindVariableFeatures() %>%
-        RunPCA(verbose = F, npcs = npcs) %>%
-        RunUMAP(dims = 1:npcs)
+        NormalizeData(verbose=verbose) %>%
+        ScaleData(features = rownames(object),verbose=verbose) %>%
+        FindVariableFeatures(verbose=verbose) %>%
+        RunPCA(verbose = verbose, npcs = npcs) %>%
+        RunUMAP(dims = 1:npcs,verbose = verbose)
     if (check_doublet) {
         object <- check_doublet(object, npcs)
     }
+    return(object)
 }
 
 
@@ -116,3 +117,9 @@ check_doublet <- function(object, npcs) {
 #    object@meta.data <- object@meta.data[, -c]
 #    return(object)
 #}
+
+check_size_future <- function(object){
+    maxSize <- ifelse(dim(object)[2]<5e4,1e9,
+                    ifelse(dim(object)[2]<1e5,1e10,9e10))
+    return(maxSize)
+}
