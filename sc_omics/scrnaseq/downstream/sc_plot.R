@@ -42,7 +42,7 @@ plot_check_pre <- function(
 
 plot_processed <- function(
     object,
-    dim_group = c("orig.ident", "type", "Phase"),
+    dim_group = c("orig.ident",  "Phase"),#"type",
     feats = c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_hb"),
     colors = pal,
     resolutions = c(0.1, 0.2, 0.3, 0.5)) {

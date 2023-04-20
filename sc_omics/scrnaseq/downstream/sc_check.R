@@ -41,7 +41,8 @@ check_pre <- function(
     check_doublet = TRUE) {
     hb_pattern <- switch(species,
         "mm" = "^Hb[^(p)]",
-        "hs" = "^HB[^(P)]",verbose=F,...
+        "hs" = "^HB[^(P)]",
+    verbose=F,...
     )
     if (cell_cycle_source == "seurat") {
         s_genes <- switch(species,

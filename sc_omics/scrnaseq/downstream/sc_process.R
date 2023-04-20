@@ -70,7 +70,8 @@ process_process <- function(object,
                             run_harmony = TRUE,
                             run_sctransform = TRUE,
                             group_in_harmony = "orig.ident",
-                            vars_to_regress = c("percent_mito", "S.Score", "G2M.Score"),...) {
+                            vars_to_regress = c("percent_mito", "S.Score", "G2M.Score"),
+                            verbose=F,...) {
     if (future) {
         options(future.globals.maxSize = check_size_future(object))
         plan("multisession")
@@ -81,13 +82,13 @@ process_process <- function(object,
     )
     ident_value <- paste0(assay_use, "_snn_res.", min(resolutions))
     if (run_sctransform == TRUE) {
-        object <- SCTransform(object, vars.to.regress = vars_to_regress) %>%
-            RunPCA()
+        object <- SCTransform(object, vars.to.regress = vars_to_regress,verbose=verbose) %>%
+            RunPCA(verbose=verbose)
     } else {
-        object <- NormalizeData(object) %>%
-            FindVariableFeatures() %>%
-            ScaleData(features = row.names(object), vars.to.regress = vars_to_regress) %>%
-            RunPCA()
+        object <- NormalizeData(object,verbose=verbose) %>%
+            FindVariableFeatures(verbose=verbose) %>%
+            ScaleData(features = row.names(object), vars.to.regress = vars_to_regress,verbose=verbose) %>%
+            RunPCA(verbose=verbose)
     }
 
     reduction_use <- switch(run_harmony + 1,
@@ -100,9 +101,9 @@ process_process <- function(object,
         object <- object %>%
             RunHarmony(group.by.vars = group_in_harmony, dims.use = 1:npcs, assay.use = assay_use)
     }
-    object <- RunUMAP(object, reduction = reduction_use, dims = 1:npcs) %>%
-        FindNeighbors(reduction = reduction_use, dims = 1:npcs) %>%
-        FindClusters(resolution = resolutions) %>%
+    object <- RunUMAP(object, reduction = reduction_use, dims = 1:npcs,verbose=verbose) %>%
+        FindNeighbors(reduction = reduction_use, dims = 1:npcs,verbose=verbose) %>%
+        FindClusters(resolution = resolutions,verbose=verbose) %>%
         SetIdent(value = ident_value)
 
     return(object)
