@@ -38,11 +38,10 @@ check_pre <- function(
     species = c("hs", "mm"),
     cell_cycle_source = c("seurat", "local"),
     npcs = 20,
-    check_doublet = TRUE) {
+    check_doublet = TRUE, verbose = F) {
     hb_pattern <- switch(species,
         "mm" = "^Hb[^(p)]",
         "hs" = "^HB[^(P)]",
-    verbose=F,...
     )
     if (cell_cycle_source == "seurat") {
         s_genes <- switch(species,
@@ -70,11 +69,11 @@ check_pre <- function(
     object <- Add_Mito_Ribo_Seurat(object, species = species) %>%
         PercentageFeatureSet(hb_pattern, col.name = "percent_hb") %>%
         CellCycleScoring(g2m.features = g2m_genes, s.features = s_genes) %>%
-        NormalizeData(verbose=verbose) %>%
-        ScaleData(features = rownames(object),verbose=verbose) %>%
-        FindVariableFeatures(verbose=verbose) %>%
+        NormalizeData(verbose = verbose) %>%
+        ScaleData(features = rownames(object), verbose = verbose) %>%
+        FindVariableFeatures(verbose = verbose) %>%
         RunPCA(verbose = verbose, npcs = npcs) %>%
-        RunUMAP(dims = 1:npcs,verbose = verbose)
+        RunUMAP(dims = 1:npcs, verbose = verbose)
     if (check_doublet) {
         object <- check_doublet(object, npcs)
     }
@@ -85,11 +84,13 @@ check_pre <- function(
 # check whether doublets exist
 check_doublet <- function(object, npcs) {
     library(DoubletFinder)
-    p <- object %>% paramSweep_v3(., PCs = 1:npcs, sct = FALSE) %>%
-         summarizeSweep(.,GT = FALSE) %>% find.pK %>%
-            .$pK[which.max(.$BCmetric)] %>%
-                as.character() %>%
-                    as.numeric()
+    p <- object %>%
+        paramSweep_v3(., PCs = 1:npcs, sct = FALSE) %>%
+        summarizeSweep(., GT = FALSE) %>%
+        find.pK() %>%
+        .$pK[which.max(.$BCmetric)] %>%
+        as.character() %>%
+        as.numeric()
     nExp_poi <- round(0.05 * ncol(object))
     object <- doubletFinder_v3(object,
         PCs = 1:npcs, pN = 0.25, pK = p, nExp = nExp_poi,
@@ -100,7 +101,7 @@ check_doublet <- function(object, npcs) {
     object@meta.data <- object@meta.data[, -c]
     return(object)
 }
-#check_doublet <- function(object, npcs) {
+# check_doublet <- function(object, npcs) {
 #    library(DoubletFinder)
 #    sweep.res.list <- paramSweep_v3(object, PCs = 1:npcs, sct = FALSE)
 #    sweep.stats <- summarizeSweep(sweep.res.list, GT = FALSE)
@@ -117,11 +118,12 @@ check_doublet <- function(object, npcs) {
 #    c <- grep("pANN_", colnames(object@meta.data))
 #    object@meta.data <- object@meta.data[, -c]
 #    return(object)
-#}
+# }
 
-check_size_future <- function(object){
-    maxSize <- ifelse(dim(object)[2]<5e4,1e9,
-                    ifelse(dim(object)[2]<1e5,1e10,9e10))
+check_size_future <- function(object) {
+    maxSize <- ifelse(dim(object)[2] < 5e4, 1e9,
+        ifelse(dim(object)[2] < 1e5, 1e10, 9e10)
+    )
     return(maxSize)
 }
 

@@ -43,7 +43,7 @@ save_file <- function(file_name = NULL, data = NULL, fun = NULL, sub_dir = NULL,
 }
 
 
-read_refdata <- function(species,file_type) {
+read_refdata <- function(species, file_type) {
     data <- switch(file_type,
         "cell_cycle_markers" = switch(species,
             "mm" = paste0(script_path, "../annotation/Refgenome/cell_cycle_Mus_musculus.csv"),
@@ -58,4 +58,3 @@ read_refdata <- function(species,file_type) {
     ) %>% read.csv()
     return(data)
 }
- 
