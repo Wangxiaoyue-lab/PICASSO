@@ -15,8 +15,8 @@ process_read <- function(filename,
             str_c(., "seurat"))
     }
     read_10x <- function(filename) {
-        if(length(list.files(filename))<3){
-            stop('The 10x files is not right')
+        if (length(list.files(filename)) < 3) {
+            stop("The 10x files is not right")
         }
         Read10X(filename) %>%
             CreateSeuratObject(project = project, min.cells = min.cells, ...)
@@ -50,7 +50,7 @@ process_read <- function(filename,
 
 
 
-#convert the seurat object to 3 files like 10X
+# convert the seurat object to 3 files like 10X
 process_to3files <- function(object,
                              output) {
     if (!requireNamespace("DropletUtils", quietly = TRUE)) {
@@ -62,7 +62,7 @@ process_to3files <- function(object,
 
 
 
-#preprocess including 
+# preprocess including
 process_process <- function(object,
                             npcs = 20,
                             resolutions = c(0.1, 0.2, 0.3, 0.5),
@@ -71,7 +71,7 @@ process_process <- function(object,
                             run_sctransform = TRUE,
                             group_in_harmony = "orig.ident",
                             vars_to_regress = c("percent_mito", "S.Score", "G2M.Score"),
-                            verbose=F,...) {
+                            verbose = F, ...) {
     if (future) {
         options(future.globals.maxSize = check_size_future(object))
         plan("multisession")
@@ -82,13 +82,13 @@ process_process <- function(object,
     )
     ident_value <- paste0(assay_use, "_snn_res.", min(resolutions))
     if (run_sctransform == TRUE) {
-        object <- SCTransform(object, vars.to.regress = vars_to_regress,verbose=verbose) %>%
-            RunPCA(verbose=verbose)
+        object <- SCTransform(object, vars.to.regress = vars_to_regress, verbose = verbose) %>%
+            RunPCA(verbose = verbose)
     } else {
-        object <- NormalizeData(object,verbose=verbose) %>%
-            FindVariableFeatures(verbose=verbose) %>%
-            ScaleData(features = row.names(object), vars.to.regress = vars_to_regress,verbose=verbose) %>%
-            RunPCA(verbose=verbose)
+        object <- NormalizeData(object, verbose = verbose) %>%
+            FindVariableFeatures(verbose = verbose) %>%
+            ScaleData(features = row.names(object), vars.to.regress = vars_to_regress, verbose = verbose) %>%
+            RunPCA(verbose = verbose)
     }
 
     reduction_use <- switch(run_harmony + 1,
@@ -101,9 +101,9 @@ process_process <- function(object,
         object <- object %>%
             RunHarmony(group.by.vars = group_in_harmony, dims.use = 1:npcs, assay.use = assay_use)
     }
-    object <- RunUMAP(object, reduction = reduction_use, dims = 1:npcs,verbose=verbose) %>%
-        FindNeighbors(reduction = reduction_use, dims = 1:npcs,verbose=verbose) %>%
-        FindClusters(resolution = resolutions,verbose=verbose) %>%
+    object <- RunUMAP(object, reduction = reduction_use, dims = 1:npcs, verbose = verbose) %>%
+        FindNeighbors(reduction = reduction_use, dims = 1:npcs, verbose = verbose) %>%
+        FindClusters(resolution = resolutions, verbose = verbose) %>%
         SetIdent(value = ident_value)
 
     return(object)
@@ -122,48 +122,56 @@ process_add_meta.data <- function(object,
     if (type == "cell") {
         by.o <- "cell_names"
     }
-    meta.filt <- object@meta.data %>% 
-        join_(., new.meta, join_by(!!sym(by.o) == !!sym(by.n) ))  
-    #meta.filt <- paste0(" object@meta.data %>%", join_, "(., new.meta, join_by(", by.o, "==", by.n, "))") %>%
+    meta.filt <- object@meta.data %>%
+        join_(., new.meta, join_by(!!sym(by.o) == !!sym(by.n)))
+    # meta.filt <- paste0(" object@meta.data %>%", join_, "(., new.meta, join_by(", by.o, "==", by.n, "))") %>%
     #    parse(text = .) %>%  eval()
     object <- subset(object, subset = cell_names %in% meta.filt$cell_names)
     object[[colnames(meta.filt)]] <- meta.filt
-    #object <- AddMetaData(object, metadata = meta.filt)
+    # object <- AddMetaData(object, metadata = meta.filt)
     return(object)
 }
 
 
 process_annotation <- function(object,
-                                col.id,
-                                col.new,
-                                split=F,...){
-    ident.pairs <- tryCatch(expr = as.list(x = ...), 
+                               col.id,
+                               col.new,
+                               split = F, ...) {
+    ident.pairs <- tryCatch(
+        expr = as.list(x = ...),
         error = function(e) {
-        return(list(...))
-        }) %>% unlist
-    col.old <- object@meta.data %>% pull(col.id) %>% unique   
-    new_minus_old <- setdiff(names(ident.pairs),col.old)
-    if(length(new_minus_old)>0){
-        stop(paste('The identities',
-            paste0(new_minus_old,collapse=","),'do not exist'))
+            return(list(...))
+        }
+    ) %>% unlist()
+    col.old <- object@meta.data %>%
+        pull(col.id) %>%
+        unique()
+    new_minus_old <- setdiff(names(ident.pairs), col.old)
+    if (length(new_minus_old) > 0) {
+        stop(paste(
+            "The identities",
+            paste0(new_minus_old, collapse = ","), "do not exist"
+        ))
     }
-    old_minus_new <- setdiff(col.old,names(ident.pairs))
-    if(length(old_minus_new)>0){
+    old_minus_new <- setdiff(col.old, names(ident.pairs))
+    if (length(old_minus_new) > 0) {
         ident.pairs[[old_minus_new]] <- "unknown"
-        warning(paste('The identities',
-            paste0(old_minus_new,collapse=","),'do not provide the clear celltype'))
+        warning(paste(
+            "The identities",
+            paste0(old_minus_new, collapse = ","), "do not provide the clear celltype"
+        ))
     }
     object@meta.data %<>% mutate(
-             !!col.new := map(!!sym(col.id),~{
-                ident.pairs[as.character(.x)]
-     })) 
-   
-    if(split==F){
-        return(object)
-    }else{
-        return(SplitObject(object,split.by=col.new))
-    }
+        !!col.new := map(!!sym(col.id), ~ {
+            ident.pairs[as.character(.x)]
+        })
+    )
 
+    if (split == F) {
+        return(object)
+    } else {
+        return(SplitObject(object, split.by = col.new))
+    }
 }
 
 
