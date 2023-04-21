@@ -38,7 +38,8 @@ check_pre <- function(
     species = c("hs", "mm"),
     cell_cycle_source = c("seurat", "local"),
     npcs = 20,
-    check_doublet = TRUE, verbose = F) {
+    #check_doublet = TRUE, 
+    verbose = F) {
     hb_pattern <- switch(species,
         "mm" = "^Hb[^(p)]",
         "hs" = "^HB[^(P)]",
@@ -74,25 +75,25 @@ check_pre <- function(
         FindVariableFeatures(verbose = verbose) %>%
         RunPCA(verbose = verbose, npcs = npcs) %>%
         RunUMAP(dims = 1:npcs, verbose = verbose)
-    if (check_doublet) {
-        object <- check_doublet(object, npcs)
-    }
+    #if (check_doublet) {
+    #    object <- check_doublet(object, npcs)
+    #}
     return(object)
 }
 
 
 # check whether doublets exist
 check_doublet <- function(object, npcs) {
-    process_ <- Command(object) %>% 
-        grepl(.,pattern='PCA') %>% 
-            Reduce('+',.) %||% 0
-    if(process_ < 1){
-        object %<>% NormalizeData(verbose = F) %>%
-            ScaleData(features = rownames(object), verbose = F) %>%
-            FindVariableFeatures(verbose = F) %>%
-            RunPCA(verbose = F, npcs = npcs)
-    }
-    if(dim(object)<50000){
+    #process_ <- Command(object) %>% 
+    #    grepl(.,pattern='PCA') %>% 
+    #        Reduce('+',.) %||% 0
+    #if(process_ < 1){
+    #    object %<>% NormalizeData(verbose = F) %>%
+    #        ScaleData(features = rownames(object), verbose = F) %>%
+    #        FindVariableFeatures(verbose = F) %>%
+    #        RunPCA(verbose = F, npcs = npcs)
+    #}
+    if(dim(object)[2]<50000){
         library(DoubletFinder)
         p <- object %>%
         paramSweep_v3(., PCs = 1:npcs, sct = FALSE) %>%
@@ -112,6 +113,13 @@ check_doublet <- function(object, npcs) {
         return(object)
     }else{
         library(scds)
+        library(SingleCellExperiment)
+        sce =  as.SingleCellExperiment(object)
+        sce = cxds(sce)
+        sce = bcds(sce)
+        sce = cxds_bcds_hybrid(sce)
+        CD  = colData(sce)
+        head(cbind(CD$cxds_score,CD$bcds_score, CD$hybrid_score))
     }
     
 }

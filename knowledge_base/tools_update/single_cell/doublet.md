@@ -1,5 +1,3 @@
-
-
 # methods
 
 | value | tool             | time | platform | link | description |  |
@@ -10,7 +8,7 @@
 |       | DobuletDecon     | 2018 | R        |      |             |  |
 | ****  | DoubletFinder    | 2019 | R        |      |             |  |
 | ***   | cxds             | 2019 | R        |      |             |  |
-
+|       | chord            | 2021 | R        |      |             |  |
 
 
 # benchmark
@@ -22,7 +20,6 @@ https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7897250/
 DoubletFinder最准
 
 cxds最快
-
 
  **doubletCells** : The method was executed by following the instruction at [https://bioconductor.statistik.tu-dortmund.de/packages/3.8/workflows/vignettes/simpleSingleCell/inst/doc/work-6-doublet.html](https://bioconductor.statistik.tu-dortmund.de/packages/3.8/workflows/vignettes/simpleSingleCell/inst/doc/work-6-doublet.html). Doublet scores were obtained from the *dblCells* function in R package *scran* (v 1.16.0) with parameters set to default.
 
