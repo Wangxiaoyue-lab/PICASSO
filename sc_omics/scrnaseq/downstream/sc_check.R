@@ -126,8 +126,9 @@ check_doublet <- function(object, npcs, celltype=NULL, ncelltype=NULL, fast=FALS
             cxds(.,estNdbl = TRUE) %>%
                 bcds(.,estNdbl = TRUE) %>%
                     cxds_bcds_hybrid(.,estNdbl = TRUE) %>% colData %>%
-                        select(cxds_score,cxds_call,bcds_score,bcds_call,hybrid_score,hybrid_call) %>%
-                            as.data.frame
+                        .@listData %>%
+                            as.data.frame %>% 
+                                select(cxds_score,cxds_call,bcds_score,bcds_call,hybrid_score,hybrid_call)
         object <- AddMetaData(object,scds_res)
     }
     return(object)
