@@ -1,12 +1,13 @@
 
- suppressPackageStartupMessages(library(viridis))
- suppressPackageStartupMessages(library(paletteer))
+
  suppressPackageStartupMessages(library(tidyverse))
  
 choose_pal <- function(n,
               source=c('viridis','all','picture','cycle'),
               name,
               picture_path=NULL){
+  suppressPackageStartupMessages(library(viridis))
+  suppressPackageStartupMessages(library(paletteer))
   # 1 viridis主题色
   choose_pal_viridis <- function(n=n,name=name){
     ##viridis
