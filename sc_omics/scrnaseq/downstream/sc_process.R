@@ -148,17 +148,23 @@ process_annotation <- function(object,
         unique()
     new_minus_old <- setdiff(names(ident.pairs), col.old)
     if (length(new_minus_old) > 0) {
+        {
+            stop(paste(
+                "The identities",
+                paste0(new_minus_old, collapse = ","), "do not exist"
+            ))
+            return(list(...))
+        } %>% unlist()
+    }
+    col.old <- object@meta.data %>%
+        pull(!!sym(col.id)) %>%
+        unique()
+    new_minus_old <- setdiff(names(ident.pairs), col.old)
+    if (length(new_minus_old) > 0) {
         stop(paste(
             "The identities",
             paste0(new_minus_old, collapse = ","), "do not exist"
         ))
-        return(list(...))
-        }) %>% unlist
-    col.old <- object@meta.data %>% pull(!!sym(col.id)) %>% unique   
-    new_minus_old <- setdiff(names(ident.pairs),col.old)
-    if(length(new_minus_old)>0){
-        stop(paste('The identities',
-            paste0(new_minus_old,collapse=","),'do not exist'))
     }
     old_minus_new <- setdiff(col.old, names(ident.pairs))
     if (length(old_minus_new) > 0) {
@@ -185,11 +191,11 @@ process_annotation <- function(object,
 # process_integration
 
 process_find_markers <- function(object,
-                                 is_all = TRUE, #whether FindMarkers or FindAllMarkers
+                                 is_all = TRUE, # whether FindMarkers or FindAllMarkers
                                  future = FALSE, # whether use future
-                                 ident = NULL,  # the ident for FindAllMarkers
+                                 ident = NULL, # the ident for FindAllMarkers
                                  loop_var = NULL, # each celltype or other ident
-                                 species,   # the species
+                                 species, # the species
                                  ...) {
     # @is_all：FindAllMarkers or FindMarkers
     # @loop_var: compare conditions within some idents
@@ -251,145 +257,165 @@ process_individual_deg <- function(object,
                                    methods,
                                    sample_id,
                                    group_id,
-                                   covariables=NULL,  #ideas
-                                   need_scale=NULL,   #ideas
-                                   cell_select=NULL,  #deseq2
-                                   cluster_id=NULL,   #deseq2
-                                   filepath=NULL      #deseq2
-                                   ){
+                                   covariables = NULL, # ideas
+                                   need_scale = NULL, # ideas
+                                   cell_select = NULL, # deseq2
+                                   cluster_id = NULL, # deseq2
+                                   filepath = NULL # deseq2
+) {
     process_ideas <- function(object,
                               sample_id, # the id of patients of samples
-                              group_id,  # the group of patients(i.e. tumor or drug)
+                              group_id, # the group of patients(i.e. tumor or drug)
                               covariables, # the covariables should be considered(i.e. gender or age)
-                              need_scale  # the continous variables need to be scaled
-                              ){
+                              need_scale # the continous variables need to be scaled
+    ) {
         library(ideas)
         library(SingleCellExperiment)
         library(doParallel)
         library(doRNG)
         library(foreach)
-        ncores=20
-        registerDoParallel(cores=ncores)
-        options(mc.core=ncores)
+        ncores <- 20
+        registerDoParallel(cores = ncores)
+        options(mc.core = ncores)
         RNGkind("L'Ecuyer-CMRG")
-        var2test="diagnosis" #检验变量
-        var2adjust=covariables #协变量
-        var2test_type="binary" #检验类型
-        var_per_cell=c("rd") #纠正深度
+        var2test <- "diagnosis" # 检验变量
+        var2adjust <- covariables # 协变量
+        var2test_type <- "binary" # 检验类型
+        var_per_cell <- c("rd") # 纠正深度
         # 表达矩阵
-        count_matrix <- object[["RNA"]]@counts %>% 
-            as.matrix %>%
-                as.data.frame %>%
-                    rowwise %>%
-                        mutate(sum=sum(c_across(everything())==0)) %>%
-                            filter(sum < 0.9*(ncol(.)-1)) %>%
-                                select(-sum) %>% 
-                                    as.data.frame %>%
-                                        set_rownames(row.names(object[["RNA"]]@counts))  %>%
-                                            as.matrix
-        #细胞元数据
-        meta_cell <- object@meta.data %>% 
-                        mutate(cell_id=rownames(.),
-                                individual = !!sym(sample_id),
-                                diagnosis = !!sym(group_id)
-                                rd = colSums(count_matrix))
-        #病人元数据
-        meta_ind <- meta_cell %>% 
-            select(individual,diagnosis,any_of(covariables)) %>%
-                distinct %>% 
-                    mutate(across(need_scale,scale))
+        count_matrix <- object[["RNA"]]@counts %>%
+            as.matrix() %>%
+            as.data.frame() %>%
+            rowwise() %>%
+            mutate(sum = sum(c_across(everything()) == 0)) %>%
+            filter(sum < 0.9 * (ncol(.) - 1)) %>%
+            select(-sum) %>%
+            as.data.frame() %>%
+            set_rownames(row.names(object[["RNA"]]@counts)) %>%
+            as.matrix()
+        # 细胞元数据
+        meta_cell <- object@meta.data %>%
+            mutate(
+                cell_id = rownames(.),
+                individual = !!sym(sample_id),
+                diagnosis = !!sym(group_id),
+                rd = colSums(count_matrix)
+            )
+        # 病人元数据
+        meta_ind <- meta_cell %>%
+            select(individual, diagnosis, any_of(covariables)) %>%
+            distinct() %>%
+            mutate(across(need_scale, scale))
         dist1 <- ideas_dist(count_matrix,
-                            meta_cell,
-                            meta_ind,
-                            var_per_cell,
-                            var2test,
-                            var2test_type,
-                            d_metric="Was",
-                            fit_method="nb")
+            meta_cell,
+            meta_ind,
+            var_per_cell,
+            var2test,
+            var2test_type,
+            d_metric = "Was",
+            fit_method = "nb"
+        )
         pval_ideas <- permanova(dist1,
-                                meta_ind,
-                                var2test,
-                                var2adjust,
-                                var2test_type,
-                                n_perm=999,
-                                r.seed=2023)
-        p_ideas_res <- data.frame(genes=row.names(count_matrix),
-                                  pval=pval_ideas) %>% 
-                        filter(!is.na(pval)) %>%
-                            arrange(desc(pval)) %>%
-                                filter(pval<0.05)
+            meta_ind,
+            var2test,
+            var2adjust,
+            var2test_type,
+            n_perm = 999,
+            r.seed = 2023
+        )
+        p_ideas_res <- data.frame(
+            genes = row.names(count_matrix),
+            pval = pval_ideas
+        ) %>%
+            filter(!is.na(pval)) %>%
+            arrange(desc(pval)) %>%
+            filter(pval < 0.05)
         return(p_ideas_res)
     }
     process_deseq2 <- function(object,
                                cell_select,
-                               cluster_id,  #the cluster repesented celltype
-                               sample_id, # the id of patients of samples 
-                               group_id,  # the group of patients like tumor or drug
+                               cluster_id, # the cluster repesented celltype
+                               sample_id, # the id of patients of samples
+                               group_id, # the group of patients like tumor or drug
                                covariables, # the covariables should be considered like gender or age
-                               need_scale,  # the continous variables need to be scaled
-                               filepath
-                              ){
+                               need_scale, # the continous variables need to be scaled
+                               filepath) {
         library(Matrix.utils)
         library(Matrix)
         library(SingleCellExperiment)
         library(apeglm)
         library(png)
-        sce <- SingleCellExperiment(assays=list(counts=object@assays$RNA@counts),
-                                    colData=object@meta.data %>% 
-                                        mutate(
-                                           sample_id=!!sym(sample_id),
-                                           group_id=!!sym(group_id),
-                                           cluster_id=!!sym(cluster_id)
-                                    ))
+        sce <- SingleCellExperiment(
+            assays = list(counts = object@assays$RNA@counts),
+            colData = object@meta.data %>%
+                mutate(
+                    sample_id = !!sym(sample_id),
+                    group_id = !!sym(group_id),
+                    cluster_id = !!sym(cluster_id)
+                )
+        )
         groups <- colData(sce)[, c("cluster_id", "sample_id")]
-        
-        #生成样本级的元数据
-        sce$cluster_id=factor(sce$cluster_id)
+
+        # 生成样本级的元数据
+        sce$cluster_id <- factor(sce$cluster_id)
         kids <- purrr::set_names(levels(sce$cluster_id))
         nk <- length(kids)
-        sce$sample_id=factor(sce$sample_id)
+        sce$sample_id <- factor(sce$sample_id)
         sids <- purrr::set_names(levels(sce$sample_id))
         ns <- length(sids)
         m <- match(sids, sce$sample_id)
-        ei <- data.frame(colData(sce)[m, ], 
-                  as.numeric(table(sce$sample_id)), 
-                  row.names = NULL) %>% 
-                select(-"cluster_id")
+        ei <- data.frame(colData(sce)[m, ],
+            as.numeric(table(sce$sample_id)),
+            row.names = NULL
+        ) %>%
+            select(-"cluster_id")
 
         # Aggregate across cluster-sample groups
-        pb <- aggregate.Matrix(t(counts(sce)), 
-                       groupings = colData(sce)[, c("cluster_id", "sample_id")], 
-                       fun = "mean") 
-        splitf <- sapply(stringr::str_split(rownames(pb), 
-                                    pattern = "_",  
-                                    n = 2), 
-                 `[`, 1)
-        pb <- split.data.frame(pb, 
-                       factor(splitf)) %>%
-        lapply(function(u) 
-                set_colnames(t(u), 
-                             stringr::str_extract(rownames(u), "(?<=_)[:alnum:]+")))
-        
+        pb <- aggregate.Matrix(t(counts(sce)),
+            groupings = colData(sce)[, c("cluster_id", "sample_id")],
+            fun = "mean"
+        )
+        splitf <- sapply(
+            stringr::str_split(rownames(pb),
+                pattern = "_",
+                n = 2
+            ),
+            `[`, 1
+        )
+        pb <- split.data.frame(
+            pb,
+            factor(splitf)
+        ) %>%
+            lapply(function(u) {
+                set_colnames(
+                    t(u),
+                    stringr::str_extract(rownames(u), "(?<=_)[:alnum:]+")
+                )
+            })
+
         # deg 元数据
-        get_sample_ids <- function(x){
+        get_sample_ids <- function(x) {
             pb[[x]] %>%
                 colnames()
-            }
+        }
         de_samples <- map(1:length(kids), get_sample_ids) %>%
             unlist()
         samples_list <- map(1:length(kids), get_sample_ids)
-        get_cluster_ids <- function(x){
-            rep(names(pb)[x], 
-                each = length(samples_list[[x]]))
-            }
+        get_cluster_ids <- function(x) {
+            rep(names(pb)[x],
+                each = length(samples_list[[x]])
+            )
+        }
         de_cluster_ids <- map(1:length(kids), get_cluster_ids) %>%
             unlist()
-        gg_df <- data.frame(cluster_id = de_cluster_ids,
-                    sample_id = de_samples)
-        gg_df <- left_join(gg_df, ei[, c("sample_id", "group_id")]) 
+        gg_df <- data.frame(
+            cluster_id = de_cluster_ids,
+            sample_id = de_samples
+        )
+        gg_df <- left_join(gg_df, ei[, c("sample_id", "group_id")])
         metadata <- gg_df %>%
-            dplyr::select(cluster_id, sample_id, group_id) 
-        
+            dplyr::select(cluster_id, sample_id, group_id)
+
         ## 提取某一亚群细胞
         clusters <- levels(metadata$cluster_id)
         cluster_x <- cell_select %||% clusters[1]
@@ -397,37 +423,43 @@ process_individual_deg <- function(object,
         rownames(cluster_metadata) <- cluster_metadata$sample_id
         counts <- pb[[cluster_x]]
         cluster_counts <- data.frame(counts[, which(colnames(counts) %in% rownames(cluster_metadata))])
-        all(rownames(cluster_metadata) == colnames(cluster_counts))        
-        dds <- DESeqDataSetFromMatrix(cluster_counts, 
-                              colData = cluster_metadata, 
-                              design = ~ group_id)
-        rld <- rlog(dds, blind=TRUE)
+        all(rownames(cluster_metadata) == colnames(cluster_counts))
+        dds <- DESeqDataSetFromMatrix(cluster_counts,
+            colData = cluster_metadata,
+            design = ~group_id
+        )
+        rld <- rlog(dds, blind = TRUE)
         pdf(paste0(filepath))
         DESeq2::plotPCA(rld, intgroup = "group_id")
         rld_mat <- assay(rld)
         rld_cor <- cor(rld_mat)
-        pheatmap(rld_cor, 
-        annotation = cluster_metadata[, c("group_id"), drop=F])
+        pheatmap(rld_cor,
+            annotation = cluster_metadata[, c("group_id"), drop = F]
+        )
         dev.off()
         dds <- DESeq(dds)
-        cluster_metadata$group_id=factor(cluster_metadata$group_id)
-        contrast <- c("group_id", 
-            levels(cluster_metadata$group_id)[2], 
-            levels(cluster_metadata$group_id)[1])
-        res <- results(dds, 
-               contrast = contrast,
-               alpha = 0.05)
-        res <- lfcShrink(dds, 
-                 contrast =  contrast,
-                 type='ashr')
+        cluster_metadata$group_id <- factor(cluster_metadata$group_id)
+        contrast <- c(
+            "group_id",
+            levels(cluster_metadata$group_id)[2],
+            levels(cluster_metadata$group_id)[1]
+        )
+        res <- results(dds,
+            contrast = contrast,
+            alpha = 0.05
+        )
+        res <- lfcShrink(dds,
+            contrast = contrast,
+            type = "ashr"
+        )
         return(res)
     }
-    process_mast <- function(...){
-        stop('the method are planning to be design')
+    process_mast <- function(...) {
+        stop("the method are planning to be design")
     }
     deg_function <- switch(methods,
-        'ideas'=process_ideas,
-        'pseudobulk'=process_deseq2,
-        'mast'=process_mast)
-
+        "ideas" = process_ideas,
+        "pseudobulk" = process_deseq2,
+        "mast" = process_mast
+    )
 }
