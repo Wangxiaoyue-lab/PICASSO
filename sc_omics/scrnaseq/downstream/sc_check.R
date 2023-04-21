@@ -83,26 +83,35 @@ check_pre <- function(
 
 
 # check whether doublets exist
-check_doublet <- function(object, npcs) {
-    #process_ <- Command(object) %>% 
-    #    grepl(.,pattern='PCA') %>% 
-    #        Reduce('+',.) %||% 0
-    #if(process_ < 1){
-    #    object %<>% NormalizeData(verbose = F) %>%
-    #        ScaleData(features = rownames(object), verbose = F) %>%
-    #        FindVariableFeatures(verbose = F) %>%
-    #        RunPCA(verbose = F, npcs = npcs)
-    #}
-    if(dim(object)[2]<50000){
+check_doublet <- function(object, npcs, celltype=NULL, ncelltype=NULL, fast=FALSE) {
+    process_ <- Command(object) %>% 
+        grepl(.,pattern='PCA') %>% 
+            Reduce('+',.) %||% 0
+    if(process_ < 1){
+        object %<>% NormalizeData(verbose = F) %>%
+            ScaleData(features = rownames(object), verbose = F) %>%
+            FindVariableFeatures(verbose = F) %>%
+            RunPCA(verbose = F, npcs = npcs)
+    }
+    if(fast==F){
         library(DoubletFinder)
         p <- object %>%
-        paramSweep_v3(., PCs = 1:npcs, sct = FALSE) %>%
-        summarizeSweep(., GT = FALSE) %>%
-        find.pK() %>%
-        .$pK[which.max(.$BCmetric)] %>%
-        as.character() %>%
-        as.numeric()
-        nExp_poi <- round(0.05 * ncol(object))
+            paramSweep_v3(., PCs = 1:npcs, sct = FALSE) %>%
+                summarizeSweep(., GT = FALSE) %>%
+                    find.pK %>% filter(BCmetric==max(BCmetric)) %>% 
+                        pull(pK) %>%
+                            as.character() %>%
+                                as.numeric()
+        nExp_poi <- round(ncol(object)*ncol(object)*1.6*1.6/2e5)
+        if(!is.null(celltype)){
+                homotypic.prop <- object@meta.data %>% 
+                    select(!!sym(celltype)) %>% 
+                                modelHomotypic
+        }else{
+            ncelltype <- ncelltype %||% 5
+            homotypic.prop <- 1/ncelltype
+        }
+        nExp_poi.adj <- round(nExp_poi*(1-homotypic.prop))
         object <- doubletFinder_v3(object,
             PCs = 1:npcs, pN = 0.25, pK = p, nExp = nExp_poi,
             reuse.pANN = FALSE, sct = FALSE
@@ -110,18 +119,18 @@ check_doublet <- function(object, npcs) {
         colnames(object@meta.data)[ncol(object@meta.data)] <- "doublet_info"
         c <- grep("pANN_", colnames(object@meta.data))
         object@meta.data <- object@meta.data[, -c]
-        return(object)
     }else{
         library(scds)
         library(SingleCellExperiment)
-        sce =  as.SingleCellExperiment(object)
-        sce = cxds(sce)
-        sce = bcds(sce)
-        sce = cxds_bcds_hybrid(sce)
-        CD  = colData(sce)
-        head(cbind(CD$cxds_score,CD$bcds_score, CD$hybrid_score))
+        scds_res <- as.SingleCellExperiment(object) %>% 
+            cxds(.,estNdbl = TRUE) %>%
+                bcds(.,estNdbl = TRUE) %>%
+                    cxds_bcds_hybrid(.,estNdbl = TRUE) %>% colData %>%
+                        select(cxds_score,cxds_call,bcds_score,bcds_call,hybrid_score,hybrid_call) %>%
+                            as.data.frame
+        object <- AddMetaData(object,scds_res)
     }
-    
+    return(object)
 }
 # check_doublet <- function(object, npcs) {
 #    library(DoubletFinder)
