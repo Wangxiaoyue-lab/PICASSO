@@ -83,18 +83,23 @@ check_pre <- function(
 
 
 # check whether doublets exist
-check_doublet <- function(object, npcs, celltype = NULL, ncelltype = NULL, fast = FALSE) {
-    process_ <- Command(object) %>%
-        grepl(., pattern = "PCA") %>%
-        Reduce("+", .) %||% 0
-    if (process_ < 1) {
-        object %<>% NormalizeData(verbose = F) %>%
-            ScaleData(features = rownames(object), verbose = F) %>%
-            FindVariableFeatures(verbose = F) %>%
-            RunPCA(verbose = F, npcs = npcs)
-    }
+check_doublet <- function(object,
+                          npcs, # the number of npcs of pca
+                          celltype = NULL, # the colname of celltype in metadata
+                          ncelltype = NULL, # the accessed number of cell types
+                          fast = FALSE # whether use the fast mode(scds package)
+) {
     if (fast == F) {
         library(DoubletFinder)
+        process_ <- Command(object) %>%
+            grepl(., pattern = "PCA") %>%
+            Reduce("+", .) %||% 0
+        if (process_ < 1) {
+            object %<>% NormalizeData(verbose = F) %>%
+                ScaleData(features = rownames(object), verbose = F) %>%
+                FindVariableFeatures(verbose = F) %>%
+                RunPCA(verbose = F, npcs = npcs)
+        }
         p <- object %>%
             paramSweep_v3(., PCs = 1:npcs, sct = FALSE) %>%
             summarizeSweep(., GT = FALSE) %>%
@@ -128,8 +133,9 @@ check_doublet <- function(object, npcs, celltype = NULL, ncelltype = NULL, fast 
             bcds(., estNdbl = TRUE) %>%
             cxds_bcds_hybrid(., estNdbl = TRUE) %>%
             colData() %>%
-            select(cxds_score, cxds_call, bcds_score, bcds_call, hybrid_score, hybrid_call) %>%
-            as.data.frame()
+            .@listData %>%
+            as.data.frame() %>%
+            select(cxds_score, cxds_call, bcds_score, bcds_call, hybrid_score, hybrid_call)
         object <- AddMetaData(object, scds_res)
     }
     return(object)
