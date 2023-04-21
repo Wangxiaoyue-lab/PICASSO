@@ -5,7 +5,8 @@ summarise_pseudobulk <- function(object, features = NULL, ...) {
     stat_fun <- function(AE_result) {
         AE_result <- as.data.frame(AE_result)
         raw_cols <- colnames(AE_result)
-        AE_result <- rowwise(AE_result) %>%
+        AE_result <- rownames_to_column(AE_result) %>%
+            rowwise() %>%
             mutate(
                 row_sum = sum(c_across(all_of(raw_cols))),
                 row_mean = mean(c_across(all_of(raw_cols))),
@@ -16,6 +17,7 @@ summarise_pseudobulk <- function(object, features = NULL, ...) {
             mutate(
                 across(all_of(raw_cols), list(norm = ~ (.x - row_mean) / row_sd), .names = "norm_{col}")
             )
+        AE_result
     }
 
     if (class(features) == "list") {
