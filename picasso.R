@@ -122,13 +122,13 @@ list_pipeline <- function(pipeline = NULL, module = F) {
 
 
 # load the specified script
-load_script <- function(dir, script = "\\.r") {
+load_script <- function(dir, script = "\\.r|R") {
     list.files(
         path = paste0(picasso_path, "/", dir),
         pattern = paste(script, collapse = "|"),
         recursive = T, full = T
     ) %>%
-        grep(., pattern = "\\.r", value = T) %>%
+        grep(., pattern = "(\\.r)|(\\.R)^", value = T) %>%
         lapply(., source)
     invisible(NULL)
 }
