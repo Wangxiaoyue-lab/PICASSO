@@ -84,7 +84,9 @@ check_pre <- function(
 
 # check whether doublets exist
 check_doublet <- function(object, npcs, celltype=NULL, ncelltype=NULL, fast=FALSE) {
-    process_ <- Command(object) %>% 
+    if(fast==F){
+        library(DoubletFinder)
+        process_ <- Command(object) %>% 
         grepl(.,pattern='PCA') %>% 
             Reduce('+',.) %||% 0
     if(process_ < 1){
@@ -93,8 +95,6 @@ check_doublet <- function(object, npcs, celltype=NULL, ncelltype=NULL, fast=FALS
             FindVariableFeatures(verbose = F) %>%
             RunPCA(verbose = F, npcs = npcs)
     }
-    if(fast==F){
-        library(DoubletFinder)
         p <- object %>%
             paramSweep_v3(., PCs = 1:npcs, sct = FALSE) %>%
                 summarizeSweep(., GT = FALSE) %>%
