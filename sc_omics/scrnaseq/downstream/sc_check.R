@@ -83,23 +83,37 @@ check_pre <- function(
 
 # check whether doublets exist
 check_doublet <- function(object, npcs) {
-    library(DoubletFinder)
-    p <- object %>%
+    process_ <- Command(object) %>% 
+        grepl(.,pattern='PCA') %>% 
+            Reduce('+',.) %||% 0
+    if(process_ < 1){
+        object %<>% NormalizeData(verbose = F) %>%
+            ScaleData(features = rownames(object), verbose = F) %>%
+            FindVariableFeatures(verbose = F) %>%
+            RunPCA(verbose = F, npcs = npcs)
+    }
+    if(dim(object)<50000){
+        library(DoubletFinder)
+        p <- object %>%
         paramSweep_v3(., PCs = 1:npcs, sct = FALSE) %>%
         summarizeSweep(., GT = FALSE) %>%
         find.pK() %>%
         .$pK[which.max(.$BCmetric)] %>%
         as.character() %>%
         as.numeric()
-    nExp_poi <- round(0.05 * ncol(object))
-    object <- doubletFinder_v3(object,
-        PCs = 1:npcs, pN = 0.25, pK = p, nExp = nExp_poi,
-        reuse.pANN = FALSE, sct = FALSE
-    )
-    colnames(object@meta.data)[ncol(object@meta.data)] <- "doublet_info"
-    c <- grep("pANN_", colnames(object@meta.data))
-    object@meta.data <- object@meta.data[, -c]
-    return(object)
+        nExp_poi <- round(0.05 * ncol(object))
+        object <- doubletFinder_v3(object,
+            PCs = 1:npcs, pN = 0.25, pK = p, nExp = nExp_poi,
+            reuse.pANN = FALSE, sct = FALSE
+        )
+        colnames(object@meta.data)[ncol(object@meta.data)] <- "doublet_info"
+        c <- grep("pANN_", colnames(object@meta.data))
+        object@meta.data <- object@meta.data[, -c]
+        return(object)
+    }else{
+        library(scds)
+    }
+    
 }
 # check_doublet <- function(object, npcs) {
 #    library(DoubletFinder)

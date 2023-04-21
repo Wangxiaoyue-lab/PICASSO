@@ -56,7 +56,8 @@ github_list <- c(
   "Sun-lab/ideas",
   "aertslab/SCopeLoomR",
   "aertslab/SCENIC",
-  "immunogenomics/harmony"
+  "immunogenomics/harmony",
+  "kostkalab/scds"
 )
 
 check_github <- function(github_list){
