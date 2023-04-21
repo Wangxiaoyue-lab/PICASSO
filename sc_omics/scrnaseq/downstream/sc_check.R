@@ -55,8 +55,8 @@ check_pre <- function(
         )
     } else {
         # Get gene names for Ensembl IDs for each gene
-        cell_cycle_markers <- left_join(read_refdata(species, "cell_cycle_markers"),
-            read_refdata(species, "annotations"),
+        cell_cycle_markers <- left_join(utils_read_refdata(species, "cell_cycle_markers"),
+            utils_read_refdata(species, "annotations"),
             by = c("geneID" = "gene_id")
         )
         # Acquire the S and G2M phase genes
