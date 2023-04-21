@@ -83,7 +83,12 @@ check_pre <- function(
 
 
 # check whether doublets exist
-check_doublet <- function(object, npcs, celltype=NULL, ncelltype=NULL, fast=FALSE) {
+check_doublet <- function(object, 
+                          npcs,    # the number of npcs of pca
+                          celltype=NULL, #the colname of celltype in metadata
+                          ncelltype=NULL, #the accessed number of cell types
+                          fast=FALSE      #whether use the fast mode(scds package)
+                          ) {
     if(fast==F){
         library(DoubletFinder)
         process_ <- Command(object) %>% 
