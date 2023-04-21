@@ -89,12 +89,12 @@ check_doublet <- function(object, npcs, celltype=NULL, ncelltype=NULL, fast=FALS
         process_ <- Command(object) %>% 
         grepl(.,pattern='PCA') %>% 
             Reduce('+',.) %||% 0
-    if(process_ < 1){
-        object %<>% NormalizeData(verbose = F) %>%
-            ScaleData(features = rownames(object), verbose = F) %>%
-            FindVariableFeatures(verbose = F) %>%
-            RunPCA(verbose = F, npcs = npcs)
-    }
+        if(process_ < 1){
+            object %<>% NormalizeData(verbose = F) %>%
+                ScaleData(features = rownames(object), verbose = F) %>%
+                    FindVariableFeatures(verbose = F) %>%
+                        RunPCA(verbose = F, npcs = npcs)
+            }
         p <- object %>%
             paramSweep_v3(., PCs = 1:npcs, sct = FALSE) %>%
                 summarizeSweep(., GT = FALSE) %>%
