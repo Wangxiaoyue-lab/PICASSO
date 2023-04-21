@@ -124,3 +124,12 @@ check_size_future <- function(object){
                     ifelse(dim(object)[2]<1e5,1e10,9e10))
     return(maxSize)
 }
+
+
+check_seurat <- function(object){
+    cat('The size is ',dim(object),'\n\n')
+    cat('The meta.data is ')
+    print(object@meta.data[1:4,])
+    cat('\n\nThe structure is ')
+    print(str(object))
+}
