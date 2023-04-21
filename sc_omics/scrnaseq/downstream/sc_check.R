@@ -38,7 +38,7 @@ check_pre <- function(
     species = c("hs", "mm"),
     cell_cycle_source = c("seurat", "local"),
     npcs = 20,
-    #check_doublet = TRUE, 
+    # check_doublet = TRUE,
     verbose = F) {
     hb_pattern <- switch(species,
         "mm" = "^Hb[^(p)]",
@@ -75,48 +75,49 @@ check_pre <- function(
         FindVariableFeatures(verbose = verbose) %>%
         RunPCA(verbose = verbose, npcs = npcs) %>%
         RunUMAP(dims = 1:npcs, verbose = verbose)
-    #if (check_doublet) {
+    # if (check_doublet) {
     #    object <- check_doublet(object, npcs)
-    #}
+    # }
     return(object)
 }
 
 
 # check whether doublets exist
-check_doublet <- function(object, 
-                          npcs,    # the number of npcs of pca
-                          celltype=NULL, #the colname of celltype in metadata
-                          ncelltype=NULL, #the accessed number of cell types
-                          fast=FALSE      #whether use the fast mode(scds package)
-                          ) {
-    if(fast==F){
+check_doublet <- function(object,
+                          npcs, # the number of npcs of pca
+                          celltype = NULL, # the colname of celltype in metadata
+                          ncelltype = NULL, # the accessed number of cell types
+                          fast = FALSE # whether use the fast mode(scds package)
+) {
+    if (fast == F) {
         library(DoubletFinder)
-        process_ <- Command(object) %>% 
-        grepl(.,pattern='PCA') %>% 
-            Reduce('+',.) %||% 0
-        if(process_ < 1){
+        process_ <- Command(object) %>%
+            grepl(., pattern = "PCA") %>%
+            Reduce("+", .) %||% 0
+        if (process_ < 1) {
             object %<>% NormalizeData(verbose = F) %>%
                 ScaleData(features = rownames(object), verbose = F) %>%
-                    FindVariableFeatures(verbose = F) %>%
-                        RunPCA(verbose = F, npcs = npcs)
-            }
+                FindVariableFeatures(verbose = F) %>%
+                RunPCA(verbose = F, npcs = npcs)
+        }
         p <- object %>%
             paramSweep_v3(., PCs = 1:npcs, sct = FALSE) %>%
-                summarizeSweep(., GT = FALSE) %>%
-                    find.pK %>% filter(BCmetric==max(BCmetric)) %>% 
-                        pull(pK) %>%
-                            as.character() %>%
-                                as.numeric()
-        nExp_poi <- round(ncol(object)*ncol(object)*1.6*1.6/2e5)
-        if(!is.null(celltype)){
-                homotypic.prop <- object@meta.data %>% 
-                    select(!!sym(celltype)) %>% 
-                                modelHomotypic
-        }else{
+            summarizeSweep(., GT = FALSE) %>%
+            find.pK() %>%
+            filter(BCmetric == max(BCmetric)) %>%
+            pull(pK) %>%
+            as.character() %>%
+            as.numeric()
+        nExp_poi <- round(ncol(object) * ncol(object) * 1.6 * 1.6 / 2e5)
+        if (!is.null(celltype)) {
+            homotypic.prop <- object@meta.data %>%
+                select(!!sym(celltype)) %>%
+                modelHomotypic()
+        } else {
             ncelltype <- ncelltype %||% 5
-            homotypic.prop <- 1/ncelltype
+            homotypic.prop <- 1 / ncelltype
         }
-        nExp_poi.adj <- round(nExp_poi*(1-homotypic.prop))
+        nExp_poi.adj <- round(nExp_poi * (1 - homotypic.prop))
         object <- doubletFinder_v3(object,
             PCs = 1:npcs, pN = 0.25, pK = p, nExp = nExp_poi,
             reuse.pANN = FALSE, sct = FALSE
@@ -124,17 +125,18 @@ check_doublet <- function(object,
         colnames(object@meta.data)[ncol(object@meta.data)] <- "doublet_info"
         c <- grep("pANN_", colnames(object@meta.data))
         object@meta.data <- object@meta.data[, -c]
-    }else{
+    } else {
         library(scds)
         library(SingleCellExperiment)
-        scds_res <- as.SingleCellExperiment(object) %>% 
-            cxds(.,estNdbl = TRUE) %>%
-                bcds(.,estNdbl = TRUE) %>%
-                    cxds_bcds_hybrid(.,estNdbl = TRUE) %>% colData %>%
-                        .@listData %>%
-                            as.data.frame %>% 
-                                select(cxds_score,cxds_call,bcds_score,bcds_call,hybrid_score,hybrid_call)
-        object <- AddMetaData(object,scds_res)
+        scds_res <- as.SingleCellExperiment(object) %>%
+            cxds(., estNdbl = TRUE) %>%
+            bcds(., estNdbl = TRUE) %>%
+            cxds_bcds_hybrid(., estNdbl = TRUE) %>%
+            colData() %>%
+            .@listData %>%
+            as.data.frame() %>%
+            select(cxds_score, cxds_call, bcds_score, bcds_call, hybrid_score, hybrid_call)
+        object <- AddMetaData(object, scds_res)
     }
     return(object)
 }
@@ -165,10 +167,10 @@ check_size_future <- function(object) {
 }
 
 
-check_seurat <- function(object){
-    cat('The size is ',dim(object),'\n\n')
-    cat('The meta.data is ')
-    print(object@meta.data[1:4,])
-    cat('\n\nThe structure is ')
+check_seurat <- function(object) {
+    cat("The size is ", dim(object), "\n\n")
+    cat("The meta.data is ")
+    print(object@meta.data[1:4, ])
+    cat("\n\nThe structure is ")
     print(str(object))
 }
