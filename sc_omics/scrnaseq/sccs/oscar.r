@@ -1,28 +1,11 @@
-#######################################
-# DATE； 20230321
-# AUTHOR: Cao Jun
-# DESCRIPTION:OSCAR策略
-######################################
 
 # options(digits=10)
 # 加载包
-library(Seurat)
-library(dplyr)
-library(purrr)
-library(stringr)
+
 library(SCENIC)
 library(SCopeLoomR)
-library(conflicted)
-source("/public/home/caojun/project/OSCAR/small_bench_20230316/script/1_my_data_compare3/design4/utils.r")
-# conflict_scout()
-conflict_prefer("filter", "dplyr")
-conflict_prefer("filter", "dplyr")
-conflict_prefer("select", "dplyr")
-conflict_prefer("rename", "dplyr")
-conflict_prefer("slice", "dplyr")
-# 调试
-# srun -p normal --pty /public/home/caojun/anaconda3/envs/r4.2/bin/R
 
+source("/public/home/caojun/project/OSCAR/small_bench_20230316/script/1_my_data_compare3/design4/utils.r")
 
 
 # 加载变量
@@ -53,6 +36,9 @@ data.seurat <- readRDS(file = paste0(dir, exp)) %>% NormalizeData()
 ## dm+em，没有normalization
 
 
+
+
+run_pySCENIC <- 
 #################################################################
 ## 运行pySCENIC
 ## 先dm和em一起运行
