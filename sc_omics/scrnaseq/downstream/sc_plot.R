@@ -35,14 +35,14 @@ plot_check_pre <- function(
     })
     message("plot the DimPlot of specified factor")
     lapply(feats, function(x) {
-        FeaturePlot_scCustom(object, colors_use = colors, features = x)
+        print(FeaturePlot_scCustom(object, colors_use = colors, features = x))
     })
     message("plot the FeaturePlot of specified continuous variable")
 }
 
 plot_processed <- function(
     object,
-    dim_group = c("orig.ident",  "Phase"),#"type",
+    dim_group = c("orig.ident", "Phase"), # "type",
     feats = c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_hb"),
     colors = pal,
     resolutions = c(0.1, 0.2, 0.3, 0.5)) {
@@ -52,7 +52,7 @@ plot_processed <- function(
         print(DimPlot_scCustom(object, group.by = x, ggplot_default_colors = TRUE, figure_plot = TRUE))
     })
     lapply(feats, function(x) {
-        FeaturePlot_scCustom(object, colors_use = colors, features = x)
+        print(FeaturePlot_scCustom(object, colors_use = colors, features = x))
     })
 
     library(clustree)
