@@ -163,7 +163,7 @@ process_add_meta.data <- function(object,
                                   by.n, # new
                                   type = c("sample", "cell"),
                                   filter = FALSE) {
-    join_ <- ifelse(filter, full_join, left_join)
+    join_ <- ifelse(filter, inner_join, left_join)
     object@meta.data$cell_names <- row.names(object@meta.data)
     if (type == "cell") {
         by.o <- "cell_names"
