@@ -1,5 +1,12 @@
-# summarise
-## summarise the expression of pseudobulk group
+#' Summarize pseudobulk data
+#'
+#' @param object An object containing data to be summarized
+#' @param features A list or character vector specifying the features to summarize (default: NULL)
+#' @param ... Additional arguments
+#'
+#' @return A data frame containing the summarized pseudobulk data
+#'
+#' @export
 summarise_pseudobulk <- function(object, features = NULL, ...) {
     # @ features: should be `list`
     stat_fun <- function(AE_result) {

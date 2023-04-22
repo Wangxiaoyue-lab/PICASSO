@@ -1,4 +1,11 @@
-# read the input of Seurat
+#' Process and read data from file
+#'
+#' @param filename The name of the file to read
+#' @param type The type of file to read
+#' @param project The project name for the Seurat object
+#' @param min.cells Minimum number of cells for creating Seurat object
+#'
+#' @return A Seurat object
 process_read <- function(filename,
                          type,
                          project,
@@ -49,23 +56,28 @@ process_read <- function(filename,
 }
 
 
-process_read_v5 <- function(...){
+process_read_v5 <- function(...) {
     library(BPCells)
     library(Seurat)
     library(SeuratObject)
     library(SeuratDisk)
     options(Seurat.object.assay.version = "v5")
-    stop('ready...')
+    stop("ready...")
 }
 
-process_to_v5 <- function(...){
-    stop('ready...')
+process_to_v5 <- function(...) {
+    stop("ready...")
 }
 
 
-# convert the seurat object to 3 files like 10X
+#' Process Seurat object to 3 files
+#'
+#' @param object The Seurat object to process
+#' @param output The output directory for the 3 files
+#'
+#' @return 3 files for the Seurat object
 process_to_3files <- function(object,
-                             output) {
+                              output) {
     if (!requireNamespace("DropletUtils", quietly = TRUE)) {
         BiocManager::install("DropletUtils")
     }
@@ -74,8 +86,19 @@ process_to_3files <- function(object,
 }
 
 
-
-# preprocess including
+#' Process Seurat object
+#'
+#' @param object The Seurat object to process
+#' @param npcs Number of principal components to use
+#' @param resolutions Resolutions for clustering
+#' @param future Logical, whether to use future package for parallel processing
+#' @param run_harmony Logical, whether to run Harmony for batch correction
+#' @param run_sctransform Logical, whether to run SCTransform for normalization
+#' @param group_in_harmony Grouping variable for Harmony batch correction
+#' @param vars_to_regress Variables to regress out during normalization
+#' @param verbose Logical, whether to print progress messages
+#'
+#' @return A processed Seurat object
 process_process <- function(object,
                             npcs = 20,
                             resolutions = c(0.1, 0.2, 0.3, 0.5),
@@ -124,6 +147,16 @@ process_process <- function(object,
 
 
 
+#' Add metadata to Seurat object
+#'
+#' @param object The Seurat object to add metadata to
+#' @param new.meta New metadata to add
+#' @param by.o Old column name for joining
+#' @param by.n New column name for joining
+#' @param type Type of metadata to add, either "sample" or "cell"
+#' @param filter Logical, whether to filter cells not present in new metadata
+#'
+#' @return A Seurat object with added metadata
 process_add_meta.data <- function(object,
                                   new.meta,
                                   by.o = NULL, # old/object
@@ -140,11 +173,18 @@ process_add_meta.data <- function(object,
     row.names(meta.filt) <- meta.filt$cell_names
     object <- subset(object, subset = cell_names %in% meta.filt$cell_names)
     object[[colnames(meta.filt)]] <- meta.filt
-    #object <- AddMetaData(object, metadata = meta.filt)
+    # object <- AddMetaData(object, metadata = meta.filt)
     return(object)
 }
 
-
+#' Annotate Seurat object
+#'
+#' @param object The Seurat object to annotate
+#' @param col.id Column name for old identities
+#' @param col.new Column name for new identities
+#' @param split Logical, whether to split object by new identities
+#'
+#' @return An annotated Seurat object or a list of split Seurat objects
 process_annotation <- function(object,
                                col.id,
                                col.new,
@@ -202,6 +242,16 @@ process_annotation <- function(object,
 
 # process_integration
 
+#' Find marker genes in Seurat object
+#'
+#' @param object The Seurat object to find marker genes in
+#' @param is_all Logical, whether to find all markers or markers for specific identities
+#' @param future Logical, whether to use future package for parallel processing
+#' @param ident Identity to use for finding all markers
+#' @param loop_var Loop variable for comparing conditions within identities
+#' @param species Species for adding gene annotations
+#'
+#' @return A data frame of marker genes
 process_find_markers <- function(object,
                                  is_all = TRUE, # whether FindMarkers or FindAllMarkers
                                  future = FALSE, # whether use future
@@ -265,6 +315,22 @@ process_find_markers <- function(object,
 # process_celltype
 
 
+
+#' Process individual degrees of freedom
+#'
+#' @param object An object containing data to be processed
+#' @param methods A character vector specifying the methods to use for processing
+#' @param sample_id A character vector specifying the sample IDs
+#' @param group_id A character vector specifying the group IDs
+#' @param covariables A character vector specifying the covariables to consider (default: NULL)  For: ideas
+#' @param need_scale A logical value indicating whether continuous variables need to be scaled (default: NULL) For: ideas
+#' @param cell_select A character vector specifying the cells to select (default: NULL) For: deseq2
+#' @param cluster_id A character vector specifying the cluster IDs (default: NULL) For: deseq2
+#' @param filepath A character vector specifying the file path (default: NULL) For: deseq2
+#'
+#' @return A list containing the results of processing individual degrees of freedom
+#'
+#' @export
 process_individual_deg <- function(object,
                                    methods,
                                    sample_id,

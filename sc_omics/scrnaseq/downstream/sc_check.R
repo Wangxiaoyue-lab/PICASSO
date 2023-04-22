@@ -10,7 +10,16 @@ lapply(
 # source("../utils/load_ref.R")
 
 
-## check the assays
+#' Check the current and available assays in a Seurat object
+#'
+#' This function takes a Seurat object and prints the current assay used for analysis as well as all available assays in the object.
+#'
+#' @param object A Seurat object.
+#' @return NULL
+#' @examples
+#' library(Seurat)
+#' pbmc_small <- pbmc_small
+#' check_assay(pbmc_small)
 check_assay <- function(object = NULL) {
     cat("The current assay used for the analysis is:", DefaultAssay(object), "\n")
     cat("All assays in this object:", Assays(object), "\n")
@@ -18,7 +27,17 @@ check_assay <- function(object = NULL) {
 
 
 
-## check whether the markes exists in the features of object
+#' Check if marker genes are present in a data object
+#'
+#' This function takes a character vector of marker genes and a data object (such as a Seurat object or data frame) and checks if the marker genes are present in the row names of the data object. The function prints any marker genes that are not present in the data object and returns a character vector of marker genes that are present in the data object.
+#'
+#' @param genes A character vector of marker genes.
+#' @param object A data object with row names (such as a Seurat object or data frame).
+#' @return A character vector of marker genes that are present in the data object.
+#' @examples
+#' library(Seurat)
+#' pbmc_small <- pbmc_small
+#' check_markers(c("MS4A1", "CD3E", "NOTAGENE"), pbmc_small)
 check_markers <- function(genes, object) {
     not_in_data_marker <- base::setdiff(genes, row.names(object))
     if (length(not_in_data_marker) != 0) {
@@ -32,7 +51,20 @@ check_markers <- function(genes, object) {
 }
 
 
-# This function checks the quality of the data
+#' Preprocess a Seurat object
+#'
+#' This function takes a Seurat object and performs several preprocessing steps, including adding mitochondrial and ribosomal gene expression information, cell cycle scoring, normalization, scaling, variable feature selection, PCA and UMAP. The function allows for customization of several parameters.
+#'
+#' @param object A Seurat object.
+#' @param species A character string specifying the species for the analysis ("hs" for human or "mm" for mouse).
+#' @param cell_cycle_source A character string specifying the source of cell cycle genes ("seurat" or "local").
+#' @param npcs An integer specifying the number of principal components to use for downstream analysis.
+#' @param verbose A logical value indicating whether to print progress messages.
+#' @return A preprocessed Seurat object.
+#' @examples
+#' library(Seurat)
+#' pbmc_small <- pbmc_small
+#' check_pre(pbmc_small)
 check_pre <- function(
     object,
     species = c("hs", "mm"),
@@ -82,13 +114,26 @@ check_pre <- function(
 }
 
 
-# check whether doublets exist
+
+#' Check for doublets in a Seurat object
+#'
+#' This function takes a Seurat object and performs doublet detection using either the DoubletFinder or scds package. The function allows for customization of several parameters.
+#'
+#' @param object A Seurat object.
+#' @param npcs An integer specifying the number of principal components to use for downstream analysis.
+#' @param celltype An optional character string specifying the column name of cell type information in the metadata.
+#' @param ncelltype An optional integer specifying the number of cell types to use for homotypic proportion estimation.
+#' @param fast A logical value indicating whether to use the fast mode (scds package) for doublet detection.
+#' @return A Seurat object with added doublet information in the metadata.
+#' @examples
+#' library(Seurat)
+#' pbmc_small <- pbmc_small
+#' check_doublet(pbmc_small, npcs = 10)
 check_doublet <- function(object,
-                          npcs, # the number of npcs of pca
-                          celltype = NULL, # the colname of celltype in metadata
-                          ncelltype = NULL, # the accessed number of cell types
-                          fast = FALSE # whether use the fast mode(scds package)
-) {
+                          npcs,
+                          celltype = NULL,
+                          ncelltype = NULL,
+                          fast = FALSE) {
     if (fast == F) {
         library(DoubletFinder)
         process_ <- Command(object) %>%
@@ -140,37 +185,14 @@ check_doublet <- function(object,
     }
     return(object)
 }
-# check_doublet <- function(object, npcs) {
-#    library(DoubletFinder)
-#    sweep.res.list <- paramSweep_v3(object, PCs = 1:npcs, sct = FALSE)
-#    sweep.stats <- summarizeSweep(sweep.res.list, GT = FALSE)
-#    bcmvn <- find.pK(sweep.stats)
-#    p <- bcmvn$pK[which.max(bcmvn$BCmetric)] %>%
-#        as.character() %>%
-#        as.numeric()
-#    nExp_poi <- round(0.05 * ncol(object))
-#    object <- doubletFinder_v3(object,
-#        PCs = 1:npcs, pN = 0.25, pK = p, nExp = nExp_poi,
-#        reuse.pANN = FALSE, sct = FALSE
-#    )
-#    colnames(object@meta.data)[ncol(object@meta.data)] <- "doublet_info"
-#    c <- grep("pANN_", colnames(object@meta.data))
-#    object@meta.data <- object@meta.data[, -c]
-#    return(object)
-# }
 
+
+#' Check the maximum size of an object
+#'
+#' @param object The object to check
+#' @return The maximum size of the object
+#' @export
 check_size_future <- function(object) {
-    maxSize <- ifelse(dim(object)[2] < 5e4, 1e9,
-        ifelse(dim(object)[2] < 1e5, 1e10, 9e10)
-    )
+    maxSize <- ncol(object) * 4e5
     return(maxSize)
-}
-
-
-check_seurat <- function(object) {
-    cat("The size is ", dim(object), "\n\n")
-    cat("The meta.data is ")
-    print(object@meta.data[1:4, ])
-    cat("\n\nThe structure is ")
-    print(str(object))
 }

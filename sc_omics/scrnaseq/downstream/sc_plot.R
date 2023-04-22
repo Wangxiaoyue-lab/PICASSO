@@ -1,3 +1,13 @@
+#' Plot various graphs for checking data quality
+#'
+#' @param object The object to plot
+#' @param feature_scatter Logical, whether to plot UMI vs Gene scatter plot
+#' @param vln_group Grouping variable for violin plot
+#' @param dim_group Grouping variable for dimensionality reduction plot. i.e. c("orig.ident", "type", "doublet_info", "Phase")
+#' @param feats Features to plot in violin and feature plots. i.e. c("nCount_RNA", "nFeature_RNA", "percent_mito", "percent_ribo", "percent_hb")
+#' @param colors Color palette to use
+#'
+#' @return Various plots for checking data quality
 plot_check_pre <- function(
     object,
     feature_scatter = TRUE,
@@ -5,9 +15,6 @@ plot_check_pre <- function(
     dim_group,
     feats = NULL,
     colors = pal) {
-    # @vln_group = "type"
-    # @dim_group = c("orig.ident", "type", "doublet_info", "Phase")
-    # @feats = c("nCount_RNA", "nFeature_RNA", "percent_mito", "percent_ribo", "percent_hb")
     lapply(vln_group, function(x) {
         print(VlnPlot(object,
             group.by = vln_group,
@@ -40,6 +47,16 @@ plot_check_pre <- function(
     message("plot the FeaturePlot of specified continuous variable")
 }
 
+
+#' Plot various graphs for processed data
+#'
+#' @param object The object to plot
+#' @param dim_group Grouping variable for dimensionality reduction plot
+#' @param feats Features to plot in feature plots
+#' @param colors Color palette to use
+#' @param resolutions Resolutions for clustering
+#'
+#' @return Various plots for processed data
 plot_processed <- function(
     object,
     dim_group = c("orig.ident", "Phase"), # "type",
@@ -64,6 +81,18 @@ plot_processed <- function(
 }
 
 
+#' Plot marker genes
+#'
+#' @param markers Marker genes to plot. Can also be a list with a cell type column
+#' @param object The object to plot
+#' @param dot_plot Logical, whether to plot dot plot
+#' @param max_markers Maximum number of markers to plot in one dot plot
+#' @param cluster Number of clusters or clustering variable for dot plot, If not number, the dotplot will not be clustered
+#' @param feature_plot Logical, whether to plot feature plot
+#' @param col_dot Color palette for dot plot
+#' @param col_fea Color palette for feature plot
+#'
+#' @return Various plots for marker genes
 plot_makers <- function(
     markers,
     object,
