@@ -57,7 +57,12 @@ github_list <- c(
   "aertslab/SCopeLoomR",
   "aertslab/SCENIC",
   "immunogenomics/harmony",
-  "kostkalab/scds"
+  "kostkalab/scds",
+  #"satijalab/seurat","seurat5" 
+  #"satijalab/seurat-data","seurat5" 
+  #"stuart-lab/signac","seurat5" 
+  #"satijalab/seurat-wrappers","seurat5"
+  "bnprks/BPCells" 
 )
 
 check_github <- function(github_list){

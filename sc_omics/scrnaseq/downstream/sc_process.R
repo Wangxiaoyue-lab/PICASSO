@@ -49,9 +49,22 @@ process_read <- function(filename,
 }
 
 
+process_read_v5 <- function(...){
+    library(BPCells)
+    library(Seurat)
+    library(SeuratObject)
+    library(SeuratDisk)
+    options(Seurat.object.assay.version = "v5")
+    stop('ready...')
+}
+
+process_to_v5 <- function(...){
+    stop('ready...')
+}
+
 
 # convert the seurat object to 3 files like 10X
-process_to3files <- function(object,
+process_to_3files <- function(object,
                              output) {
     if (!requireNamespace("DropletUtils", quietly = TRUE)) {
         BiocManager::install("DropletUtils")
@@ -117,18 +130,17 @@ process_add_meta.data <- function(object,
                                   by.n, # new
                                   type = c("sample", "cell"),
                                   filter = FALSE) {
-    join_ <- ifelse(filter, "inner_join", "left_join")
+    join_ <- ifelse(filter, inner_join, left_join)
     object@meta.data$cell_names <- row.names(object@meta.data)
     if (type == "cell") {
         by.o <- "cell_names"
     }
     meta.filt <- object@meta.data %>%
         join_(., new.meta, join_by(!!sym(by.o) == !!sym(by.n)))
-    # meta.filt <- paste0(" object@meta.data %>%", join_, "(., new.meta, join_by(", by.o, "==", by.n, "))") %>%
-    #    parse(text = .) %>%  eval()
+    row.names(meta.filt) <- meta.filt$cell_names
     object <- subset(object, subset = cell_names %in% meta.filt$cell_names)
     object[[colnames(meta.filt)]] <- meta.filt
-    # object <- AddMetaData(object, metadata = meta.filt)
+    #object <- AddMetaData(object, metadata = meta.filt)
     return(object)
 }
 
