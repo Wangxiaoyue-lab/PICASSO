@@ -3,7 +3,7 @@ inch2cm <- function(inch) {
 }
 
 cm2inch <- function(cm) {
-    inch/2.54
+    cm/2.54
 }
 
 px2cm <- function(px,res){

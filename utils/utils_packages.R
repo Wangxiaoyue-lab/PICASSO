@@ -1,13 +1,13 @@
 # CRAN and bioconductor
 pkgs <- c(
-  "Seurat", "scater","scran","tidyverse","readxl","magrittr", 
+  "Seurat","assertthat", "scater","scran","tidyverse","readxl","magrittr", 
   "Signac", "devtools", "DropletUtils", "EdgeR","limma","chromVAR",
   "clustree", "rlang", "monocle","DESeq2","GSVA","org.Mm.eg.db",
   "org.Hs.eg.db","clusterProfiler","scCustomize","scMAGeCK","biomaRt",
   "WGCNA","GENIE3", "AUCell", "RcisTarget","glmnetUtils","Matrix.utils",
   "tximport","RobustRankAggreg","randomForest","enrichplot","e1071","VennDiagram",
   "survival","survivalROC","factoextra","FactoMineR","survminer","survMisc",
-  "UpSetR","ConsensusClusterPlus","JASPAR2020",#"caret",
+  "UpSetR","ConsensusClusterPlus","JASPAR2020",#"caret","Nebulosa"
   "circlize",""
 )
 
@@ -62,7 +62,10 @@ github_list <- c(
   #"satijalab/seurat-data","seurat5" 
   #"stuart-lab/signac","seurat5" 
   #"satijalab/seurat-wrappers","seurat5"
-  "bnprks/BPCells" 
+  "mojaveazure/seurat-disk",
+  "bnprks/BPCells",
+  "TheHumphreysLab/plot1cell",
+
 )
 
 check_github <- function(github_list){

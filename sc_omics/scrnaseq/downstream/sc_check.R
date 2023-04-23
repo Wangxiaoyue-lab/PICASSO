@@ -1,15 +1,3 @@
-# core packages
-libraries <- c("scCustomize", "Seurat")
-lapply(
-    libraries,
-    function(x) {
-        suppressPackageStartupMessages(library(x, character.only = TRUE))
-    }
-)
-
-# source("../utils/load_ref.R")
-
-
 #' Check the current and available assays in a Seurat object
 #'
 #' This function takes a Seurat object and prints the current assay used for analysis as well as all available assays in the object.
@@ -103,8 +91,8 @@ check_pre <- function(
         PercentageFeatureSet(hb_pattern, col.name = "percent_hb") %>%
         CellCycleScoring(g2m.features = g2m_genes, s.features = s_genes) %>%
         NormalizeData(verbose = verbose) %>%
-        ScaleData(features = rownames(object), verbose = verbose) %>%
         FindVariableFeatures(verbose = verbose) %>%
+        ScaleData( verbose = verbose) %>%
         RunPCA(verbose = verbose, npcs = npcs) %>%
         RunUMAP(dims = 1:npcs, verbose = verbose)
     # if (check_doublet) {

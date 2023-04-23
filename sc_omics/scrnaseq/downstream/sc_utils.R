@@ -1,3 +1,14 @@
+# core packages
+libraries <- c("scCustomize", "Seurat","BPCells","SeuratObject","SeuratDisk")
+lapply(
+    libraries,
+    function(x) {
+        suppressPackageStartupMessages(library(x, character.only = TRUE))
+    }
+)
+
+
+
 #' Start parallel mode
 #'
 #' @param ... Additional arguments

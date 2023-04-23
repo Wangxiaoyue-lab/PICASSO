@@ -47,6 +47,55 @@ plot_check_pre <- function(
     message("plot the FeaturePlot of specified continuous variable")
 }
 
+plot_features_group <- function(object,features,group,select,pal){
+    library(plot1cell)
+    complex_featureplot(object, 
+        features = features, 
+        group = group, 
+        select = select, 
+        order = T)
+}
+
+#joint features scatterplot
+plot_features_density <- function(object,features,repair=T){
+    #if(repair==T){ #repair the missing gene expression
+        Nebulosa::plot_density(object,features,joint=T)
+    #}else{
+    #    scCustomize::Plot_Density_Joint_Only(seurat_object = object, features = features)
+    #}
+}
+
+plot_stack_violin <- function(object,features,pal){
+    scCustomize::Stacked_VlnPlot(seurat_object = object,
+        features = features, 
+        x_lab_rotate = TRUE,
+        colors_use = pal)
+}
+
+plot_big_circlize <- function(object,core_col,other_col){
+    library(plot1cell)
+    prepare <- prepare_circlize_data(object, scale = 0.8 )
+    cols <- c(core_col,other_col)
+    cols_select <- lapply(cols,function(x){
+        object@meta.data %>% 
+            pull(any_of(x)) %>% 
+                unique %>% 
+                    length %>%  
+                        rand_color
+    }) %>% set_names(cols)
+    plot_circlize(prepare,
+        do.label = T, 
+        pt.size = 0.01, 
+        col.use = cols_select[[core_col]],
+        bg.color = 'white', 
+        kde2d.n = 200, 
+        repel = T, 
+        label.cex = 0.6)
+    for(i in 2:length(cols)){
+        add_track(prepare, group = cols[i], colors = cols_select[i], track_num = i) 
+    }
+}
+
 
 #' Plot various graphs for processed data
 #'

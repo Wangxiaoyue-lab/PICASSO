@@ -56,17 +56,41 @@ process_read <- function(filename,
 }
 
 
-process_read_v5 <- function(...) {
+process_read_v5 <- function(filename,
+                            type,
+                            project,
+                            min.cells = 3,
+                            store_path, ...) {
     library(BPCells)
     library(Seurat)
     library(SeuratObject)
     library(SeuratDisk)
     options(Seurat.object.assay.version = "v5")
-    stop("ready...")
+    read_h5 <- function(filename){
+        mat <- open_matrix_10x_hdf5(path = filename) %>% 
+            write_matrix_dir(mat = ., dir = store_path, overwrite = TRUE)
+    }
+    read_10x <- function(filename){
+        mat <- open_matrix_10x(path = filename) %>% 
+            write_matrix_dir(mat = ., dir = store_path, overwrite = TRUE)
+    }
+    object <- open_matrix_dir(dir = store_path) %>% 
+        CreateSeuratObject(counts = . )
 }
 
-process_to_v5 <- function(...) {
-    stop("ready...")
+process_to_v5 <- function(object,store_path) {
+    options(Seurat.object.assay.version = "v5")
+    #if(!dir.exists(store_path)){
+    #    dir.create(store_path, recursive = T)
+    #}
+    write_matrix_dir(mat = object[["RNA"]]$counts, 
+        dir = store_path)
+    meta.data <- object@meta.data
+    counts.mat <- open_matrix_dir(dir = store_path)
+    object <- CreateSeuratObject(counts = counts.mat)
+    object <- AddMetaData(object,meta.data)
+    gc()
+    return(object)
 }
 
 
@@ -85,6 +109,18 @@ process_to_3files <- function(object,
     write10xCounts(output, object[["RNA"]]@counts, version = 3)
 }
 
+
+process_nomalization <- function(object,methods){
+    process_nomalization_scran <- function(object){
+        library(scran)
+        sce <- object %>% as.SingleCellExperiment 
+        object[["RNA"]]@data <- sce %>% computeSumFactors(.,clusters=quickCluster(sce)) %>% 
+            computeSpikeFactors( ) %>% 
+                logNormCounts( )  %>%
+                    .@assays@data$logcounts
+    return(object)
+    }
+}
 
 #' Process Seurat object
 #'
@@ -541,3 +577,6 @@ process_individual_deg <- function(object,
         "mast" = process_mast
     )
 }
+
+
+ 

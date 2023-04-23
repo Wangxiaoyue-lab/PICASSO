@@ -20,7 +20,7 @@ choose_pal <- function(n,
   # suppressPackageStartupMessages(library(viridis))
   suppressPackageStartupMessages(library(paletteer))
 
-  choose_pal_all <- function() {
+  choose_pal_all <- function(n,name) {
     # palettes_d_names %>%
     #  select(package) %>%
     #    unique %>%
@@ -31,10 +31,10 @@ choose_pal <- function(n,
     #      print(n=nrow(.))
     tryCatch(
       {
-        paletteer_c(name, n = n) %>% fct_inorder()
+        paletteer_c(palette = name, n = n) %>% fct_inorder()
       },
       error = function(e) {
-        paletteer_d(name, n = n) %>% fct_inorder()
+        paletteer_d(palette = name, n = n) %>% fct_inorder()
       }
     )
   }
@@ -44,17 +44,18 @@ choose_pal <- function(n,
     rPlotter::extract_colours(picture_path)
   }
   # 4 色轮取色
-  choose_pal_cycle <- function(name, n) {
+  choose_pal_cycle <- function(n,name) {
     # SCpubr::do_ColorPalette(
     # colors.use = "steelblue",
     # complete_output = TRUE)
     stop("The function is developing...")
   }
-  switch(source,
+  choose_ <- switch(source,
     "all" = choose_pal_all,
     "picture" = choose_pal_picture,
     "cycle" = choose_pal_cycle
   )
+  choose_(n,name)
 }
 
 
@@ -104,7 +105,8 @@ choose_pal <- function(n,
 
 # 颜色指南
 color_guide <- function(path) {
-  if (T) {
+  suppressPackageStartupMessages(library(paletteer))
+  if (F) {
     palettes_d_names %>%
       mutate(package_title = package) %>%
       group_by(package) %>%
@@ -156,7 +158,7 @@ color_guide <- function(path) {
     dev.off()
   }
 }
-if (T) {
+if (F) {
   palettes_c_names %>%
     mutate(package_title = package) %>%
     group_by(package) %>%
