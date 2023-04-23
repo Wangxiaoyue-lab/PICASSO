@@ -62,6 +62,7 @@ github_list <- c(
   #"satijalab/seurat-data","seurat5" 
   #"stuart-lab/signac","seurat5" 
   #"satijalab/seurat-wrappers","seurat5"
+  "mojaveazure/seurat-disk",
   "bnprks/BPCells" 
 )
 
