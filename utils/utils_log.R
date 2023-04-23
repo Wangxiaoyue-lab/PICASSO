@@ -86,19 +86,19 @@ log_message <- function(...,verbose=T){
 
 
 log_seurat <- function(object){
-    print('The size of seurat object')
+    log_message('The size of seurat object')
     print(format(object.size(object), units = "Mb"))
-    print('The metadata of seurat object')
+    log_message('The metadata of seurat object')
     print(str(object@meta.data))
-    print('The number of seurat object')
+    log_message('The number of seurat object')
     print(length(object@assays))
     print(names(object@assays))
-    print('The situation of RNA assay')
+    log_message('The situation of RNA assay')
     print(str(object[["RNA"]]))
-    print('The situation of reductions')
+    log_message('The situation of reductions')
     print(length(object@reductions))
     print(names(object@reductions))
-    print('The situation of Commands')
+    log_message('The situation of Commands')
     print(Command(object))
 }
 
@@ -110,14 +110,14 @@ log_file <- function(filepath){
     )
     assertthat::assert_that(!is.null(file_names))
     file_info <- file.info(file_names)[,c('ctime','size')]
-    file_sah256 <- sapply(file_names,function(f){
+    file_sha256 <- sapply(file_names,function(f){
         log_sha256(f)
     })
     result <- data.frame(name=basename(file_names),
                          fullname=file_names,
                          create_time=file_info$ctime,
                          size=file_info$size,
-                         sha256=file_sah256)
+                         sha256=file_sha256)
     print(result)                     
     return(result)
 }
