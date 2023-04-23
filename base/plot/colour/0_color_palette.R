@@ -20,7 +20,7 @@ choose_pal <- function(n,
   # suppressPackageStartupMessages(library(viridis))
   suppressPackageStartupMessages(library(paletteer))
 
-  choose_pal_all <- function() {
+  choose_pal_all <- function(name,n) {
     # palettes_d_names %>%
     #  select(package) %>%
     #    unique %>%
