@@ -80,9 +80,9 @@ process_read_v5 <- function(filename,
 
 process_to_v5 <- function(object,store_path) {
     options(Seurat.object.assay.version = "v5")
-    if(!dir.exists(store_path)){
-        dir.create(store_path, recursive = T)
-    }
+    #if(!dir.exists(store_path)){
+    #    dir.create(store_path, recursive = T)
+    #}
     write_matrix_dir(mat = object[["RNA"]]$counts, 
         dir = store_path)
     meta.data <- object@meta.data
