@@ -14,13 +14,19 @@ plot_check_pre <- function(
     vln_group,
     dim_group,
     feats = NULL,
-    colors = pal) {
+    colors = pal) {    
     lapply(vln_group, function(x) {
+        ncol_ <- object@meta.data %>% 
+                    pull(any_of(vln_group)) %>% 
+                        unique %>% 
+                            length
+        ncol <- ifelse(ncol_>20,1,
+                    ifelse(ncol_>10,2,3))                    
         print(VlnPlot(object,
             group.by = vln_group,
             features = feats,
             pt.size = 0,
-            ncol = 3
+            ncol = ncol
         ) + NoLegend())
     })
     message("plot the VlnPlot")
