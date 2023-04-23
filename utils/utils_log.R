@@ -83,3 +83,21 @@ log_seed <- function(seed=NULL){
 log_message <- function(...,verbose=T){
     message(...)
 }
+
+
+log_seurat <- function(object){
+    print('The size of seurat object')
+    print(format(object.size(object), units = "Mb"))
+    print('The metadata of seurat object')
+    print(str(object@meta.data))
+    print('The number of seurat object')
+    print(length(object@assays))
+    print(names(object@assays))
+    print('The situation of RNA assay')
+    print(str(object[["RNA"]]))
+    print('The situation of reductions')
+    print(length(object@reductions))
+    print(names(object@reductions))
+    print('The situation of Commands')
+    print(Command(object))
+}
