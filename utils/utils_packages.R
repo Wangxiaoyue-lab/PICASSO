@@ -1,6 +1,6 @@
 # CRAN and bioconductor
 pkgs <- c(
-  "Seurat", "scater","scran","tidyverse","readxl","magrittr", 
+  "Seurat","assertthat", "scater","scran","tidyverse","readxl","magrittr", 
   "Signac", "devtools", "DropletUtils", "EdgeR","limma","chromVAR",
   "clustree", "rlang", "monocle","DESeq2","GSVA","org.Mm.eg.db",
   "org.Hs.eg.db","clusterProfiler","scCustomize","scMAGeCK","biomaRt",
