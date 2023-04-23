@@ -108,7 +108,7 @@ log_file <- function(filepath){
         #pattern =  NULL,
         recursive = T, full = T
     )
-    assert_that(is.null(file_names))
+    assertthat::assert_that(is.null(file_names))
     file_info <- file.info(file_names)[,c('ctime','size')]
     file_sah256 <- sapply(file_names,function(f){
         log_sha256(f)
