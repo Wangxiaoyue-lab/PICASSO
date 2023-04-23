@@ -85,8 +85,10 @@ process_to_v5 <- function(object,store_path) {
     }
     write_matrix_dir(mat = object[["RNA"]]$counts, 
         dir = store_path)
+    meta.data <- object@meta.data
     counts.mat <- open_matrix_dir(dir = store_path)
     object <- CreateSeuratObject(counts = counts.mat)
+    object <- AddMetaData(object,meta.data)
     gc()
     return(object)
 }
