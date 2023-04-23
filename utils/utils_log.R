@@ -101,3 +101,27 @@ log_seurat <- function(object){
     print('The situation of Commands')
     print(Command(object))
 }
+
+log_file <- function(filepath){
+    file_names <- list.files(
+        path = filepath,
+        #pattern =  NULL,
+        recursive = T, full = T
+    )
+    file_info <- file.info(file_names)[,c('ctime','size')]
+    file_sah256 <- sapply(file_names,function(f){
+        log_sha256(f)
+    })
+    result <- data.frame(name=basename(file_names),
+                         fullname=file_names,
+                         create_time=file_info$ctime,
+                         size=file_info$size,
+                         sha256=file_sah256)
+    print(result)                     
+    return(result)
+}
+
+
+log_sha256 <- function(x){
+    digest::digest(x,file=T,algo = 'sha256')
+}
