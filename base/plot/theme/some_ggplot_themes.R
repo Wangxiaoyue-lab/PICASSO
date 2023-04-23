@@ -16,10 +16,10 @@ theme_background <- theme(panel.background = element_rect(fill = 'grey80'),
 
 #字号
 theme_font_size <- theme(
-        axis.text=element_text(size=rel(size)),
-        strip.text=element_text(size=rel(size)),
-        legend.text=element_text(size=rel(size)),
-        plot.title=element_text(size=rel(size))
+        axis.text=element_text(size=rel(1.2)),
+        strip.text=element_text(size=rel(1.2)),
+        legend.text=element_text(size=rel(1.2)),
+        plot.title=element_text(size=rel(1.2))
     )
  
 
