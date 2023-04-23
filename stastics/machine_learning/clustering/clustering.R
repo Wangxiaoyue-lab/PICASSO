@@ -45,3 +45,19 @@ ml_bicluster <- function(...){
 ml_ccp <- function(..){
     next
 } 
+
+
+ml_cluster_metric <- function(...,methods){
+    ml_cluster_metric_ami <- function(...){
+        next
+    }
+    ml_cluster_metric_ari <- function(...){
+        next
+    }
+    ml_cluster_metric_psi <- function(...){
+        next
+    }
+    ml_cluster_metric_nmi <- function(...){
+        next
+    }
+}

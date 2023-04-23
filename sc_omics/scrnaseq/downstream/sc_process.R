@@ -110,6 +110,18 @@ process_to_3files <- function(object,
 }
 
 
+process_nomalization <- function(object,methods){
+    process_nomalization_scran <- function(object){
+        library(scran)
+        sce <- object %>% as.SingleCellExperiment 
+        object[["RNA"]]@data <- sce %>% computeSumFactors(.,clusters=quickCluster(sce)) %>% 
+            computeSpikeFactors( ) %>% 
+                logNormCounts( )  %>%
+                    .@assays@data$logcounts
+    return(object)
+    }
+}
+
 #' Process Seurat object
 #'
 #' @param object The Seurat object to process
