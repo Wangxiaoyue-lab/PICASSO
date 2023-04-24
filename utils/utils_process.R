@@ -34,7 +34,7 @@ list_clean.list <- function(object) {
 }
 list_clean.default <- function(object) {
     object <- object[!is.na(object)] 
-    object %<>%  gsub(" ","",m ) %>%                                
+    object %<>%  gsub(" ","",.) %>%                                
                     gsub("c\\(","",.) %>% 
                         gsub("\\\\","",.) %>% 
                             gsub("\\)","",.) %>% 
