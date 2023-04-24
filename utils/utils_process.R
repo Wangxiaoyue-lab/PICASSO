@@ -33,16 +33,15 @@ list_clean.list <- function(object) {
     }), .)
 }
 list_clean.default <- function(object) {
-    object <- object[!is.na(object)] 
-    object %<>%  gsub(" ","",.) %>%                                
-                    gsub("c\\(","",.) %>% 
-                        gsub("\\\\","",.) %>% 
-                            gsub("\\)","",.) %>% 
-                                gsub("\"","",.) %>%
-                                    keep(~ nchar(.) >= 1)
+    object <- object[!is.na(object)]
+    object %<>% gsub(" ", "", .) %>%
+        gsub("c\\(", "", .) %>%
+        gsub("\\\\", "", .) %>%
+        gsub("\\)", "", .) %>%
+        gsub("\"", "", .) %>%
+        keep(~ nchar(.) >= 1)
     return(object)
 }
-
 
 # list 彻底拉平并保留所有元素名字
 list_flat <- function(object) {
