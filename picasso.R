@@ -29,6 +29,7 @@ black_list <- c("\\.git", "\\.vscode", "picture", "knowledge_base", "utils")
 load_necessary <- function() {
     ## basical utils
     load_script(dir = "utils", script = "utils_log")
+    load_script(dir = "utils", script = "utils_process")
     load_script(dir = "utils/parallel", script = "utils_parallel")
     # load_script(dir = "utils", script = "utils_package")
     # load_script(dir = "utils/input_your_parameter", script = "utils_parameter")
