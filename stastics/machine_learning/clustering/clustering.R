@@ -1,3 +1,5 @@
+
+
 ml_cluster <- function(object,methods){
     ml_cluster_kmeans <- function(...){
         next
@@ -23,7 +25,7 @@ ml_cluster <- function(object,methods){
     ml_cluster_hdbscan <- function(...){
         next
     }     
-    ml_cluster_hmm <- function(...){
+    ml_cluster_gmm <- function(...){
         next
     }
     ml_cluster_spectral <- function(...){
