@@ -7,8 +7,12 @@
 #' @return A data frame containing the summarized pseudobulk data
 #'
 #' @export
+#'
 summarise_pseudobulk <- function(object, features = NULL, ...) {
-    # @ features: should be `list`
+    UseMethod("summarise_pseudobulk")
+}
+
+summarise_pseudobulk.default <- function(object, features = NULL, ...) {
     stat_fun <- function(AE_result) {
         AE_result <- as.data.frame(AE_result)
         raw_cols <- colnames(AE_result)
@@ -21,23 +25,22 @@ summarise_pseudobulk <- function(object, features = NULL, ...) {
                 row_mad = mad(c_across(all_of(raw_cols)))
             ) %>%
             ungroup() %>%
-            mutate(
-                across(all_of(raw_cols), list(norm = ~ (.x - row_mean) / row_sd), .names = "norm_{col}")
-            )
+            mutate(across(all_of(raw_cols), list(norm = ~ (.x - row_mean) / row_sd), .names = "norm_{col}"))
         AE_result
     }
+    result <- AverageExpression(object, features = na.omit(features), ...) %>%
+        stat_fun()
+    return(result)
+}
 
-    if (class(features) == "list") {
-        classed_genes <- names(features)
-        result <- classed_genes %>%
-            map(~ {
-                AE_result <- AverageExpression(object, features = as.character(na.omit(features[[.x]]), ...)) %>% stat_fun()
-                AE_result$class <- .x
-                AE_result
-            }) %>%
-            bind_rows()
-    } else {
-        result <- AverageExpression(object, features = na.omit(features), ...) %>% stat_fun()
-    }
+summarise_pseudobulk.list <- function(object, features = NULL, ...) {
+    classed_genes <- names(features)
+    result <- classed_genes %>%
+        map(~ {
+            AE_result <- summarise_pseudobulk.default(object, features[[.x]], ...)
+            AE_result$class <- .x
+            AE_result
+        }) %>%
+        bind_rows()
     return(result)
 }
