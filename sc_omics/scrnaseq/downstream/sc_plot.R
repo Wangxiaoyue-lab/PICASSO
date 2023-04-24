@@ -126,12 +126,11 @@ plot_processed <- function(
     lapply(feats, function(x) {
         print(FeaturePlot_scCustom(object, colors_use = colors, features = x))
     })
-
-    library(clustree)
     lapply(resolutions, function(x) {
         group <- paste0(assay_use, "_snn_res.", x)
         print(DimPlot(object, group.by = group, label = T))
     })
+    library(clustree)
     print(clustree(object@meta.data, prefix = paste0(assay_use, "_snn_res.")))
 }
 

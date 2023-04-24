@@ -143,7 +143,7 @@ process_process <- function(object,
                             run_sctransform = TRUE,
                             group_in_harmony = "orig.ident",
                             vars_to_regress = c("percent_mito", "S.Score", "G2M.Score"),
-                            verbose = F, ...) {
+                            verbose = F, nfeatures=2000) {
     if (future) {
         options(future.globals.maxSize = check_size_future(object))
         plan("multisession")
@@ -157,10 +157,10 @@ process_process <- function(object,
         object <- SCTransform(object, vars.to.regress = vars_to_regress, verbose = verbose) %>%
             RunPCA(verbose = verbose)
     } else {
-        object <- NormalizeData(object, verbose = verbose) %>%
-            FindVariableFeatures(verbose = verbose) %>%
-            ScaleData(features = row.names(object), vars.to.regress = vars_to_regress, verbose = verbose) %>%
-            RunPCA(verbose = verbose)
+        object %<>% NormalizeData( verbose = verbose) %>%
+            FindVariableFeatures( verbose = verbose,nfeatures=nfeatures) %>%
+            ScaleData( vars.to.regress = vars_to_regress, verbose = verbose) %>%
+            RunPCA( verbose = verbose)
     }
 
     reduction_use <- switch(run_harmony + 1,
