@@ -66,29 +66,31 @@ process_read_v5 <- function(filename,
     library(SeuratObject)
     library(SeuratDisk)
     options(Seurat.object.assay.version = "v5")
-    read_h5 <- function(filename){
-        mat <- open_matrix_10x_hdf5(path = filename) %>% 
+    read_h5 <- function(filename) {
+        mat <- open_matrix_10x_hdf5(path = filename) %>%
             write_matrix_dir(mat = ., dir = store_path, overwrite = TRUE)
     }
-    read_10x <- function(filename){
-        mat <- open_matrix_10x(path = filename) %>% 
+    read_10x <- function(filename) {
+        mat <- open_matrix_10x(path = filename) %>%
             write_matrix_dir(mat = ., dir = store_path, overwrite = TRUE)
     }
-    object <- open_matrix_dir(dir = store_path) %>% 
-        CreateSeuratObject(counts = . )
+    object <- open_matrix_dir(dir = store_path) %>%
+        CreateSeuratObject(counts = .)
 }
 
-process_to_v5 <- function(object,store_path) {
+process_to_v5 <- function(object, store_path) {
     options(Seurat.object.assay.version = "v5")
-    #if(!dir.exists(store_path)){
+    # if(!dir.exists(store_path)){
     #    dir.create(store_path, recursive = T)
-    #}
-    write_matrix_dir(mat = object[["RNA"]]$counts, 
-        dir = store_path)
+    # }
+    write_matrix_dir(
+        mat = object[["RNA"]]$counts,
+        dir = store_path
+    )
     meta.data <- object@meta.data
     counts.mat <- open_matrix_dir(dir = store_path)
     object <- CreateSeuratObject(counts = counts.mat)
-    object <- AddMetaData(object,meta.data)
+    object <- AddMetaData(object, meta.data)
     gc()
     return(object)
 }
@@ -110,15 +112,16 @@ process_to_3files <- function(object,
 }
 
 
-process_nomalization <- function(object,methods){
-    process_nomalization_scran <- function(object){
+process_nomalization <- function(object, methods) {
+    process_nomalization_scran <- function(object) {
         library(scran)
-        sce <- object %>% as.SingleCellExperiment 
-        object[["RNA"]]@data <- sce %>% computeSumFactors(.,clusters=quickCluster(sce)) %>% 
-            computeSpikeFactors( ) %>% 
-                logNormCounts( )  %>%
-                    .@assays@data$logcounts
-    return(object)
+        sce <- object %>% as.SingleCellExperiment()
+        object[["RNA"]]@data <- sce %>%
+            computeSumFactors(., clusters = quickCluster(sce)) %>%
+            computeSpikeFactors() %>%
+            logNormCounts() %>%
+            .@assays@data$logcounts
+        return(object)
     }
 }
 
@@ -143,7 +146,7 @@ process_process <- function(object,
                             run_sctransform = TRUE,
                             group_in_harmony = "orig.ident",
                             vars_to_regress = c("percent_mito", "S.Score", "G2M.Score"),
-                            verbose = F, nfeatures=2000) {
+                            verbose = F, nfeatures = 2000) {
     if (future) {
         options(future.globals.maxSize = check_size_future(object))
         plan("multisession")
@@ -157,10 +160,10 @@ process_process <- function(object,
         object <- SCTransform(object, vars.to.regress = vars_to_regress, verbose = verbose) %>%
             RunPCA(verbose = verbose)
     } else {
-        object %<>% NormalizeData( verbose = verbose) %>%
-            FindVariableFeatures( verbose = verbose,nfeatures=nfeatures) %>%
-            ScaleData( vars.to.regress = vars_to_regress, verbose = verbose) %>%
-            RunPCA( verbose = verbose)
+        object %<>% NormalizeData(verbose = verbose) %>%
+            FindVariableFeatures(verbose = verbose, nfeatures = nfeatures) %>%
+            ScaleData(vars.to.regress = vars_to_regress, verbose = verbose) %>%
+            RunPCA(verbose = verbose)
     }
 
     reduction_use <- switch(run_harmony + 1,
@@ -564,6 +567,3 @@ process_individual_deg <- function(object,
         "mast" = process_mast
     )
 }
-
-
- 
