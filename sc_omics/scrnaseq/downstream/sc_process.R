@@ -235,20 +235,7 @@ process_annotation <- function(object,
         }
     ) %>% unlist()
     col.old <- object@meta.data %>%
-        pull(col.id) %>%
-        unique()
-    new_minus_old <- setdiff(names(ident.pairs), col.old)
-    if (length(new_minus_old) > 0) {
-        {
-            stop(paste(
-                "The identities",
-                paste0(new_minus_old, collapse = ","), "do not exist"
-            ))
-            return(list(...))
-        } %>% unlist()
-    }
-    col.old <- object@meta.data %>%
-        pull(!!sym(col.id)) %>%
+        pull(any_of(col.id)) %>%
         unique()
     new_minus_old <- setdiff(names(ident.pairs), col.old)
     if (length(new_minus_old) > 0) {
