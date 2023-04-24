@@ -155,7 +155,7 @@ plot_markers <- function(
     assay_use <<- ifelse(exists("assay_use"), assay_use %||%
         DefaultAssay(object), DefaultAssay(object))
     scaled_markers <- lapply(markers,function(m){
-        check_markers(m, object[[assay_use]]@scale.data) 
+        check_markers(m, object) 
     }) %>% list_clean 
     assertthat::assert_that(length(scaled_markers)<1)   
     dot_markers <- list_shorten(scaled_markers,dot_max)
