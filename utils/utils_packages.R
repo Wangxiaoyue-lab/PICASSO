@@ -7,7 +7,7 @@ pkgs <- c(
   "WGCNA","GENIE3", "AUCell", "RcisTarget","glmnetUtils","Matrix.utils",
   "tximport","RobustRankAggreg","randomForest","enrichplot","e1071","VennDiagram",
   "survival","survivalROC","factoextra","FactoMineR","survminer","survMisc",
-  "UpSetR","ConsensusClusterPlus","JASPAR2020",#"caret","Nebulosa"
+  "UpSetR","ConsensusClusterPlus","JASPAR2020","Nebulosa",#"caret"
   "circlize",""
 )
 
