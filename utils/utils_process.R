@@ -21,7 +21,7 @@ list_shorten.default <- function(object, max_len, name = NULL) {
 }
 
 
-# 去除list和其中元素中的"",NA,NULL,logical(0)
+# 去除list和其中元素中的"",NA,NULL,logical(0)或者读取导致的特殊符号
 list_clean <- function(object, ...) {
     UseMethod(generic = "list_clean", object = object)
 }
@@ -34,10 +34,14 @@ list_clean.list <- function(object) {
 }
 list_clean.default <- function(object) {
     object <- object[!is.na(object)]
-    object %<>% keep(~ nchar(.) >= 1)
+    object %<>% gsub(" ", "", .) %>%
+        gsub("c\\(", "", .) %>%
+        gsub("\\\\", "", .) %>%
+        gsub("\\)", "", .) %>%
+        gsub("\"", "", .) %>%
+        keep(~ nchar(.) >= 1)
     return(object)
 }
-
 
 # list 彻底拉平并保留所有元素名字
 list_flat <- function(object) {

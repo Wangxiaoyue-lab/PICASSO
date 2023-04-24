@@ -73,3 +73,12 @@ utils_read_refdata <- function(species, file_type, picasso_path = picasso_path) 
     ) %>% read.csv()
     return(data)
 }
+
+utils_markers_scb <- function(path=NULL,species){
+    path <- path %||% "/other_bioinfo/annotation/annotation_files/marker"
+    path_s <- switch(species,
+        "hs" = paste0(picasso_path,path,"/singleCellBase_human_cell_markers_20220629.txt"),
+        "mm" = paste0(picasso_path,path,"/singleCellBase_mouse_cell_markers_20220629.txt"))
+    marker_df <- data.table::fread(path_s) %>% as.data.frame
+    return(marker_df)
+}
