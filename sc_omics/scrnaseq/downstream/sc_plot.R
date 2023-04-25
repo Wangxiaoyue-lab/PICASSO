@@ -168,7 +168,7 @@ plot_markers <- function(
         check_markers(m, object)
     }) %>% list_clean()
     assertthat::assert_that(length(scaled_markers) >= 1)
-    dot_markers <- list_shorten(scaled_markers, dot_max) %>% list_flat
+    dot_markers <- list_shorten(scaled_markers, dot_max) %>% list_flat()
     feature_markers <- list_shorten(scaled_markers, feature_max) %>% list_flat()
     resolution <- resolution_select %||% 0.3
     ident_group <- ident_group %||% paste0(assay_use, "_snn_res.", resolution)
@@ -179,8 +179,8 @@ plot_markers <- function(
                 features = features,
                 group.by = ident_group,
                 flip_axes = TRUE,
-                colors_use = colors_use, 
-                ,...
+                colors_use = colors_use, ,
+                ...
             ) +
                 theme(axis.text.x = element_text(angle = 90))
         } else {
