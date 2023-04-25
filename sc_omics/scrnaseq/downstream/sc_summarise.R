@@ -8,8 +8,8 @@
 #'
 #' @export
 #'
-summarise_pseudobulk <- function(object) {
-    UseMethod("summarise_pseudobulk", object = object)
+summarise_pseudobulk <- function(object, features = NULL, ...) {
+    UseMethod("summarise_pseudobulk", object = features)
 }
 
 summarise_pseudobulk.default <- function(object, features = NULL, ...) {
