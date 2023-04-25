@@ -255,7 +255,7 @@ plot_markers <- function(
             p_feature <- draw_feature_plot(
                 object = object,
                 features = feature_markers[[m]],
-                colors_use = col_feature,
+                colors_use = feature_col,
                 feature_ncol = feature_ncol
             ) %>%
                 Annotation_plot(., cell_p = names(feature_markers)[m])
