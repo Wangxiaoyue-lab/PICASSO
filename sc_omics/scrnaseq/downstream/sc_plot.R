@@ -225,12 +225,12 @@ plot_markers <- function(
             )
         )
     }
-    draw_dot_plot <- switch(version,
-                        5=draw_dot_plot_v5,
-                        4=draw_dot_plot_v4)
-    draw_feature_plot <- switch(version,
-                        5=draw_feature_plot_v5,
-                        4=draw_feature_plot_v4)
+    draw_dot_plot <- switch(as.character(version),
+                        "5"=draw_dot_plot_v5,
+                        "4"=draw_dot_plot_v4)
+    draw_feature_plot <- switch(as.character(version),
+                        "5"=draw_feature_plot_v5,
+                        "4"=draw_feature_plot_v4)
     if (dot_plot == T) {
         lapply(seq_along(dot_markers), function(m) {
             p_dot <- draw_dot_plot(
