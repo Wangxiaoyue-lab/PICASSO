@@ -3,17 +3,34 @@
 #' This function takes a Seurat object and prints the current assay used for analysis as well as all available assays in the object.
 #'
 #' @param object A Seurat object.
-#' @return NULL
+#' @return The bool logical value
 #' @examples
 #' library(Seurat)
 #' pbmc_small <- pbmc_small
 #' check_assay(pbmc_small)
-check_assay <- function(object = NULL) {
+check_assay <- function(object = NULL, assay = NULL) {
     cat("The current assay used for the analysis is:", DefaultAssay(object), "\n")
     cat("All assays in this object:", Assays(object), "\n")
+    assay <- assay %||% "RNA"
+    return(DefaultAssay(object) == assay)
 }
 
-
+check_meta.data <- function(object, col_names = NULL) {
+    meta <- object@meta.data
+    if (is.null(col_names)) {
+        lapply(seq_along(meta), function(m) {
+            cat(colnames(meta)[m], ":\n")
+            if (class(meta[, m]) == "character") {
+                print(summary(factor(meta[, m])))
+            } else {
+                print(summary(meta[, m]))
+            }
+        })
+    } else {
+        bool_ <- all(grepl(colnames(meta), pattern = paste0(col_names, collapse = "|")))
+        return(bool_)
+    }
+}
 
 #' Check if marker genes are present in a data object
 #'
@@ -92,7 +109,7 @@ check_pre <- function(
         CellCycleScoring(g2m.features = g2m_genes, s.features = s_genes) %>%
         NormalizeData(verbose = verbose) %>%
         FindVariableFeatures(verbose = verbose) %>%
-        ScaleData( verbose = verbose) %>%
+        ScaleData(verbose = verbose) %>%
         RunPCA(verbose = verbose, npcs = npcs) %>%
         RunUMAP(dims = 1:npcs, verbose = verbose)
     # if (check_doublet) {
