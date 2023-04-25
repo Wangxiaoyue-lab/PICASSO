@@ -155,8 +155,8 @@ plot_markers <- function(
     feature_raster = F,
     feature_ncol,
     version = 5,
-    resolution_select=NULL,
-     ...) {
+    resolution_select = NULL,
+    ...) {
     assertthat::assert_that(version %in% c(4, 5))
     if (!is.list(markers)) {
         markers <- as.list(markers)
@@ -172,12 +172,14 @@ plot_markers <- function(
     feature_markers <- list_shorten(scaled_markers, feature_max)
     resolution <- resolution_select %||% 0.3
     ident_group <- ident_group %||% paste0(assay_use, "_snn_res.", resolution)
-    draw_dot_plot_v4 <- function(object, features, cluster, colors_use = dot_col, ...) {
+    draw_dot_plot_v4 <- function(object, features, cluster, colors_use = dot_col, ident_group, ...) {
         if (is.null(cluster)) {
             DotPlot_scCustom(object,
                 features = features,
+                group.by = ident_group,
                 flip_axes = TRUE,
-                colors_use = colors_use, ...
+                colors_use = colors_use, 
+                ,...
             ) +
                 theme(axis.text.x = element_text(angle = 90))
         } else {
@@ -188,7 +190,7 @@ plot_markers <- function(
             )
         }
     }
-    draw_dot_plot_v5 <- function(object, features, cluster, colors_use = dot_col,ident_group, ...) {
+    draw_dot_plot_v5 <- function(object, features, cluster, colors_use = dot_col, ident_group, ...) {
         # because the temporary bug of scCustomize
         if (is.null(cluster)) {
             DotPlot(object,
@@ -196,9 +198,9 @@ plot_markers <- function(
                 group.by = ident_group,
                 cols = colors_use, ...
             ) +
-                 theme(axis.text.x = element_text(angle = 90))
+                theme(axis.text.x = element_text(angle = 90))
         } else {
-            stop('need to be ')
+            stop("need to be ")
         }
     }
     draw_feature_plot_v4 <- function(object, features, colors_use = feature_col, raster = feature_raster, feature_ncol, ...) {
@@ -226,18 +228,21 @@ plot_markers <- function(
         )
     }
     draw_dot_plot <- switch(as.character(version),
-                        "5"=draw_dot_plot_v5,
-                        "4"=draw_dot_plot_v4)
+        "5" = draw_dot_plot_v5,
+        "4" = draw_dot_plot_v4
+    )
     draw_feature_plot <- switch(as.character(version),
-                        "5"=draw_feature_plot_v5,
-                        "4"=draw_feature_plot_v4)
+        "5" = draw_feature_plot_v5,
+        "4" = draw_feature_plot_v4
+    )
     if (dot_plot == T) {
         lapply(seq_along(dot_markers), function(m) {
             p_dot <- draw_dot_plot(
                 object = object,
                 cluster = dot_cluster,
                 features = dot_markers[[m]],
-                colors_use = dot_col
+                colors_use = dot_col,
+                ident_group = ident_group
             ) %>%
                 Annotation_plot(., cell_p = names(dot_markers)[m])
             print(p_dot)
