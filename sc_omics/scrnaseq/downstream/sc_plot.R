@@ -150,7 +150,7 @@ plot_markers <- function(
     dot_cluster = NULL,
     dot_col = viridis_plasma_dark_high,
     feature_plot = TRUE,
-    feature_max = 9,
+    feature_max = 8,
     feature_col = viridis_plasma_dark_high,
     feature_raster = F,
     feature_ncol = NULL,
@@ -172,6 +172,7 @@ plot_markers <- function(
     feature_markers <- list_shorten(scaled_markers, feature_max) %>% list_flat()
     resolution <- resolution_select %||% 0.3
     ident_group <- ident_group %||% paste0(assay_use, "_snn_res.", resolution)
+    assertthat::assert_that(ident_group %in% colnames(object@meta.data))
     feature_ncol <- feature_ncol %||% round(sqrt(feature_max))
     draw_dot_plot_v4 <- function(object, features, cluster, colors_use = dot_col, ident_group, ...) {
         if (is.null(cluster)) {
@@ -197,11 +198,13 @@ plot_markers <- function(
             DotPlot(object,
                 features = features,
                 group.by = ident_group,
-                #cols = colors_use, 
+                # cols = colors_use,
                 ...
             ) + scale_color_gradientn(colors = colors_use) +
-                theme(axis.text.x = element_text(size=rel(1.4),angle = 90),
-                      axis.text.y = element_text(size=rel(1.4)))
+                theme(
+                    axis.text.x = element_text(size = rel(1.4), angle = 90),
+                    axis.text.y = element_text(size = rel(1.4))
+                )
         } else {
             stop("need to be ")
         }
@@ -217,7 +220,7 @@ plot_markers <- function(
     draw_feature_plot_v5 <- function(object, features, colors_use = feature_col, raster = feature_raster, feature_ncol, ...) {
         FeaturePlot(object,
             features = features,
-            #cols = colors_use,
+            # cols = colors_use,
             raster = feature_raster,
             ncol = feature_ncol,
             order = T,
@@ -239,6 +242,11 @@ plot_markers <- function(
         }
         return(plot)
     }
+    p_dim <- DimPlot(object,
+        group.by = ident_group,
+        label = T,
+        label.size = 7
+    ) & NoAxes() & NoLegend()
     draw_dot_plot <- switch(as.character(version),
         "5" = draw_dot_plot_v5,
         "4" = draw_dot_plot_v4
@@ -268,9 +276,11 @@ plot_markers <- function(
                 features = feature_markers[[m]],
                 colors_use = feature_col,
                 feature_ncol = feature_ncol
-            ) %>%
-                Annotation_plot(., cell_p = names(feature_markers)[m]) %>%
+            )  %>%
                 spacer_plot(plot = ., n = length(feature_markers[[m]]), max = dot_max) #+
+            p_feature <- p_dim | p_feature  
+            p_feature %>%
+                Annotation_plot(., cell_p = names(feature_markers)[m])
             # plot_layout(
             #    ncol = feature_ncol
             # )
