@@ -168,8 +168,8 @@ plot_markers <- function(
         check_markers(m, object)
     }) %>% list_clean()
     assertthat::assert_that(length(scaled_markers) >= 1)
-    dot_markers <- list_shorten(scaled_markers, dot_max)
-    feature_markers <- list_shorten(scaled_markers, feature_max)
+    dot_markers <- list_shorten(scaled_markers, dot_max) %>% list_flat
+    feature_markers <- list_shorten(scaled_markers, feature_max) %>% list_flat()
     resolution <- resolution_select %||% 0.3
     ident_group <- ident_group %||% paste0(assay_use, "_snn_res.", resolution)
     draw_dot_plot_v4 <- function(object, features, cluster, colors_use = dot_col, ident_group, ...) {
