@@ -153,7 +153,7 @@ plot_markers <- function(
     feature_max = 9,
     feature_col = viridis_plasma_dark_high,
     feature_raster = F,
-    feature_ncol,
+    feature_ncol = NULL,
     version = 5,
     resolution_select = NULL,
     ...) {
@@ -172,6 +172,7 @@ plot_markers <- function(
     feature_markers <- list_shorten(scaled_markers, feature_max) %>% list_flat()
     resolution <- resolution_select %||% 0.3
     ident_group <- ident_group %||% paste0(assay_use, "_snn_res.", resolution)
+    feature_ncol <- feature_ncol %||% round(sqrt(feature_max))
     draw_dot_plot_v4 <- function(object, features, cluster, colors_use = dot_col, ident_group, ...) {
         if (is.null(cluster)) {
             DotPlot_scCustom(object,
@@ -254,7 +255,8 @@ plot_markers <- function(
             p_feature <- draw_feature_plot(
                 object = object,
                 features = feature_markers[[m]],
-                colors_use = col_feature
+                colors_use = col_feature,
+                feature_ncol = feature_ncol
             ) %>%
                 Annotation_plot(., cell_p = names(feature_markers)[m])
             print(p_feature)
