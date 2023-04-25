@@ -18,6 +18,9 @@
 
 # How to learn maching learning
 
+[lovingers/ML_Books: 宗旨：构建全球最大的ML相关的学习书籍平台（吹个大牛） (github.com)](https://github.com/lovingers/ML_Books)
+
+
 # How to learn omics
 
 # How to learn single cell RNAseq
@@ -26,3 +29,7 @@
 - [Seurat official](https://satijalab.org/seurat/)
 - [Sanger institute](https://www.singlecellcourse.org/)
 - [Harvard hbc](https://github.com/hbctraining) # including scRNA-seq, R, shell, rna-seq. For beginners.
+
+
+
+[gao-lab/Guideline-for-Computational-Biology-and-Bioinformatics (github.com)](https://github.com/gao-lab/Guideline-for-Computational-Biology-and-Bioinformatics)
