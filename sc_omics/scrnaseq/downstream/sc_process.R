@@ -112,7 +112,17 @@ process_to_3files <- function(object,
 }
 
 
+process_removal <- function(...){
+    print("soupX")
+    next
+}
+
+
+
 process_nomalization <- function(object, methods) {
+    process_nomalization_tpm <- function(object){
+        next
+    }
     process_nomalization_scran <- function(object) {
         library(scran)
         sce <- object %>% as.SingleCellExperiment()

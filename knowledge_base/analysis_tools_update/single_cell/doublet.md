@@ -1,4 +1,4 @@
-# methods
+# Methods
 
 | value | tool             | time | platform | link | description |  |
 | ----- | ---------------- | ---- | -------- | ---- | ----------- | - |
@@ -10,8 +10,7 @@
 | ***   | cxds             | 2019 | R        |      |             |  |
 |       | chord            | 2021 | R        |      |             |  |
 
-
-# benchmark
+# Benchmark
 
 Benchmarking Computational Doublet-DetectionMethods for Single-Cell RNA Sequencing Data
 
@@ -34,3 +33,14 @@ cxds最快
  **DoubletDecon** : The method was executed by following the instruction at [https://github.com/EDePasquale/DoubletDecon](https://github.com/EDePasquale/DoubletDecon). Doublet predictions were obtained from the function *Main_Doublet_Decon* in R package *DoubletDecon* (v 1.1.5) with parameters set to default.
 
  **Solo** : The method was executed by following the instruction at the GitHub repository [https://github.com/calico/Solo](https://github.com/calico/Solo). Every scRNA-seq count matrix was transformed into the *loom* format as required by the method. The parameters were set the same as those in the file  *Solo_params_example.json* , which was downloaded from the GitHub repository. Doublet scores were obtained from the file  *softmax_scores.npy* .
+
+# Details
+
+## DoubletFinder
+
+
+## cxds
+
+
+
+# Comments

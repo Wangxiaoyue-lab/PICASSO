@@ -150,10 +150,10 @@ plot_markers <- function(
     dot_cluster = NULL,
     dot_col = viridis_plasma_dark_high,
     feature_plot = TRUE,
-    feature_max = 9,
+    feature_max = 8,
     feature_col = viridis_plasma_dark_high,
     feature_raster = F,
-    feature_ncol,
+    feature_ncol = NULL,
     version = 5,
     resolution_select = NULL,
     ...) {
@@ -168,18 +168,20 @@ plot_markers <- function(
         check_markers(m, object)
     }) %>% list_clean()
     assertthat::assert_that(length(scaled_markers) >= 1)
-    dot_markers <- list_shorten(scaled_markers, dot_max)
-    feature_markers <- list_shorten(scaled_markers, feature_max)
+    dot_markers <- list_shorten(scaled_markers, dot_max) %>% list_flat()
+    feature_markers <- list_shorten(scaled_markers, feature_max) %>% list_flat()
     resolution <- resolution_select %||% 0.3
     ident_group <- ident_group %||% paste0(assay_use, "_snn_res.", resolution)
+    assertthat::assert_that(ident_group %in% colnames(object@meta.data))
+    feature_ncol <- feature_ncol %||% round(sqrt(feature_max))
     draw_dot_plot_v4 <- function(object, features, cluster, colors_use = dot_col, ident_group, ...) {
         if (is.null(cluster)) {
             DotPlot_scCustom(object,
                 features = features,
                 group.by = ident_group,
                 flip_axes = TRUE,
-                colors_use = colors_use, 
-                ,...
+                colors_use = colors_use, ,
+                ...
             ) +
                 theme(axis.text.x = element_text(angle = 90))
         } else {
@@ -196,9 +198,13 @@ plot_markers <- function(
             DotPlot(object,
                 features = features,
                 group.by = ident_group,
-                cols = colors_use, ...
-            ) +
-                theme(axis.text.x = element_text(angle = 90))
+                # cols = colors_use,
+                ...
+            ) + scale_color_gradientn(colors = colors_use) +
+                theme(
+                    axis.text.x = element_text(size = rel(1.4), angle = 90),
+                    axis.text.y = element_text(size = rel(1.4))
+                )
         } else {
             stop("need to be ")
         }
@@ -214,10 +220,12 @@ plot_markers <- function(
     draw_feature_plot_v5 <- function(object, features, colors_use = feature_col, raster = feature_raster, feature_ncol, ...) {
         FeaturePlot(object,
             features = features,
-            cols = colors_use,
+            # cols = colors_use,
             raster = feature_raster,
-            ncol = feature_ncol, ...
-        ) & NoAxes()
+            ncol = feature_ncol,
+            order = T,
+            min.cutoff = 0, ...
+        ) & NoAxes() & scale_color_gradientn(colors = colors_use)
     }
     Annotation_plot <- function(plot, cell_p) {
         library(patchwork)
@@ -227,6 +235,18 @@ plot_markers <- function(
             )
         )
     }
+    spacer_plot <- function(plot, n, max) {
+        library(patchwork)
+        for (i in (n + 1):max) {
+            plot <- plot + plot_spacer()
+        }
+        return(plot)
+    }
+    p_dim <- DimPlot(object,
+        group.by = ident_group,
+        label = T,
+        label.size = 7
+    ) & NoAxes() & NoLegend()
     draw_dot_plot <- switch(as.character(version),
         "5" = draw_dot_plot_v5,
         "4" = draw_dot_plot_v4
@@ -236,7 +256,7 @@ plot_markers <- function(
         "4" = draw_feature_plot_v4
     )
     if (dot_plot == T) {
-        lapply(seq_along(dot_markers), function(m) {
+        lapply_par(seq_along(dot_markers), function(m) {
             p_dot <- draw_dot_plot(
                 object = object,
                 cluster = dot_cluster,
@@ -245,20 +265,27 @@ plot_markers <- function(
                 ident_group = ident_group
             ) %>%
                 Annotation_plot(., cell_p = names(dot_markers)[m])
-            print(p_dot)
-        })
+            # print(p_dot)
+        }, parallel = "future.apply") %>% lapply(., print)
     }
     message("plot the dot_plot of markers")
     if (feature_plot == T) {
-        lapply(seq_along(feature_markers), function(m) {
+        lapply_par(seq_along(feature_markers), function(m) {
             p_feature <- draw_feature_plot(
                 object = object,
                 features = feature_markers[[m]],
-                colors_use = col_feature
-            ) %>%
+                colors_use = feature_col,
+                feature_ncol = feature_ncol
+            )  %>%
+                spacer_plot(plot = ., n = length(feature_markers[[m]]), max = dot_max) #+
+            p_feature <- p_dim | p_feature  
+            p_feature %>%
                 Annotation_plot(., cell_p = names(feature_markers)[m])
-            print(p_feature)
-        })
+            # plot_layout(
+            #    ncol = feature_ncol
+            # )
+            # print(p_feature)
+        }, parallel = "future.apply") %>% lapply(., print)
     }
     message("plot the dot_plot of markers")
 }
