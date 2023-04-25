@@ -33,7 +33,7 @@ log_start <- function(...) {
 }
 
 # 3 start the log
-# log_start()
+log_start()
 
 # 4 end the log
 log_done <- function(...) {
