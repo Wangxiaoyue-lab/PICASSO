@@ -197,9 +197,11 @@ plot_markers <- function(
             DotPlot(object,
                 features = features,
                 group.by = ident_group,
-                cols = colors_use, ...
-            ) +
-                theme(axis.text.x = element_text(angle = 90))
+                #cols = colors_use, 
+                ...
+            ) + scale_color_gradientn(colors = colors_use) +
+                theme(axis.text.x = element_text(size=rel(1.4),angle = 90),
+                      axis.text.y = element_text(size=rel(1.4)))
         } else {
             stop("need to be ")
         }
@@ -215,10 +217,12 @@ plot_markers <- function(
     draw_feature_plot_v5 <- function(object, features, colors_use = feature_col, raster = feature_raster, feature_ncol, ...) {
         FeaturePlot(object,
             features = features,
-            cols = colors_use,
+            #cols = colors_use,
             raster = feature_raster,
-            ncol = feature_ncol, ...
-        ) & NoAxes()
+            ncol = feature_ncol,
+            order = T,
+            min.cutoff = 0, ...
+        ) & NoAxes() & scale_color_gradientn(colors = colors_use)
     }
     Annotation_plot <- function(plot, cell_p) {
         library(patchwork)
@@ -227,6 +231,13 @@ plot_markers <- function(
                 plot.title = element_text(size = 18, face = "bold")
             )
         )
+    }
+    spacer_plot <- function(plot, n, max) {
+        library(patchwork)
+        for (i in (n + 1):max) {
+            plot <- plot + plot_spacer()
+        }
+        return(plot)
     }
     draw_dot_plot <- switch(as.character(version),
         "5" = draw_dot_plot_v5,
@@ -237,7 +248,7 @@ plot_markers <- function(
         "4" = draw_feature_plot_v4
     )
     if (dot_plot == T) {
-        lapply(seq_along(dot_markers), function(m) {
+        lapply_par(seq_along(dot_markers), function(m) {
             p_dot <- draw_dot_plot(
                 object = object,
                 cluster = dot_cluster,
@@ -246,21 +257,25 @@ plot_markers <- function(
                 ident_group = ident_group
             ) %>%
                 Annotation_plot(., cell_p = names(dot_markers)[m])
-            print(p_dot)
-        })
+            # print(p_dot)
+        }, parallel = "future.apply") %>% lapply(., print)
     }
     message("plot the dot_plot of markers")
     if (feature_plot == T) {
-        lapply(seq_along(feature_markers), function(m) {
+        lapply_par(seq_along(feature_markers), function(m) {
             p_feature <- draw_feature_plot(
                 object = object,
                 features = feature_markers[[m]],
                 colors_use = feature_col,
                 feature_ncol = feature_ncol
             ) %>%
-                Annotation_plot(., cell_p = names(feature_markers)[m])
-            print(p_feature)
-        })
+                Annotation_plot(., cell_p = names(feature_markers)[m]) %>%
+                spacer_plot(plot = ., n = length(feature_markers[[m]]), max = dot_max) #+
+            # plot_layout(
+            #    ncol = feature_ncol
+            # )
+            # print(p_feature)
+        }, parallel = "future.apply") %>% lapply(., print)
     }
     message("plot the dot_plot of markers")
 }
