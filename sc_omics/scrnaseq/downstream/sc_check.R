@@ -72,11 +72,14 @@ check_markers <- function(genes, object) {
 #' check_pre(pbmc_small)
 check_pre <- function(
     object,
-    species = c("hs", "mm"),
-    cell_cycle_source = c("seurat", "local"),
+    species,
+    cell_cycle_source = NULL,
     npcs = 20,
     # check_doublet = TRUE,
     verbose = F) {
+    assertthat::assert_that(species %in% c("hs", "mm"))
+    cell_cycle_source <- cell_cycle_source %||% "seurat"
+    assertthat::assert_that(cell_cycle_source %in% c("seurat", "local"))
     hb_pattern <- switch(species,
         "mm" = "^Hb[^(p)]",
         "hs" = "^HB[^(P)]",
