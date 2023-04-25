@@ -144,6 +144,7 @@ plot_processed <- function(
 plot_markers <- function(
     object,
     markers,
+    ident_group = NULL,
     dot_plot = TRUE,
     dot_max = 40,
     dot_cluster = NULL,
@@ -152,7 +153,11 @@ plot_markers <- function(
     feature_max = 9,
     feature_col = viridis_plasma_dark_high,
     feature_raster = F,
-    feature_ncol, ...) {
+    feature_ncol,
+    version = 5,
+    resolution_select=NULL,
+     ...) {
+    assertthat::assert_that(version %in% c(4, 5))
     if (!is.list(markers)) {
         markers <- as.list(markers)
         message("The markers should be a list object whose names are celltypes!")
@@ -165,7 +170,9 @@ plot_markers <- function(
     assertthat::assert_that(length(scaled_markers) >= 1)
     dot_markers <- list_shorten(scaled_markers, dot_max)
     feature_markers <- list_shorten(scaled_markers, feature_max)
-    draw_dot_plot <- function(object, features, cluster, colors_use = dot_col, ...) {
+    resolution <- resolution_select %||% 0.3
+    ident_group <- ident_group %||% paste0(assay_use, "_snn_res.", resolution)
+    draw_dot_plot_v4 <- function(object, features, cluster, colors_use = dot_col, ...) {
         if (is.null(cluster)) {
             DotPlot_scCustom(object,
                 features = features,
@@ -181,10 +188,31 @@ plot_markers <- function(
             )
         }
     }
-    draw_feature_plot <- function(object, features, colors_use = feature_col, raster = feature_raster, feature_ncol, ...) {
+    draw_dot_plot_v5 <- function(object, features, cluster, colors_use = dot_col,ident_group, ...) {
+        # because the temporary bug of scCustomize
+        if (is.null(cluster)) {
+            DotPlot(object,
+                features = features,
+                group.by = ident_group,
+                cols = colors_use, ...
+            ) +
+                 theme(axis.text.x = element_text(angle = 90))
+        } else {
+            stop('need to be ')
+        }
+    }
+    draw_feature_plot_v4 <- function(object, features, colors_use = feature_col, raster = feature_raster, feature_ncol, ...) {
         FeaturePlot_scCustom(object,
             features = features,
             colors_use = colors_use,
+            raster = feature_raster,
+            ncol = feature_ncol, ...
+        ) & NoAxes()
+    }
+    draw_feature_plot_v5 <- function(object, features, colors_use = feature_col, raster = feature_raster, feature_ncol, ...) {
+        FeaturePlot(object,
+            features = features,
+            cols = colors_use,
             raster = feature_raster,
             ncol = feature_ncol, ...
         ) & NoAxes()
@@ -197,11 +225,17 @@ plot_markers <- function(
             )
         )
     }
+    draw_dot_plot <- switch(version,
+                        5=draw_dot_plot_v5,
+                        4=draw_dot_plot_v4)
+    draw_feature_plot <- switch(version,
+                        5=draw_feature_plot_v5,
+                        4=draw_feature_plot_v4)
     if (dot_plot == T) {
         lapply(seq_along(dot_markers), function(m) {
             p_dot <- draw_dot_plot(
                 object = object,
-                cluster = cluster,
+                cluster = dot_cluster,
                 features = dot_markers[[m]],
                 colors_use = dot_col
             ) %>%
@@ -209,7 +243,7 @@ plot_markers <- function(
             print(p_dot)
         })
     }
-    message("plot the markers of ")
+    message("plot the dot_plot of markers")
     if (feature_plot == T) {
         lapply(seq_along(feature_markers), function(m) {
             p_feature <- draw_feature_plot(
@@ -221,6 +255,7 @@ plot_markers <- function(
             print(p_feature)
         })
     }
+    message("plot the dot_plot of markers")
 }
 
 
