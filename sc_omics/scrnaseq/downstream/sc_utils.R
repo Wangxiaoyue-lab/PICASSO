@@ -1,5 +1,5 @@
 # core packages
-libraries <- c("scCustomize", "Seurat","BPCells","SeuratObject","SeuratDisk")
+libraries <- c("scCustomize", "Seurat", "BPCells", "SeuratObject", "SeuratDisk")
 lapply(
     libraries,
     function(x) {
@@ -74,11 +74,43 @@ utils_read_refdata <- function(species, file_type, picasso_path = picasso_path) 
     return(data)
 }
 
-utils_markers_scb <- function(path=NULL,species){
+utils_markers_scb <- function(path = NULL, species, clean = F, disease = NULL) {
     path <- path %||% "/other_bioinfo/annotation/annotation_files/marker"
+    assertthat::assert_that(species %in% c("hs", "mm"))
     path_s <- switch(species,
-        "hs" = paste0(picasso_path,path,"/singleCellBase_human_cell_markers_20220629.txt"),
-        "mm" = paste0(picasso_path,path,"/singleCellBase_mouse_cell_markers_20220629.txt"))
-    marker_df <- data.table::fread(path_s) %>% as.data.frame
+        "hs" = paste0(picasso_path, path, "/singleCellBase_human_cell_markers_20220629.txt"),
+        "mm" = paste0(picasso_path, path, "/singleCellBase_mouse_cell_markers_20220629.txt")
+    )
+    marker_df <- data.table::fread(path_s) %>%
+        as.data.frame()
+    if (clean == T) {
+        marker_df %<>%
+            as_tibble() %>%
+            select(
+                cell_type, gene_symbol, sample_type,
+                disease, sci_if, date
+            ) %>%
+            filter(grepl(disease, pattern = disease)) %>%
+            select(cell_type, gene_symbol) %>%
+            arrange(cell_type) %>%
+            group_by(cell_type) %>%
+            nest() %>%
+            mutate(markers = map(data, ~ {
+                tryCatch(
+                    {
+                        paste0(.x, collapse = ",") %>%
+                            str_split(., pattern = ",", simplify = T) %>%
+                            .[1, ] %>%
+                            unique()
+                    },
+                    error = function(e) {
+                        NA
+                    }
+                )
+            })) %>%
+            select(cell_type, markers) %>%
+            deframe() %>%
+            list_clean()
+    }
     return(marker_df)
 }
