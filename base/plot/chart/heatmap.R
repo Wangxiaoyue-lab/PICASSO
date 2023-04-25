@@ -115,3 +115,5 @@ plot_heatmap <- function(data,
                 )
         }
 }
+
+# funkyheatmap https://github.com/funkyheatmap/funkyheatmap
