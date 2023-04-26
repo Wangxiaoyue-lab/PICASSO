@@ -351,6 +351,42 @@ process_find_markers <- function(object,
 }
 
 
+ 
+FindMarkers_replace <- function(object,
+        ident.1 , 
+        ident.2,
+        group.by=NULL,
+        slot='data',
+        max.cells.per.ident=NULL,...){
+        if(is.null(group.by)){
+            Idents(object) <- group.by
+        }
+        cells.1 <- names(Idents(object)[Idents(object) == ident.1])
+        cells.2 <- names(Idents(object)[Idents(object) == ident.2])
+        if(!is.null(max.cells.per.ident)){
+            cells.1 <- sample(names(Idents(object)[Idents(object) == ident.1]), max.cells.per.ident)
+            cells.2 <- sample(names(Idents(object)[Idents(object) == ident.2]), max.cells.per.ident)
+        }
+        data <- FetchData(object = object, vars = rownames(object), cells = c(cells.1,cells.2)) %>% 
+            t %>% as.data.frame()
+
+        features <- features %||% rownames(x = object)
+
+        # Foldchange.default
+        fc.results <- FoldChange(
+            object = data, slot = slot,
+            cells.1 = cells.1, cells.2 = cells.2, features = features, fc.name = "avg_log2FC",
+            mean.fxn = function(x) {
+                return(log(x = rowMeans(x = expm1(x = x)) + 0.1, base = 2))
+            }
+        )
+        de.results <- FindMarkers(
+            object= data,slot = slot,cells.1 = cells.1, cells.2 = cells.2, features = features, 
+            fc.results = fc.results)
+        de.results %<>% filter(p_val_adj < 0.05) %>% arranger(desc(avg_log2FC))
+        
+}
+
 # process_celltype
 
 
