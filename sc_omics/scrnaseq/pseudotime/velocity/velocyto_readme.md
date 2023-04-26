@@ -14,11 +14,11 @@ Running time: One hour for each sample.
 **$!$ Make sure you use the correct species and version of annotation files.**
 **$!$ Run the script after modifying the parameters. The current script is just an example.**
 
-## **2. Run `combine.sh`:**
+## **2. Run `velocyto_combine.sh`:**
 
 Ckeck if the `argparse` and `loompy` have been installed.
 
-Read the `combine.sh` and modify the parameters.
+Read the `velocyto_combine.sh ` and modify the parameters.
 
 Running time: Ten minutes.
 

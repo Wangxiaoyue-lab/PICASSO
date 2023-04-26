@@ -1,11 +1,35 @@
-#compute_PCA
+#PCA
+ml_dr_pca <- function(...){
+    next
+}
+
+#ICA
+ml_dr_ica <- function(...){
+    next
+}
 
 
-#compute_ICA
+#FA
+ml_dr_fa <- function(...){
+    next
+}
 
+#LDA
+ml_dr_lda <- function(...){
+    next
+}
 
-#compute_FA
+#LLE
+ml_dr_lle <- function(...){
+    next
+}
 
+#difussion map
+ml_dr_dm <- function(...){
+    next
+}
 
-#compute_LDA
-
+#phate
+ml_dr_phate <- function(...){
+    next
+}

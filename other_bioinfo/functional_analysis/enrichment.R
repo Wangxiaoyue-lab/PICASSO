@@ -1,26 +1,60 @@
-
-# do GO
-
-profile_cluster <- function(genes = NULL, enrich_fun = "GO", species = "mm", ...) {
+#' Perform over-representation analysis with optional simplification
+#'
+#' This function takes a list of genes and performs over-representation analysis using either the Gene Ontology (GO) or KEGG pathway databases. The function uses the clusterProfiler package to perform the analysis. The results can be optionally simplified using the simplify function from the same package.
+#'
+#' @param genes A character vector of gene symbols.
+#' @param enrich_fun A character string specifying the type of enrichment analysis to perform ("GO" or "KEGG").
+#' @param species A character string specifying the species for the analysis ("mm" for mouse or "hs" for human).
+#' @param simplify_cutoff An optional numeric value specifying the cutoff for semantic similarity when simplifying the results.
+#' @return A data frame containing the results of the enrichment analysis.
+#' @examples
+#' genes <- c("BRCA1", "BRCA2", "TP53")
+#' enrich_ora(genes = genes, enrich_fun = "GO", species = "hs", simplify_cutoff = 0.7)
+enrich_ora <- function(genes = NULL, enrich_fun = "GO", species = "mm", simplify_cutoff = NULL, ...) {
     library(clusterProfiler)
     Org <- switch(species,
         "mm" = "org.Mm.eg.db" %>% library(char = .),
         "hs" = "org.Hs.eg.db" %>% library(char = .)
     )
+    simplify_ <- function(res, simplify_cutoff = simplify_cutoff) {
+        if (!is.null(simplify_cutoff)) {
+            res <- clusterProfiler::simplify(res, cutoff = as.numeric(simplify_cutoff))
+        }
+        return(res)
+    }
     data <- switch(enrich_fun,
-        "GO" = enrichGO(gene = genes, OrgDb = names(Org), keyType = "SYMBOL", ont = "BP", ...) %>%
-            .@result,
+        "GO" = enrichGO(gene = genes, OrgDb = names(Org), keyType = "SYMBOL", ont = "BP", ...) %>% simplify_() %>%
+            as.data.frame(),
         "KEGG" = enrichKEGG(gene = genes, organism = switch(species,
             "mm" = "mmu",
             "hs" = "hsa"
         ), ...) %>%
-            setReadable(OrgDb = names(Org), keyType = "ENTREZID") %>% .@result,
-        "Reactome" = Reactome_function(),
-        "WikiPathways" = WikiPathways_function()
+            setReadable(OrgDb = names(Org), keyType = "ENTREZID") %>% as.data.frame()
     )
 }
 
+enrich_gsea <- function() {}
 
+enrich_gsva <- function() {}
+
+enrich_kobas <- function() {}
+# http://kobas.cbi.pku.edu.cn/download/
+
+enrich_go_module <- function() {}
+
+
+#' Plot GO enrichment results
+#'
+#' This function takes a data frame of GO enrichment results and creates a bar plot of the top n most significant terms. The function allows for grouping and coloring of the bars based on user-specified columns in the data frame.
+#'
+#' @param df A data frame containing GO enrichment results.
+#' @param group An optional character string specifying the column to use for grouping the results. For example, different cell types.
+#' @param class An optional character string specifying the column to use for coloring the bars. Must be "up" and/or "done".
+#' @param n An integer specifying the number of top terms to plot by "p.adjust".
+#' @return A bar plot of the top n most significant GO terms.
+#' @examples
+#' data <- enrich_ora(gene = c("BRCA1", "BRCA2", "TP53"), enrich_fun = "GO", species = "mm", simplify_cutoff = NULL)
+#' GO_plot(data)
 GO_plot <- function(df, group = NULL, class = NULL, n = 10) {
     # create plot function
     plot_func <- function(sub_df) {

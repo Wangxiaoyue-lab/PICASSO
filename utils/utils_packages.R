@@ -1,8 +1,14 @@
 # CRAN and bioconductor
 pkgs <- c(
-  "Seurat", "tidyverse","readxl","magrittr", "signac", 
-  "devtools", "DropletUtils", "EdgeR",
-  "clustree", "rlang", "monocle","DESeq2",""
+  "Seurat","assertthat", "scater","scran","tidyverse","readxl","magrittr", 
+  "Signac", "devtools", "DropletUtils", "EdgeR","limma","chromVAR",
+  "clustree", "rlang", "monocle","DESeq2","GSVA","org.Mm.eg.db",
+  "org.Hs.eg.db","clusterProfiler","scCustomize","scMAGeCK","biomaRt",
+  "WGCNA","GENIE3", "AUCell", "RcisTarget","glmnetUtils","Matrix.utils",
+  "tximport","RobustRankAggreg","randomForest","enrichplot","e1071","VennDiagram",
+  "survival","survivalROC","factoextra","FactoMineR","survminer","survMisc",
+  "UpSetR","ConsensusClusterPlus","JASPAR2020","Nebulosa",#"caret"
+  "circlize",""
 )
 
 # devtools::install_local(package_name,force = T,quiet = F)
@@ -47,7 +53,19 @@ github_list <- c(
   "samuel-marsh/scCustomize",
   "mojaveazure/seurat-disk",
   "chris-mcginnis-ucsf/DoubletFinder",
-  "Sun-lab/ideas"
+  "Sun-lab/ideas",
+  "aertslab/SCopeLoomR",
+  "aertslab/SCENIC",
+  "immunogenomics/harmony",
+  "kostkalab/scds",
+  #"satijalab/seurat","seurat5" 
+  #"satijalab/seurat-data","seurat5" 
+  #"stuart-lab/signac","seurat5" 
+  #"satijalab/seurat-wrappers","seurat5"
+  "mojaveazure/seurat-disk",
+  "bnprks/BPCells",
+  "TheHumphreysLab/plot1cell",
+
 )
 
 check_github <- function(github_list){

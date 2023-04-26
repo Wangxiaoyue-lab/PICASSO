@@ -29,8 +29,9 @@ black_list <- c("\\.git", "\\.vscode", "picture", "knowledge_base", "utils")
 load_necessary <- function() {
     ## basical utils
     load_script(dir = "utils", script = "utils_log")
+    load_script(dir = "utils", script = "utils_process")
     load_script(dir = "utils/parallel", script = "utils_parallel")
-    load_script(dir = "utils", script = "utils_package")
+    # load_script(dir = "utils", script = "utils_package")
     # load_script(dir = "utils/input_your_parameter", script = "utils_parameter")
     ## color
     # load_script(dir='visualization/colour',script='palette')
@@ -122,13 +123,13 @@ list_pipeline <- function(pipeline = NULL, module = F) {
 
 
 # load the specified script
-load_script <- function(dir, script = "\\.R") {
+load_script <- function(dir, script = "(\\.r)|(\\.R)$") {
     list.files(
         path = paste0(picasso_path, "/", dir),
         pattern = paste(script, collapse = "|"),
         recursive = T, full = T
     ) %>%
-        grep(., pattern = "\\.R", value = T) %>%
+        grep(., pattern = "(\\.r)|(\\.R)$", value = T) %>%
         lapply(., source)
     invisible(NULL)
 }
