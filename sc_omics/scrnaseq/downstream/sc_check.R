@@ -1,3 +1,25 @@
+check_files_input <- function(path, pattern = NULL) {
+    if (dir.exists(path)) {
+        files_10x_pattern <- pattern %||% c("(barcodes\\.tsv)|(features\\.tsv)|(matrix\\.mtx)")
+        bool_ <- all(grepl(list.files(path, full.names = FALSE, recursive = FALSE),
+            pattern = files_10x_pattern
+        ))
+    } else if (file.exists(path)) {
+        files_h5_pattern <- pattern %||% "\\.h5$"
+        bool_ <- all(grepl(path,
+            pattern = files_h5_pattern
+        ))
+    } else {
+        bool_ <- FALSE
+    }
+    return(bool_)
+}
+
+
+check_species <- function(object) {
+    row.names(object)
+}
+
 #' Check the current and available assays in a Seurat object
 #'
 #' This function takes a Seurat object and prints the current assay used for analysis as well as all available assays in the object.

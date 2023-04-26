@@ -16,7 +16,7 @@ lapply(
 picasso_path <- getwd()
 black_list <- c("\\.git", "\\.vscode", "picture", "knowledge_base", "utils")
 
-log_start()
+
 
 
 # 3 file management system functions:

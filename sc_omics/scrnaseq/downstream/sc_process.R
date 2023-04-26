@@ -112,7 +112,7 @@ process_to_3files <- function(object,
 }
 
 
-process_removal <- function(...){
+process_removal <- function(...) {
     print("soupX")
     next
 }
@@ -120,7 +120,7 @@ process_removal <- function(...){
 
 
 process_nomalization <- function(object, methods) {
-    process_nomalization_tpm <- function(object){
+    process_nomalization_tpm <- function(object) {
         next
     }
     process_nomalization_scran <- function(object) {
@@ -275,6 +275,9 @@ process_annotation <- function(object,
     }
 }
 
+process_anno_merge <- function(object, sub_object, sub_id, new_col_id = NULL) {
+    next
+}
 
 # process_integration
 
