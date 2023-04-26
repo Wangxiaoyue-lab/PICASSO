@@ -20,7 +20,6 @@
 
 [lovingers/ML_Books: 宗旨：构建全球最大的ML相关的学习书籍平台（吹个大牛） (github.com)](https://github.com/lovingers/ML_Books)
 
-
 # How to learn omics
 
 # How to learn single cell RNAseq
@@ -28,8 +27,7 @@
 - [Scanpy作者教程](https://www.sc-best-practices.org/)
 - [Seurat official](https://satijalab.org/seurat/)
 - [Sanger institute](https://www.singlecellcourse.org/)
-- [Harvard hbc](https://github.com/hbctraining) # including scRNA-seq, R, shell, rna-seq. For beginners.
-
-
+- [Harvard hbc](https://github.com/hbctraining) # including scRNA-seq, R, shell, rna-seq. Recommended for beginners.
+- [A great book on exclusively the Bioconductor ecosystem](https://bioconductor.org/books/release/OSCA/) # not recommended. SCE is not well developed as Seurat
 
 [gao-lab/Guideline-for-Computational-Biology-and-Bioinformatics (github.com)](https://github.com/gao-lab/Guideline-for-Computational-Biology-and-Bioinformatics)
