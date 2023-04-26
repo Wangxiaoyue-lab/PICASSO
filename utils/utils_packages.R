@@ -3,12 +3,12 @@ pkgs <- c(
   "Seurat","assertthat", "scater","scran","tidyverse","readxl","magrittr", 
   "Signac", "devtools", "DropletUtils", "EdgeR","limma","chromVAR",
   "clustree", "rlang", "monocle","DESeq2","GSVA","org.Mm.eg.db",
-  "org.Hs.eg.db","clusterProfiler","scCustomize","scMAGeCK","biomaRt",
+  "org.Hs.eg.db","clusterProfiler","scCustomize","scMAGeCK",
   "WGCNA","GENIE3", "AUCell", "RcisTarget","glmnetUtils","Matrix.utils",
   "tximport","RobustRankAggreg","randomForest","enrichplot","e1071","VennDiagram",
   "survival","survivalROC","factoextra","FactoMineR","survminer","survMisc",
   "UpSetR","ConsensusClusterPlus","JASPAR2020","Nebulosa",#"caret"
-  "circlize",""
+  "circlize"#,"","biomaRt"
 )
 
 # devtools::install_local(package_name,force = T,quiet = F)
