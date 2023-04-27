@@ -74,7 +74,7 @@ utils_read_refdata <- function(species, file_type, picasso_path = picasso_path) 
     return(data)
 }
 
-utils_markers_scb <- function(path = NULL, species, clean = F, disease = NULL) {
+utils_markers_scb <- function(path = NULL, species, clean = F, disease_pattern = NULL) {
     path <- path %||% "/other_bioinfo/annotation/annotation_files/marker"
     assertthat::assert_that(species %in% c("hs", "mm"))
     path_s <- switch(species,
@@ -90,7 +90,7 @@ utils_markers_scb <- function(path = NULL, species, clean = F, disease = NULL) {
                 cell_type, gene_symbol, sample_type,
                 disease, sci_if, date
             ) %>%
-            filter(grepl(disease, pattern = disease)) %>%
+            filter(grepl(disease, pattern = disease_pattern)) %>%
             select(cell_type, gene_symbol) %>%
             arrange(cell_type) %>%
             group_by(cell_type) %>%
