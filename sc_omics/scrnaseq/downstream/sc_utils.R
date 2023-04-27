@@ -8,7 +8,6 @@ lapply(
 )
 
 
-
 #' Start parallel mode
 #'
 #' @param ... Additional arguments
