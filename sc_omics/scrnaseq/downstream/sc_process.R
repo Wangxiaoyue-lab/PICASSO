@@ -357,8 +357,9 @@ FindMarkers_replace <- function(object,
                                 ident.2,
                                 group.by = NULL,
                                 slot = "data",
-                                max.cells.per.ident = NULL, ...) {
-    if (is.null(group.by)) {
+                                max.cells.per.ident = NULL,
+                                features = NULL, ...) {
+    if (!is.null(group.by)) {
         Idents(object) <- group.by
     }
     cells <- Idents(object)
@@ -386,7 +387,7 @@ FindMarkers_replace <- function(object,
         object = data, slot = slot, cells.1 = cells.1, cells.2 = cells.2, features = features,
         fc.results = fc.results
     )
-    de.results %<>% filter(p_val_adj < 0.05) %>% arranger(desc(avg_log2FC))
+    # de.results %<>% filter(p_val_adj < 0.05) %>% arrange(desc(avg_log2FC))
 }
 
 # process_celltype
