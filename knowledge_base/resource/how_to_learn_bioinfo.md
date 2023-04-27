@@ -24,7 +24,8 @@
 
 # How to learn single cell RNAseq
 
-- [Scanpy作者教程](https://www.sc-best-practices.org/)
+- [Scanpy – Single-Cell Analysis in Python](https://scanpy.readthedocs.io/en/stable/index.html)
+* [sc-best-practices / for python users](https://www.sc-best-practices.org/) # Further development of scanpy
 - [Seurat official](https://satijalab.org/seurat/)
 - [Sanger institute](https://www.singlecellcourse.org/)
 - [Harvard hbc](https://github.com/hbctraining) # including scRNA-seq, R, shell, rna-seq. Recommended for beginners.
