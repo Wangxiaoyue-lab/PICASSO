@@ -226,3 +226,42 @@ check_size_future <- function(object) {
     maxSize <- ncol(object) * 4e5
     return(maxSize)
 }
+
+#' Check the outlier of an object by mad
+#'
+#' @param object The object to check
+#' @param col_name Column names of seurat object metadata
+#' @param n_mad Pick n mads to determine the outlier
+#' @return A list contains min and max cols
+#' @export
+#' @example
+#' x <- sample(1:100, size = 100, replace = TRUE)
+#' check_outlier(x)
+#' Lower bound: -122.412
+#' Upper bound: 233.412
+#' a <- check_outlier(x)
+#' a
+#' $max
+#' [1] 233.412
+#' $min
+#' [1] -122.412
+check_outlier <- function(object, col_name = NULL, n_mad = 5) {
+    UseMethod("check_outlier", object = object)
+}
+
+check_outlier.Seurat <- function(object, col_name = NULL, n_mad = 5) {
+    check_outlier(object[[col_name]], n_mad = n_mad)
+}
+
+check_outlier.data.frame <- function(object, col_name = NULL, n_mad = 5) {
+    check_outlier(object[[col_name]], n_mad = n_mad)
+}
+
+check_outlier.default <- function(object, col_name = NULL, n_mad = 5) {
+    assertthat::assert_that(is.numeric(object))
+    lower_bound <- median(object) - n_mad * mad(object, constant = 1)
+    upper_bound <- median(object) + n_mad * mad(object, constant = 1)
+    cat(paste("Lower bound:", lower_bound, "\n"))
+    cat(paste("Upper bound:", upper_bound, "\n"))
+    return(list("max" = upper_bound, "min" = lower_bound))
+}

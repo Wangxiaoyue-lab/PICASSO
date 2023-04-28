@@ -16,13 +16,18 @@ DRIECTORY_OF_PICASSO
 ```
 
 Then, if you want to use R scripts:
+
 ```r
 source(paste0("DRIECTORY_OF_PICASSO","/PICASSO/picasso.R"), chdir=TRUE)
 ```
+
 ## file management and scripts usage
+
 The file management system and the scripts usage system are synchronized. Here, the second-level header of the document is the pipeline, and the third-level header is the module. `choose_pipeline("scrnaseq")` loads all functions of that pipeline.
+
 ```r
 > choose_pipeline()
+#choose_pipeline(<pipelie>,<module>)
 
 #---- base ----#
 --> plot 
@@ -54,6 +59,26 @@ Succeed to load script: scrnaseq
 # Or
 choose_pipeline("scrnaseq")
 ```
+
+# Knowlegde
+
+## Academy
+
+- The list of important bioinfomatic or biology databases
+- The set of important reviews or articles
+- The timeline of technologies
+
+## Update analysis tools
+
+- scRNAseq
+- Bulk RNAseq
+
+## Resource
+
+- how to learn bioinfo
+
+## Workflow
+
 
 
 # Acknowledgements
