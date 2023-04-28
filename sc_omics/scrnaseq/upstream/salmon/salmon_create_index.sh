@@ -6,6 +6,7 @@ genome="GRCm38.primary_assembly.genome.fa.gz"
 transcript="gencode.vM23.transcripts.fa.gz"
 decoy="decoys.txt"
 gentrome="gentrome.fa.gz"
+salmon_index=#最后构建的index是一个文件夹
 
 #Preparing
 #create decoys file
@@ -15,5 +16,5 @@ sed -i.bak -e 's/>//g' ${decoy}
 cat ${transcript} ${genome} > ${gentrome}
 
 #Salmon Indexing
-salmon index -t ${gentrome} -d ${decoy} -p 12 -i salmon_index --gencode
+salmon index -t ${gentrome} -d ${decoy} -p 12 -i ${salmon_index} --gencode
 
