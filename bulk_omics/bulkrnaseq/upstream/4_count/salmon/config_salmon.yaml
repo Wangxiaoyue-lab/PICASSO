@@ -1,0 +1,24 @@
+## project的task文件夹
+dir: 
+## task里的data存储文件夹
+input: input
+## task里的output存储文件夹
+output: output
+
+## 参考基因组文件夹
+ref:   ###应该有fa、fai、gtf三个文件
+ref_fa:  
+ref_fai:  
+ref_gtf: 
+
+## 软件的安装目录
+salmon:  
+gffread: 
+multiqc: 
+
+
+## fq数据 应该按sample分好文件夹
+fq: 
+## fq后缀形式
+fq1: 
+fq2:  
