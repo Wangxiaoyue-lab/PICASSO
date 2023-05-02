@@ -28,13 +28,13 @@ salmon=$(yq e '.salmon' ${yaml})
 gffread=$(yq e '.gffread' ${yaml})
 multiqc=$(yq e '.multiqc' ${yaml})
 
-
 ## fq数据 应该按sample分好文件夹
 fq=$(yq e '.fq' ${yaml})
 fq1=$(yq e '.fq1' ${yaml})
 fq2=$(yq e '.fq2' ${yaml})
 
-
+## 重要参数
+thread=$(yq e '.thread' ${yaml})
 
 # 2 构建并链接数据
 if [ ! -d ${dir}/${input} ]; then
@@ -75,7 +75,7 @@ ${salmon} index \
     -t ${dir}/${input}/salmon_index/ref_fa_genome.fa \
     -d ${dir}/${input}/salmon_index/ref_fa.decoys.txt \
     -i ${dir}/${input}/salmon_index/ref_fa_salmon_index \
-    -p 12 -k 31 --gencode
+    -p ${thread} -k 31 --gencode
 
 
 
@@ -90,7 +90,7 @@ ${salmon} quant \
     -l A \
     -1 ${dir}/${input}/fq/${sample}/*${fq1} \
     -2 ${dir}/${input}/fq/${sample}/*${fq2} \
-    -p 10 \
+    -p ${thread} \
     --gcBias \
     --validateMappings \
     -g ${dir}/${input}/salmon_index/ref_gtf \
