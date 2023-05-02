@@ -19,6 +19,9 @@ multiqc:
 
 ## fq数据 应该按sample分好文件夹
 fq: 
-## fq后缀形式
-fq1: 
-fq2:  
+fq1:    ## fq1后缀形式
+fq2:    ## fq2后缀形式
+
+
+# 可能需要考虑的参数
+thread:    #线程数
