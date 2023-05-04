@@ -13,8 +13,8 @@ store_md5:
 ## the path of raw data
 raw_data: 
 ## the suffix of fq files
-suffix_fq1: 
-suffix_fq2: 
+fq1: 
+fq2: 
 
 # some important parameters
-thread:
+ 
