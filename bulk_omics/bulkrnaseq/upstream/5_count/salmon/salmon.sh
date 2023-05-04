@@ -6,55 +6,54 @@
 # https://salmon.readthedocs.io/en/latest/
 
 
-# 1 设置关键变量
-##配置文件路径
+# 1 set key variables
+## path of yaml configuration
 yaml=$1
-## project的task文件夹
+## the task folder in project
 dir=$(yq e '.dir' ${yaml})
-## task里的input存储文件夹
+## the input folder in task
 input=$(yq e '.input' ${yaml})
-## task里的output存储文件夹
+## the output folder in task
 output=$(yq e '.output' ${yaml})
 
-## 参考基因组文件夹
+## the path of reference
 ref=$(yq e '.ref' ${yaml})
 ###应该有fa、fai、gtf三个文件
 ref_fa=${ref}/$(yq e '.ref_fa' ${yaml})
 ref_fai=${ref}/$(yq e '.ref_fai' ${yaml})
 ref_gtf=${ref}/$(yq e '.ref_gtf' ${yaml})
 
-## 软件的安装目录
+## the install path of softwares
 salmon=$(yq e '.salmon' ${yaml})
 gffread=$(yq e '.gffread' ${yaml})
 multiqc=$(yq e '.multiqc' ${yaml})
 
-## fq数据 应该按sample分好文件夹
+## fq data which should be split to subfolders according to samples
 fq=$(yq e '.fq' ${yaml})
+## the suffix of fq files
 fq1=$(yq e '.fq1' ${yaml})
 fq2=$(yq e '.fq2' ${yaml})
 
-## 重要参数
+## important parameters
 thread=$(yq e '.thread' ${yaml})
 
-# 2 构建并链接数据
+# 2 check the directory link data
 if [ ! -d ${dir}/${input} ]; then
     mkdir ${dir}/${input}
 fi
 if [ ! -d ${dir}/${output} ]; then
     mkdir ${dir}/${output}
 fi
-
-## fq数据
+## fq data
 ln -s ${fq} ${dir}/${input}/fq
-
-## salmon的ref
+## the ref of salmon 
 mkdir ${dir}/${input}/salmon_index
 ln -s ${ref_fa} ${dir}/${input}/salmon_index/ref_fa
 ln -s ${ref_fai} ${dir}/${input}/salmon_index/ref_fai
 ln -s ${ref_gtf} ${dir}/${input}/salmon_index/ref_gtf
 
 
-# 3 salmon的index
+# 3 construct the index of salmon 
 ## extract the cRNA sequence
 ${gffread} \
     ${dir}/${input}/salmon_index/ref_gtf \
@@ -79,7 +78,7 @@ ${salmon} index \
 
 
 
-## 3 salmon的定量
+## 3 quantifing by salmon
 ls ${dir}/${input}/fq | while read sample;
 do
 if [ ! -d ${dir}/${output}/${sample} ]; then
