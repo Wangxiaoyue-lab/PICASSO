@@ -1,6 +1,9 @@
 #!/bin/bash
 
 task=$1
+dir=$2
+
+mkdir ${task}
 
 if [ ! -d ${task}/script ]; then
     mkdir ${task}/script

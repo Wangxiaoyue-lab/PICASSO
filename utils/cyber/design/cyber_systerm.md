@@ -63,7 +63,6 @@ task1
   - log.out存储服务器产生的直接控制台输出与报错
   - report.yaml请填写当前task的相关信息以生成实验报告
 
-
 # 工作流
 
 1. input
@@ -83,3 +82,12 @@ task1
    2. 图片如无特殊原因，如体积过大等。应优先保存为pdf矢量图。
    3. 表格应该保证列名的意义
 4. report
+
+   1. 填写report.yaml
+   2. 根据task文件夹结果生成pdf报告
+5. summarize
+
+   1. 所有task合并为一个project报告
+   2. 自动生成目录
+   3. 添加文件tree
+   4. 添加项目存储情况

@@ -16,6 +16,6 @@
 
 # 7 picture下如果存在pdf图片则转为像素图并添加水印
 
-# 8 html加入output下水印版pdf图片
+# 8 html加入output下水印版pdf图片并且编号A、B、C、D
 
 # 9 html转pdf，如若每页过长则换页
