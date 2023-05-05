@@ -35,9 +35,11 @@ process_read <- function(filename,
             .[[matrix]] %>%
             as.Seurat()
     }
-    # read_mtx <- function(filename){
-    #    readMM(filename)
-    # }
+    ###read matrix in tsv format
+    read_mtx <- function(filename){
+        read.csv(filename,sep="\t", header=T, row.names = 1) %>%
+            CreateSeuratObject(project = project, min.cells = min.cells, ...)
+    }
     read_table <- function(filename) {
         library(Matrix)
         as.matrix(filename) %>%
@@ -49,7 +51,7 @@ process_read <- function(filename,
         "h5ad" = read_h5ad,
         "10x" = read_10x,
         "loom" = read_loom,
-        #' mtx'=read_mtx,
+        "mtx" = read_mtx,
         "table" = read_table
     )
     read_seurat(filename)
