@@ -13,18 +13,20 @@ ref_fai:  _ref_fai_
 ref_gtf: _ref_gtf_ 
 
 ## 软件的安装目录
-salmon:  _salmon_ 
-gffread: _gffread_ 
+featurecounts: _featurecounts_
 multiqc: _multiqc_ 
 
 
 ## fq数据 应该按sample分好文件夹
 fq: _DIR_ 
 suffix_fq1: _suffix_fq1_   ## fq1后缀形式
-suffix_fq2: _suffix_fq2_    ## fq2后缀形式
-
+suffix_fq2: _suffix_fq2_   ## fq2后缀形式
+black_list:                ## 文件夹中的黑名单文件
+  - multiqc
 
 # 可能需要考虑的参数
+index: yes         #是否需要建立index
+index_path:    #有index的话,index路径
 thread: 12     #线程数
 SEorPE:        #单端还是双端
 SSorNS:        #链特异性还是非链特异性
