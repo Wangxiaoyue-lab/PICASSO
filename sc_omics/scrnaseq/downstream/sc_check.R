@@ -109,11 +109,11 @@ check_pre <- function(
     if (cell_cycle_source == "seurat") {
         s_genes <- switch(species,
             "hs" = cc.genes$s.genes,
-            "mm" = cc.genes$s.genes %>% str_to_tittle()
+            "mm" = cc.genes$s.genes %>% str_to_title()
         )
         g2m_genes <- switch(species,
             "hs" = cc.genes$g2m.genes,
-            "mm" = cc.genes$g2m.genes %>% str_to_tittle()
+            "mm" = cc.genes$g2m.genes %>% str_to_title()
         )
     } else {
         # Get gene names for Ensembl IDs for each gene
