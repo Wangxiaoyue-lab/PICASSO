@@ -1,0 +1,20 @@
+## project的task文件夹
+## path of yaml configuration
+yaml: 
+## the task folder in project
+dir: 
+## the input folder in task
+input: 
+## the output folder in task
+output: 
+
+## the path of md5 file
+store_md5: 
+## the path of raw data
+raw_data: 
+## the suffix of fq files
+fq1: 
+fq2: 
+
+# some important parameters
+ 
