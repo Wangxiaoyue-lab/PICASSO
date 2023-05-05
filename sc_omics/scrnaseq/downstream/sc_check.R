@@ -194,7 +194,7 @@ check_doublet <- function(object,
         }
         nExp_poi.adj <- round(nExp_poi * (1 - homotypic.prop))
         object <- doubletFinder_v3(object,
-            PCs = 1:npcs, pN = 0.25, pK = p, nExp = nExp_poi,
+            PCs = 1:npcs, pN = 0.25, pK = p, nExp = nExp_poi.adj,
             reuse.pANN = FALSE, sct = FALSE
         )
         colnames(object@meta.data)[ncol(object@meta.data)] <- "doublet_info"
