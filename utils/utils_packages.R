@@ -65,6 +65,12 @@ github_list <- c(
   "mojaveazure/seurat-disk",
   "bnprks/BPCells",
   "TheHumphreysLab/plot1cell",
+  "icbi-lab/immunedeconv",
+  # "Moonerss/CIBERSORT",
+  "xuranw/MuSiC",
+  "renozao/xbioc",
+  "Jiaxin-Fan/MuSiC2",
+  # "amitfrish/scBio"
 )
 
 check_github <- function(github_list) {
@@ -80,3 +86,7 @@ check_github <- function(github_list) {
     }
   })
 }
+
+
+# 其他
+install.packages("estimate", repos = "http://r-forge.r-project.org", dependencies = TRUE)

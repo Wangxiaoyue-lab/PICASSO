@@ -164,6 +164,9 @@ check_doublet <- function(object,
                           celltype = NULL,
                           ncelltype = NULL,
                           fast = FALSE) {
+    if (ncol(object) > 15000) {
+        warning("please check the cell numbers, maybe you should run check_doublet to per sequencing")
+    }
     if (fast == F) {
         library(DoubletFinder)
         process_ <- Command(object) %>%
@@ -183,7 +186,7 @@ check_doublet <- function(object,
             pull(pK) %>%
             as.character() %>%
             as.numeric()
-        nExp_poi <- round(ncol(object) * ncol(object) * 1.6 * 1.6 / 2e5)
+        nExp_poi <- round(ncol(object) * ncol(object) * 7.6e-06)
         if (!is.null(celltype)) {
             homotypic.prop <- object@meta.data %>%
                 select(!!sym(celltype)) %>%

@@ -26,6 +26,28 @@ plot_range_adjust <- function(df, threshold = NULL) {
 }
 
 
+plot_gap <- function(vector) {
+        which(!duplicated(vector))[-1] - 1
+}
+
+
+plot_rearrange <- function(df, group_df) {
+        group <- group_df %>%
+                mutate(names = rownames(.)) %>%
+                arrange(across(-names)) %>%
+                group_by(across(-names)) %>%
+                nest()
+        order <- lapply(group$data, function(d) {
+                df[, d %>% pull(data)] %>%
+                        t() %>%
+                        dist() %>%
+                        hclust() %>%
+                        .$order
+        }) %>% unlist()
+        df <- df[, match(order, colnames(df))]
+        return(df)
+}
+
 
 #' Plot a heatmap
 #'

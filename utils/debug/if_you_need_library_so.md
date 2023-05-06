@@ -48,3 +48,7 @@ source ~/.bashrc
 monole →libicuuc.so.58→ icu
 
 SCopeLoomR→libhdf5_hl.so.100→hdf5_1.10.6
+
+rgdal→proj → https://proj.org/download.html
+
+rgdal→gdal
