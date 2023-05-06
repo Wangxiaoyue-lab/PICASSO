@@ -32,19 +32,24 @@ plot_gap <- function(vector) {
 
 
 plot_rearrange <- function(df, group_df) {
+        set.seed(1)
         group <- group_df %>%
                 mutate(names = rownames(.)) %>%
                 arrange(across(-names)) %>%
                 group_by(across(-names)) %>%
                 nest()
         order <- lapply(group$data, function(d) {
-                df[, d %>% pull(data)] %>%
+                df[, d %>% pull(names)] %>%
                         t() %>%
                         dist() %>%
                         hclust() %>%
                         .$order
-        }) %>% unlist()
-        df <- df[, match(order, colnames(df))]
+        })
+        arrange <- mapply(function(x, y) {
+                x %<>% pull(names)
+                x[y]
+        }, group$data, order, SIMPLIFY = T)
+        df <- df[, match(arrange, colnames(df))]
         return(df)
 }
 
