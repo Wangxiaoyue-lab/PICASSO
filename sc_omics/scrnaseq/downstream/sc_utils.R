@@ -57,16 +57,16 @@ utils_seurat_merge <- function(seurat_list) {
 #' @return A data frame containing the reference data
 #'
 #' @export
-utils_read_refdata <- function(species, file_type, picasso_path = picasso_path) {
+utils_read_refdata <- function(species, file_type, path = picasso_path) {
     data <- switch(file_type,
         "cell_cycle_markers" = switch(species,
-            "mm" = paste0(picasso_path, "/other_bioinfo/annotation/reference/cell_cycle_Mus_musculus.csv"),
-            "hs" = paste0(picasso_path, "./other_bioinfo/annotation/reference/cell_cycle_Homo_sapiens.csv"),
+            "mm" = paste0(path, "/other_bioinfo/annotation/annotation_files/reference/cell_cycle_Mus_musculus.csv"),
+            "hs" = paste0(path, "/other_bioinfo/annotation/annotation_files/reference/cell_cycle_Homo_sapiens.csv"),
             stop("Invalid species argument")
         ),
         "annotations" = switch(species,
-            "mm" = paste0(picasso_path, "/other_bioinfo/annotation/reference/annotations_Mus_musculus.csv"),
-            "hs" = paste0(picasso_path, "/other_bioinfo/annotation/reference/annotations_Homo_sapiens.csv"),
+            "mm" = paste0(path, "/other_bioinfo/annotation/annotation_files/reference/annotations_Mus_musculus.csv"),
+            "hs" = paste0(path, "/other_bioinfo/annotation/annotation_files/reference/annotations_Homo_sapiens.csv"),
         ),
         stop("Invalid file_type argument")
     ) %>% read.csv()

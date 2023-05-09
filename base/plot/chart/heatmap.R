@@ -31,8 +31,8 @@ plot_gap <- function(vector) {
 }
 
 
-plot_rearrange <- function(df, group_df) {
-        set.seed(1)
+plot_rearrange <- function(df, group_df, seed = 1) {
+        set.seed(seed)
         group <- group_df %>%
                 dplyr::mutate(names = rownames(.)) %>%
                 dplyr::arrange(across(-names)) %>%
