@@ -1,3 +1,8 @@
+# library(SCENT)
+# CytoTRACE
+
+
+
 # https://github.com/compbioNJU/scPlant/blob/master/R/RunCytoTRACE.R
 
 #' Run CytoTRACE on Seurat object
