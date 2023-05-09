@@ -12,6 +12,7 @@ require(rlang)
 # implement a function of one variable in parallel
 lapply_par <- function(x, fun,
                        parallel = c("foreach", "parallel", "snowfall", "future.apply", "None"),
+                       choose_memory = NULL,
                        export = NULL,
                        ncores = NULL,
                        verbose = F) {
@@ -58,7 +59,8 @@ lapply_par <- function(x, fun,
     if (parallel == "future.apply") {
         library(future)
         library(future.apply)
-        options(future.globals.maxSize= 1e10)
+        choose_memory <- choose_memory %||% 1e10
+        options(future.globals.maxSize = choose_memory)
         plan("multisession", workers = ncores)
         return(future.apply::future_lapply(X = x, FUN = fun))
     }

@@ -265,6 +265,7 @@ plot_markers <- function(
                 ident_group = ident_group
             ) %>%
                 Annotation_plot(., cell_p = names(dot_markers)[m])
+            gc()
             # print(p_dot)
         }, parallel = "future.apply") %>% lapply(., print)
     }
@@ -281,6 +282,7 @@ plot_markers <- function(
             p_feature <- p_dim | p_feature  
             p_feature %>%
                 Annotation_plot(., cell_p = names(feature_markers)[m])
+            gc() 
             # plot_layout(
             #    ncol = feature_ncol
             # )

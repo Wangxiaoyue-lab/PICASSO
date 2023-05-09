@@ -8,13 +8,24 @@ pkgs <- c(
   "tximport", "RobustRankAggreg", "randomForest", "enrichplot", "e1071", "VennDiagram",
   "survival", "survivalROC", "factoextra", "FactoMineR", "survminer", "survMisc",
   "UpSetR", "ConsensusClusterPlus", "JASPAR2020", "Nebulosa", # "caret"
-  "circlize" # ,"","biomaRt"
+  "circlize", "table1", "formattable", "webshot", "infercnv", "TxDb.Hsapiens.UCSC.hg19.knownGene",
+  "dbscan" # ,"","biomaRt"
 )
 
 # devtools::install_local(package_name,force = T,quiet = F)
 # check_pkgs(pkgs)
 
 # from https://github.com/compbioNJU/scPlant/blob/master/R/load_shinyApp.R
+#' check_pkgs
+#'
+#' A function to check whether the required packages are installed or not.
+#'
+#' @param pkgs A vector of the required packages.
+#'
+#' @return No explicit return, but users can check the installation status of the pkgs.
+#'
+#' @examples
+#' check_pkgs(c("packageA", "packageB"))
 check_pkgs <- function(pkgs = pkgs) {
   options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
   unavail <- c()
@@ -71,6 +82,9 @@ github_list <- c(
   "renozao/xbioc",
   "Jiaxin-Fan/MuSiC2",
   # "amitfrish/scBio"
+  "JEFworks/HoneyBADGER",
+  "akdess/CaSpER",
+  "navinlabcode/copykat"
 )
 
 check_github <- function(github_list) {
@@ -90,3 +104,5 @@ check_github <- function(github_list) {
 
 # 其他
 install.packages("estimate", repos = "http://r-forge.r-project.org", dependencies = TRUE)
+
+webshot::install_phantomjs()
