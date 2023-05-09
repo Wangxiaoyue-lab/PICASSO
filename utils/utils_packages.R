@@ -9,7 +9,7 @@ pkgs <- c(
   "survival", "survivalROC", "factoextra", "FactoMineR", "survminer", "survMisc",
   "UpSetR", "ConsensusClusterPlus", "JASPAR2020", "Nebulosa", # "caret"
   "circlize", "table1", "formattable", "webshot", "infercnv", "TxDb.Hsapiens.UCSC.hg19.knownGene",
-  "dbscan" # ,"","biomaRt"
+  "dbscan", "AnnoProbe" # ,"","biomaRt"
 )
 
 # devtools::install_local(package_name,force = T,quiet = F)
@@ -82,6 +82,8 @@ github_list <- c(
   "renozao/xbioc",
   "Jiaxin-Fan/MuSiC2",
   # "amitfrish/scBio"
+  "bmbroom/tsvio",
+  "broadinstitute/inferCNV_NGCHM",
   "JEFworks/HoneyBADGER",
   "akdess/CaSpER",
   "navinlabcode/copykat"
@@ -106,3 +108,5 @@ check_github <- function(github_list) {
 install.packages("estimate", repos = "http://r-forge.r-project.org", dependencies = TRUE)
 
 webshot::install_phantomjs()
+
+devtools::install_github("bmbroom/NGCHMR", ref = "stable")
