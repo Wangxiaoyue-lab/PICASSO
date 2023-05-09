@@ -156,6 +156,7 @@ plot_markers <- function(
     feature_ncol = NULL,
     version = 5,
     resolution_select = NULL,
+    future.bool = F,
     ...) {
     assertthat::assert_that(version %in% c(4, 5))
     if (!is.list(markers)) {
@@ -255,6 +256,7 @@ plot_markers <- function(
         "5" = draw_feature_plot_v5,
         "4" = draw_feature_plot_v4
     )
+    parallel.bool <- ifelse(future.bool==T,"future.apply","None")
     if (dot_plot == T) {
         lapply_par(seq_along(dot_markers), function(m) {
             p_dot <- draw_dot_plot(
@@ -267,7 +269,7 @@ plot_markers <- function(
                 Annotation_plot(., cell_p = names(dot_markers)[m])
             gc()
             # print(p_dot)
-        }, parallel = "future.apply") %>% lapply(., print)
+        }, parallel = parallel.bool) %>% lapply(., print)
     }
     message("plot the dot_plot of markers")
     if (feature_plot == T) {
@@ -287,7 +289,7 @@ plot_markers <- function(
             #    ncol = feature_ncol
             # )
             # print(p_feature)
-        }, parallel = "future.apply") %>% lapply(., print)
+        }, parallel = parallel.bool) %>% lapply(., print)
     }
     message("plot the dot_plot of markers")
 }
