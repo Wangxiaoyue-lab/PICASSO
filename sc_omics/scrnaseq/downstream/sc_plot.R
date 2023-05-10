@@ -163,9 +163,9 @@ plot_markers <- function(
     assertthat::assert_that(version %in% c(4, 5))
     assay_use <<- ifelse(exists("assay_use"), assay_use %||%
         DefaultAssay(object), DefaultAssay(object))
+    resolution <- resolution_select %||% 0.3
     ident_group <- ident_group %||% paste0(assay_use, "_snn_res.", resolution)
     assertthat::assert_that(ident_group %in% colnames(object@meta.data))
-    resolution <- resolution_select %||% 0.3
     feature_ncol <- feature_ncol %||% round(sqrt(feature_max))
     parallel.bool <- ifelse(future.bool == T, "future.apply", "None")
     # 1 clean the markers
