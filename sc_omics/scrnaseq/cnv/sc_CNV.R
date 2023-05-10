@@ -1,8 +1,35 @@
+#' Detection of CNV in scRNA-seq Data
+#'
+#' This function uses the inferCNV package to detect Copy Number Variations (CNVs) in Single-Cell RNA sequencing data.
+#'
+#' @param object A 'Seurat' object.
+#' @param outpath Output directory for saving results.
+#' @param celltype_col The name of the column in metadata identifying cell types.
+#' @param normal_cell The name of the normal cell type.
+#' @param type The level predicting tbhe cnv(samples or subclusters).
+#' @param denoise Use the denoise method for reducing noise in the data (default is TRUE).
+#' @param HMM Use the Hidden Markov Model for smoothing the data (default is FALSE).
+#' @param ncores The number of cores used in parallel (default is 20).
+#'
+#' @return A matrix of CNV scores corresponding to the input Seurat object.
+#'
+#' @examples
+#' library(Seurat)
+#' data("pbmc_small")
+#' cnv_scores <- sc_cnv_infercnv(
+#'     seurat_obj = object, outpath = "cnv_results",
+#'     celltype_col = "seurat_clusters", normal_cell = "CD8T",
+#'     denoise = TRUE, HMM = FALSE
+#' )
+#'
+#' @import Seurat
+#' @import inferCNV
+#' @export
 sc_cnv_infercnv <- function(object,
                             outpath,
-                            celltype_col, # metadta里标记细胞类型的列的列名
-                            normal_cell, # 作为参考的正常细胞
-                            type, # 按样本预测cnv还是按亚克隆预测cnv
+                            celltype_col,
+                            normal_cell,
+                            type,
                             denoise = T,
                             HMM = T,
                             ncores = NULL) {
@@ -101,13 +128,27 @@ sc_cnv_infercnv <- function(object,
     return(infercnv_obj)
 }
 
+#' sc_cnv_copykat is a function to call copykat package to call Copy-number variants from
+#' single cell data. It requires a Seurat object, an output path,
+#' cell type column name, normal cell type name for normalization and number
+#' of cores to use. It does preprocessing, then runs the copykat pipeline and generate
+#' basic plots to visualize the results.
+#'
+#' @param object an object of class Seurat
+#' @param outpath the output path
+#' @param celltype_col the cell type column name
+#' @param normal_cell the normal cell type names
+#' @param ncores number of cores
+#'
+#' @return copykat.test object
 sc_cnv_copykat <- function(object,
                            outpath,
-                           celltype_col, # metadta里标记细胞类型的列的列名
-                           normal_cell, # 作为参考的正常细胞
+                           celltype_col,
+                           normal_cell,
                            ncores) {
     # 0 check the setting
     library(copykat)
+    assertthat::assert_that(class(object) == "Seurat")
     assertthat::assert_that(all(celltype_col %in% colnames(object@meta.data)))
     assertthat::assert_that(all(normal_cell %in% unique(object@meta.data[, celltype_col])))
     ncores <- ncores %||% 20
@@ -130,7 +171,7 @@ sc_cnv_copykat <- function(object,
     anno2cnv <- object@meta.data %>%
         mutate(cellnames2cnv = rownames(.)) %>%
         dplyr::select(cellnames2cnv, !!sym(celltype_col))
-    normal2cnv <- anno2cnv %>% 
+    normal2cnv <- anno2cnv %>%
         dplyr::filter(!!sym(celltype_col) %in% normal_cell) %>%
         dplyr::pull(cellnames2cnv)
     assertthat::assert_that(length(normal2cnv) > 50)
@@ -150,8 +191,10 @@ sc_cnv_copykat <- function(object,
     saveRDS(copykat_obj, file = paste0(outpath, "/output", "/copykat_obj.RDS"))
     # 肿瘤是否恶性
     pred.test <- data.frame(copykat.test$prediction)
-    pred.test <- lefj_join(x = pred.test, y = anno2cnv, 
-        dplyr::join_by(cell.names == cellnames2cnv)) #copykat会自动过滤基因数少于100的细胞
+    pred.test <- lefj_join(
+        x = pred.test, y = anno2cnv,
+        dplyr::join_by(cell.names == cellnames2cnv)
+    ) # copykat会自动过滤基因数少于100的细胞
     saveRDS(pred.test, file = paste0(outpath, "/output", "/pred.test.RDS"))
     print(table(pred.test[, c(celltype_col, "copykat.pred")]))
     # cnv事件坐标与检测量
@@ -160,69 +203,81 @@ sc_cnv_copykat <- function(object,
     # 3 plot the result
     ## chromosome color
     my_palette <- colorRampPalette(rev(RColorBrewer::brewer.pal(n = 3, name = "RdBu")))(n = 999)
-    chr <- as.numeric(CNA.test$chrom) %% 2+1
-    rbPal1 <- colorRampPalette(c('black','grey'))
+    chr <- as.numeric(CNA.test$chrom) %% 2 + 1
+    rbPal1 <- colorRampPalette(c("black", "grey"))
     CHR <- rbPal1(2)[as.numeric(chr)]
-    chr1 <- cbind(CHR,CHR)
+    chr1 <- cbind(CHR, CHR)
     ## scale color
     rbPal5 <- colorRampPalette(RColorBrewer::brewer.pal(n = 8, name = "Dark2")[2:1])
     com.preN <- pred.test$copykat.pred
     pred <- rbPal5(2)[as.numeric(factor(com.preN))]
-    cells <- rbind(pred,pred)
-    col_breaks = c(seq(-1,-0.4,length=50),
-                   seq(-0.4,-0.2,length=150),
-                   seq(-0.2,0.2,length=600),
-                   seq(0.2,0.4,length=150),
-                   seq(0.4, 1,length=50))
+    cells <- rbind(pred, pred)
+    col_breaks <- c(
+        seq(-1, -0.4, length = 50),
+        seq(-0.4, -0.2, length = 150),
+        seq(-0.2, 0.2, length = 600),
+        seq(0.2, 0.4, length = 150),
+        seq(0.4, 1, length = 50)
+    )
     pdf(paste0(outpath, "/output", "/picture", "/CNA_tumor_normal.pdf"),
-        width = 14, height = 16)
-    heatmap.3(t(CNA.test[,4:ncol(CNA.test)]),
-            dendrogram="r", 
-            distfun = function(x) parallelDist::parDist(x,threads =4, method = "euclidean"),
-            hclustfun = function(x) hclust(x, method="ward.D2"),
-            ColSideColors=chr1,
-            RowSideColors=cells,
-            Colv=NA, Rowv=TRUE,
-            notecol="black",
-            col=my_palette,
-            breaks=col_breaks, 
-            key=TRUE,
-            keysize=1, density.info="none", trace="none",
-            cexRow=0.1,cexCol=0.1,cex.main=1,cex.lab=0.1,
-            symm=F,symkey=F,symbreaks=T,cex=1, cex.main=4, margins=c(10,10))
-    legend("topright", 
-        paste("pred.",names(table(com.preN)),sep=""), 
-        pch=15,
-        col=RColorBrewer::brewer.pal(n = 8, name = "Dark2")[2:1], 
-        cex=0.6, bty="n")
+        width = 14, height = 16
+    )
+    heatmap.3(t(CNA.test[, 4:ncol(CNA.test)]),
+        dendrogram = "r",
+        distfun = function(x) parallelDist::parDist(x, threads = 4, method = "euclidean"),
+        hclustfun = function(x) hclust(x, method = "ward.D2"),
+        ColSideColors = chr1,
+        RowSideColors = cells,
+        Colv = NA, Rowv = TRUE,
+        notecol = "black",
+        col = my_palette,
+        breaks = col_breaks,
+        key = TRUE,
+        keysize = 1, density.info = "none", trace = "none",
+        cexRow = 0.1, cexCol = 0.1, cex.main = 1, cex.lab = 0.1,
+        symm = F, symkey = F, symbreaks = T, cex = 1, cex.main = 4, margins = c(10, 10)
+    )
+    legend("topright",
+        paste("pred.", names(table(com.preN)), sep = ""),
+        pch = 15,
+        col = RColorBrewer::brewer.pal(n = 8, name = "Dark2")[2:1],
+        cex = 0.6, bty = "n"
+    )
     dev.off()
     # 肿瘤根据层次聚类分亚群
-    tumor.cells <- pred.test$cell.names[which(pred.test$copykat.pred=="aneuploid")]
+    tumor.cells <- pred.test$cell.names[which(pred.test$copykat.pred == "aneuploid")]
     tumor.mat <- CNA.test[, which(colnames(CNA.test) %in% tumor.cells)]
-    hcc <- hclust(parallelDist::parDist(t(tumor.mat),threads =4, method = "euclidean"), 
-        method = "ward.D2")
-    hc.umap <- cutree(hcc,2)
+    hcc <- hclust(parallelDist::parDist(t(tumor.mat), threads = 4, method = "euclidean"),
+        method = "ward.D2"
+    )
+    hc.umap <- cutree(hcc, 2)
     saveRDS(list(hclust = hcc, hcut = hc.umap), file = paste0(outpath, "/output", "/CNA_hclust_result.RDS"))
     rbPal6 <- colorRampPalette(RColorBrewer::brewer.pal(n = 8, name = "Dark2")[3:4])
     subpop <- rbPal6(2)[as.numeric(factor(hc.umap))]
-    cells <- rbind(subpop,subpop)
+    cells <- rbind(subpop, subpop)
     pdf(paste0(outpath, "/output", "/picture", "/CNA_tumor_subclone.pdf"),
-        width = 14, height = 16)
-    heatmap.3(t(tumor.mat),dendrogram="r", 
-        distfun = function(x) parallelDist::parDist(x,threads =4, method = "euclidean"), 
-        hclustfun = function(x) hclust(x, method="ward.D2"),
-        ColSideColors=chr1,RowSideColors=cells,Colv=NA, Rowv=TRUE,
-        notecol="black",col=my_palette,breaks=col_breaks, key=TRUE,
-        keysize=1, density.info="none", trace="none",
-        cexRow=0.1,cexCol=0.1,cex.main=1,cex.lab=0.1,
-        symm=F,symkey=F,symbreaks=T,cex=1, cex.main=4, margins=c(10,10))
-    legend("topright", c("c1","c2"), 
-        pch=15,
-        col=RColorBrewer::brewer.pal(n = 8, name = "Dark2")[3:4], 
-        cex=0.9, bty='n')
+        width = 14, height = 16
+    )
+    heatmap.3(t(tumor.mat),
+        dendrogram = "r",
+        distfun = function(x) parallelDist::parDist(x, threads = 4, method = "euclidean"),
+        hclustfun = function(x) hclust(x, method = "ward.D2"),
+        ColSideColors = chr1, RowSideColors = cells, Colv = NA, Rowv = TRUE,
+        notecol = "black", col = my_palette, breaks = col_breaks, key = TRUE,
+        keysize = 1, density.info = "none", trace = "none",
+        cexRow = 0.1, cexCol = 0.1, cex.main = 1, cex.lab = 0.1,
+        symm = F, symkey = F, symbreaks = T, cex = 1, cex.main = 4, margins = c(10, 10)
+    )
+    legend("topright", c("c1", "c2"),
+        pch = 15,
+        col = RColorBrewer::brewer.pal(n = 8, name = "Dark2")[3:4],
+        cex = 0.9, bty = "n"
+    )
     dev.off()
     return(copykat.test)
 }
+
+
 
 
 sc_cnv_score <- function() {
