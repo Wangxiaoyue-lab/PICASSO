@@ -1,8 +1,3 @@
-sc_cnv <- function(object, method, output) {
-
-}
-
-
 sc_cnv_infercnv <- function(object,
                             outpath,
                             celltype_col, # metadta里标记细胞类型的列的列名
@@ -207,9 +202,12 @@ sc_cnv_copykat <- function(object,
     hcc <- hclust(parallelDist::parDist(t(tumor.mat),threads =4, method = "euclidean"), 
         method = "ward.D2")
     hc.umap <- cutree(hcc,2)
+    saveRDS(list(hclust = hcc, hcut = hc.umap), file = paste0(outpath, "/output", "/CNA_hclust_result.RDS"))
     rbPal6 <- colorRampPalette(RColorBrewer::brewer.pal(n = 8, name = "Dark2")[3:4])
     subpop <- rbPal6(2)[as.numeric(factor(hc.umap))]
     cells <- rbind(subpop,subpop)
+    pdf(paste0(outpath, "/output", "/picture", "/CNA_tumor_subclone.pdf"),
+        width = 14, height = 16)
     heatmap.3(t(tumor.mat),dendrogram="r", 
         distfun = function(x) parallelDist::parDist(x,threads =4, method = "euclidean"), 
         hclustfun = function(x) hclust(x, method="ward.D2"),
@@ -218,9 +216,11 @@ sc_cnv_copykat <- function(object,
         keysize=1, density.info="none", trace="none",
         cexRow=0.1,cexCol=0.1,cex.main=1,cex.lab=0.1,
         symm=F,symkey=F,symbreaks=T,cex=1, cex.main=4, margins=c(10,10))
-
-legend("topright", c("c1","c2"), pch=15,col=RColorBrewer::brewer.pal(n = 8, name = "Dark2")[3:4], cex=0.9, bty='n')
-
+    legend("topright", c("c1","c2"), 
+        pch=15,
+        col=RColorBrewer::brewer.pal(n = 8, name = "Dark2")[3:4], 
+        cex=0.9, bty='n')
+    dev.off()
     return(copykat.test)
 }
 
