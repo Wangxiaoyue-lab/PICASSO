@@ -1,3 +1,13 @@
+sc_cnv_function <- function(...) {
+    cat("# function list")
+    cat("#-- sc_cnv_infercnv: Detection of CNV by infercnv")
+    cat("#-- sc_cnv_copykat:  Detection of CNV by infercnv")
+    cat("#-- sc_cnv_honeybadger:  Detection of CNV by infercnv")
+    cat("#-- sc_cnv_casper:  Detection of CNV by infercnv")
+    cat("#-- sc_cnv_score: Scoring of cells' CNV")
+}
+
+
 #' Detection of CNV in scRNA-seq Data
 #'
 #' This function uses the inferCNV package to detect Copy Number Variations (CNVs) in Single-Cell RNA sequencing data.
