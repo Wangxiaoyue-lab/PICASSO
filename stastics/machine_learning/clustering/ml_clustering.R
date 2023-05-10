@@ -1,4 +1,24 @@
-ml_cluster <- function(object, methods) {
+# 默认方向为--列为样本，行为特征
+# 层次聚类及剪枝
+ml_cluster_hclust <- function(object, ncores = NULL, cut = F, k = NULL, ...) {
+    ncores <- ncores %||% 20
+    hcc <- hclust(
+        parallelDist::parDist(t(object),
+            threads = ncores,
+            method = "euclidean"
+        ),
+        method = "ward.D2"
+    )
+    if (cut == F) {
+        return(hcc)
+    } else {
+        hc.cluster <- cutree(hcc, k...)
+    }
+}
+
+
+
+ml_cluster <- function(object, methods, ...) {
     ml_cluster_kmeans <- function(...) {
         next
     }
@@ -42,32 +62,4 @@ ml_bicluster <- function(...) {
 # 一致性聚类
 ml_ccp <- function(..) {
     next
-}
-
-# https://github.com/LuyiTian/sc_mixology/blob/master/script/clustering/cluster_eval.R 评估聚类结果
-
-cal_entropy <- function(x) {
-    x <- x / sum(x)
-    -sum(x * log(x))
-}
-
-ARI_matric <- function(x, y) {
-    x <- factor(x)
-    y <- factor(y)
-    return(adjustedRandIndex(x, y))
-}
-
-ml_cluster_metric <- function(..., methods) {
-    ml_cluster_metric_ami <- function(...) {
-        next
-    }
-    ml_cluster_metric_ari <- function(...) {
-        next
-    }
-    ml_cluster_metric_psi <- function(...) {
-        next
-    }
-    ml_cluster_metric_nmi <- function(...) {
-        next
-    }
 }

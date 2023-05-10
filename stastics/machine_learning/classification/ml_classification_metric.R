@@ -1,15 +1,3 @@
-ml_classification <- function(..., methods) {
-    ml_classification_knn <- function(...) {
-        next
-    }
-    ml_classification_svm <- function(...) {
-        next
-    }
-    ml_classification_tree <- function(...) {
-        next
-    }
-}
-
 ml_classification_metric <- function(...) {
     ml_classification_metric_confusion <- function() {
         next

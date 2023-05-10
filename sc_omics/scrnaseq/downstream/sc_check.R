@@ -15,10 +15,26 @@ check_files_input <- function(path, pattern = NULL) {
     return(bool_)
 }
 
-
 check_species <- function(object) {
-    row.names(object)
+    assertthat::assert_that(class(object) == "Seurat")
+    check_gene <- row.names(object)
+    human_bool <- any(grepl(check_gene, pattern = "^(ACTB|GAPDH)$"))
+    mouse_bool <- any(grepl(check_gene, pattern = "^(Actb|Gapdh)$"))
+    if (human_bool == T & mouse_bool == F) {
+        species <- "human"
+    }
+    if (human_bool == F & mouse_bool == T) {
+        species <- "mouse"
+    }
+    if (human_bool == T & mouse_bool == T) {
+        species <- c("human_mouse_mixed")
+    }
+    if (human_bool == F & mouse_bool == F) {
+        species <- "unknown"
+    }
 }
+
+
 
 #' Check the current and available assays in a Seurat object
 #'
