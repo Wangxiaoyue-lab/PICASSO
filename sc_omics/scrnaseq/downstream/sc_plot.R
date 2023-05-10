@@ -158,23 +158,28 @@ plot_markers <- function(
     resolution_select = NULL,
     future.bool = F,
     ...) {
+    # 0 check the settings
+    assertthat::assert_that(class(object) == "Seurat")
     assertthat::assert_that(version %in% c(4, 5))
+    assay_use <<- ifelse(exists("assay_use"), assay_use %||%
+        DefaultAssay(object), DefaultAssay(object))
+    ident_group <- ident_group %||% paste0(assay_use, "_snn_res.", resolution)
+    assertthat::assert_that(ident_group %in% colnames(object@meta.data))
+    resolution <- resolution_select %||% 0.3
+    feature_ncol <- feature_ncol %||% round(sqrt(feature_max))
+    parallel.bool <- ifelse(future.bool == T, "future.apply", "None")
+    # 1 clean the markers
     if (!is.list(markers)) {
         markers <- as.list(markers)
         message("The markers should be a list object whose names are celltypes!")
     }
-    assay_use <<- ifelse(exists("assay_use"), assay_use %||%
-        DefaultAssay(object), DefaultAssay(object))
     scaled_markers <- lapply(markers, function(m) {
         check_markers(m, object)
     }) %>% list_clean()
     assertthat::assert_that(length(scaled_markers) >= 1)
     dot_markers <- list_shorten(scaled_markers, dot_max) %>% list_flat()
     feature_markers <- list_shorten(scaled_markers, feature_max) %>% list_flat()
-    resolution <- resolution_select %||% 0.3
-    ident_group <- ident_group %||% paste0(assay_use, "_snn_res.", resolution)
-    assertthat::assert_that(ident_group %in% colnames(object@meta.data))
-    feature_ncol <- feature_ncol %||% round(sqrt(feature_max))
+    # 2 design the plot function
     draw_dot_plot_v4 <- function(object, features, cluster, colors_use = dot_col, ident_group, ...) {
         if (is.null(cluster)) {
             DotPlot_scCustom(object,
@@ -243,11 +248,6 @@ plot_markers <- function(
         }
         return(plot)
     }
-    p_dim <- DimPlot(object,
-        group.by = ident_group,
-        label = T,
-        label.size = 7
-    ) & NoAxes() & NoLegend()
     draw_dot_plot <- switch(as.character(version),
         "5" = draw_dot_plot_v5,
         "4" = draw_dot_plot_v4
@@ -256,7 +256,12 @@ plot_markers <- function(
         "5" = draw_feature_plot_v5,
         "4" = draw_feature_plot_v4
     )
-    parallel.bool <- ifelse(future.bool==T,"future.apply","None")
+    # 3 draw the plot
+    p_dim <- DimPlot(object,
+        group.by = ident_group,
+        label = T,
+        label.size = 7
+    ) & NoAxes() & NoLegend()
     if (dot_plot == T) {
         lapply_par(seq_along(dot_markers), function(m) {
             p_dot <- draw_dot_plot(
@@ -267,7 +272,6 @@ plot_markers <- function(
                 ident_group = ident_group
             ) %>%
                 Annotation_plot(., cell_p = names(dot_markers)[m])
-            gc()
             # print(p_dot)
         }, parallel = parallel.bool) %>% lapply(., print)
     }
@@ -279,12 +283,11 @@ plot_markers <- function(
                 features = feature_markers[[m]],
                 colors_use = feature_col,
                 feature_ncol = feature_ncol
-            )  %>%
+            ) %>%
                 spacer_plot(plot = ., n = length(feature_markers[[m]]), max = dot_max) #+
-            p_feature <- p_dim | p_feature  
+            p_feature <- p_dim | p_feature
             p_feature %>%
                 Annotation_plot(., cell_p = names(feature_markers)[m])
-            gc() 
             # plot_layout(
             #    ncol = feature_ncol
             # )
