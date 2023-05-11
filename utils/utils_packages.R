@@ -9,7 +9,7 @@ pkgs <- c(
   "survival", "survivalROC", "factoextra", "FactoMineR", "survminer", "survMisc",
   "UpSetR", "ConsensusClusterPlus", "JASPAR2020", "Nebulosa", # "caret"
   "circlize", "table1", "formattable", "webshot", "infercnv", "TxDb.Hsapiens.UCSC.hg19.knownGene",
-  "dbscan", "AnnoProbe","parallelDist" # ,"","biomaRt"
+  "dbscan", "AnnoProbe", "parallelDist" # ,"","biomaRt"
 )
 
 # devtools::install_local(package_name,force = T,quiet = F)
@@ -86,7 +86,8 @@ github_list <- c(
   "broadinstitute/inferCNV_NGCHM",
   "JEFworks/HoneyBADGER",
   "akdess/CaSpER",
-  "navinlabcode/copykat"
+  "navinlabcode/copykat",
+  "stemangiola/tidyHeatmap"
 )
 
 check_github <- function(github_list) {

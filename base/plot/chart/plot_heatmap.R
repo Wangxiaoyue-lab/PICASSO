@@ -150,4 +150,33 @@ plot_heatmap <- function(data,
         }
 }
 
+# 长数据热图
+# stemangiola/tidyHeatmap
+# https://cran.r-project.org/web/packages/tidyHeatmap/vignettes/introduction.html
+
+
+library(tidyHeatmap)
+# mtcars_tidy_groupings |>
+#    group_by(vs, property_group) |>  #先是行分组，再是列分组
+# heatmap(
+#       .row,
+#       .column,
+#       .value,
+#       transform = NULL,  是否进行转化，如log1p
+#       scale = "none",  还有row、col、both
+#       palette_value = c("#440154FF", "#21908CFF", "#fefada"),
+#       palette_grouping = list( # For first grouping (vs)
+#            c("#66C2A5", "#FC8D62"),
+
+# For second grouping (property_group)
+#            c("#b58b4c", "#74a6aa")),
+#       row_km = 2,        #kmeans聚类划分
+#       column_km = 2       #kmeans聚类划分
+#       )
+# |>   add_tile(hp,        #增加注释条
+#               palette = circlize::colorRamp2(c(0, 100, 200, 300), viridis::magma(4))   #选择刻度与颜色
+# |>   split_rows(2)  #根据层次聚类划分
+# |>   split_columns(2)
+
+# benchmark热图
 # funkyheatmap https://github.com/funkyheatmap/funkyheatmap
