@@ -1,5 +1,5 @@
-sc_regulon <- function(){
-    sc_DoRothEA <- function(...){
+sc_regulon <- function() {
+    sc_DoRothEA <- function(...) {
         next
     }
 }
