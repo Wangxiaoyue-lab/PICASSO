@@ -1,5 +1,0 @@
-# the pipeline of chipseq
-
-
-
-
