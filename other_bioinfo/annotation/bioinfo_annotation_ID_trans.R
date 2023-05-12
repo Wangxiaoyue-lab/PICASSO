@@ -12,9 +12,8 @@ library(biomaRt)
 library(AnnotationDbi)
 library(AnnotationHub)
 library(tidyverse)
-library(conflicted)
-conflict_scout()
-conflict_prefer("filter", "dplyr")
+
+
 
 # method 1 :AnnotationDbi
 

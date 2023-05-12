@@ -1,8 +1,8 @@
-# 参考
+# 1 from transcript ID to gene ID
 # http://bioconductor.org/packages/release/bioc/vignettes/tximport/inst/doc/tximport.html
 
 library(tximport)
-# library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
 
 
@@ -23,10 +23,9 @@ write.csv(tx2gene, file = "/other_bioinfo/annotation/annotation_files/reference/
 
 
 
+
+# 2 from transcript matrix to gene matrix
 # https://www.jianshu.com/p/e0acb957b351
-
-
-
 
 files <- file.path(dir, "salmon", samples$run, "quant.sf.gz")
 names(files) <- paste0("sample", 1:6)
