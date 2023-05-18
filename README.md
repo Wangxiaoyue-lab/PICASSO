@@ -59,26 +59,7 @@ Succeed to load script: scrnaseq
 # Or
 choose_pipeline("scrnaseq")
 ```
-
-# Knowlegde
-
-## Academy
-
-- The list of important bioinfomatic or biology databases
-- The set of important reviews or articles
-- The timeline of technologies
-
-## Update analysis tools
-
-- scRNAseq
-- Bulk RNAseq
-
-## Resource
-
-- how to learn bioinfo
-
-## Workflow
-
+ 
 
 
 # Acknowledgements
