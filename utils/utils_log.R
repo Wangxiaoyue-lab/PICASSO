@@ -133,3 +133,9 @@ log_file <- function(filepath) {
 log_sha256 <- function(x) {
     digest::digest(x, file = T, algo = "sha256")
 }
+
+log_cyber <- function(task) {
+    sink(paste0(task, "/report/loading_R_packages.txt"))
+    print(sessionInfo())
+    sink()
+}
