@@ -155,28 +155,49 @@ plot_heatmap <- function(data,
 # https://cran.r-project.org/web/packages/tidyHeatmap/vignettes/introduction.html
 
 
-library(tidyHeatmap)
+# library(tidyHeatmap)
 # mtcars_tidy_groupings |>
 #    group_by(vs, property_group) |>  #先是行分组，再是列分组
+#    mutate(`Car name` = fct_reorder(`Car name`, `Car name`, .desc = TRUE))|>    #因子排序
 # heatmap(
 #       .row,
 #       .column,
 #       .value,
 #       transform = NULL,  是否进行转化，如log1p
 #       scale = "none",  还有row、col、both
+#       cluster_rows = FALSE,cluster_cols = FALSE,
+#       column_dend_height = unit(0.2, "cm"), row_dend_width = unit(0.2, "cm"),
 #       palette_value = c("#440154FF", "#21908CFF", "#fefada"),
-#       palette_grouping = list( # For first grouping (vs)
+#       show_heatmap_legend = FALSE,
+#       row_names_gp = gpar(fontsize = 7),
+#       column_names_gp = gpar(fontsize = 7),
+#       column_title_gp = gpar(fontsize = 7),
+#       row_title_gp = gpar(fontsize = 7)
+#       palette_grouping = list(
+# For first grouping (vs)
 #            c("#66C2A5", "#FC8D62"),
-
 # For second grouping (property_group)
 #            c("#b58b4c", "#74a6aa")),
 #       row_km = 2,        #kmeans聚类划分
 #       column_km = 2       #kmeans聚类划分
 #       )
-# |>   add_tile(hp,        #增加注释条
+# split_rows(2)  |>   #根据层次聚类划分
+# split_columns(2)|>
+
+# 增加注释条
+# |>   add_tile(hp, show_legend = FALSE,
+#               size = unit(0.3, "cm"),
+#               annotation_name_gp= gpar(fontsize = 8),
 #               palette = circlize::colorRamp2(c(0, 100, 200, 300), viridis::magma(4))   #选择刻度与颜色
-# |>   split_rows(2)  #根据层次聚类划分
-# |>   split_columns(2)
+#               palette = circlize::colorRamp2( seq(-2, 2, length.out = 11), RColorBrewer::brewer.pal(11, "RdBu") )
+# add_point(activation) |>
+# add_bar(size) |>
+# add_line(age)|>
+
+# 拼图
+# library(patchwork)
+# wrap_heatmap(p_heatmap) + p_ggplot
+
 
 # benchmark热图
 # funkyheatmap https://github.com/funkyheatmap/funkyheatmap
