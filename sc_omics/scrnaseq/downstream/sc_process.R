@@ -265,7 +265,7 @@ process_annotation <- function(object,
         ))
     }
     object@meta.data %<>% mutate(
-        !!col.new := map(!!sym(col.id), ~ {
+        !!col.new := map_chr(!!sym(col.id), ~ {
             ident.pairs[as.character(.x)]
         })
     )
