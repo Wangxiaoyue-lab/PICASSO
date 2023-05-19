@@ -13,8 +13,8 @@ calc_x_limits <- function(data) {
 
 # 输入x的limits范围得到breaks
 get_breaks <- function(data) {
-    xmin <- data[1]
-    xmax <- data[2]
+    xmin <- min(data)
+    xmax <- max(data)
     range <- ceiling(xmax) - round(xmin)
     if (range <= 10) {
         by <- 1
