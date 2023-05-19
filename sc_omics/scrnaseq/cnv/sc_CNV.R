@@ -1,10 +1,10 @@
 sc_cnv_function <- function(...) {
-    cat("# function list")
-    cat("#-- sc_cnv_infercnv: Detection of CNV by infercnv")
-    cat("#-- sc_cnv_copykat:  Detection of CNV by infercnv")
-    cat("#-- sc_cnv_honeybadger:  Detection of CNV by infercnv")
-    cat("#-- sc_cnv_casper:  Detection of CNV by infercnv")
-    cat("#-- sc_cnv_score: Scoring of cells' CNV")
+    cat("# function list\n")
+    cat("#-- sc_cnv_infercnv: Detection of CNV by infercnv\n")
+    cat("#-- sc_cnv_copykat:  Detection of CNV by copykat\n")
+    cat("#-- sc_cnv_honeybadger:  Detection of CNV by honeybadger\n")
+    cat("#-- sc_cnv_casper:  Detection of CNV by casper\n")
+    cat("#-- sc_cnv_score: Scoring of cells' CNV\n")
 }
 
 
