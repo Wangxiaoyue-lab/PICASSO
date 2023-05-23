@@ -13,7 +13,7 @@ sc_cnv_function <- function(...) {
 #' This function uses the inferCNV package to detect Copy Number Variations (CNVs) in Single-Cell RNA sequencing data.
 #'
 #' @param object A 'Seurat' object.
-#' @param outpath Output directory for saving results.
+#' @param task_path Output directory for saving results.
 #' @param celltype_col The name of the column in metadata identifying cell types.
 #' @param normal_cell The name of the normal cell type.
 #' @param type The level predicting tbhe cnv(samples or subclusters).
@@ -27,7 +27,7 @@ sc_cnv_function <- function(...) {
 #' library(Seurat)
 #' data("pbmc_small")
 #' cnv_scores <- sc_cnv_infercnv(
-#'     seurat_obj = object, outpath = "cnv_results",
+#'     seurat_obj = object, task_path = "cnv_results",
 #'     celltype_col = "seurat_clusters", normal_cell = "CD8T",
 #'     denoise = TRUE, HMM = FALSE
 #' )
@@ -36,7 +36,8 @@ sc_cnv_function <- function(...) {
 #' @import inferCNV
 #' @export
 sc_cnv_infercnv <- function(object,
-                            outpath,
+                            task_path,
+                            prefix,
                             celltype_col,
                             normal_cell,
                             type,
@@ -54,17 +55,33 @@ sc_cnv_infercnv <- function(object,
     assertthat::assert_that(all(normal_cell %in% unique(object@meta.data[, celltype_col])))
     ncores <- ncores %||% 20
     # 1 prepare the input
-    dir.create(paste0(outpath, "/input"))
-    dir.create(paste0(outpath, "/output"))
-    dir.create(paste0(outpath, "/output", "/picture"))
-    dir.create(paste0(outpath, "/output", type))
+    if (!dir.exists(task_path)) {
+        dir.create(task_path)
+    }
+    if (!dir.exists(paste0(task_path, "/input"))) {
+        dir.create(paste0(task_path, "/input"))
+    }
+    if (!dir.exists(paste0(task_path, "/output"))) {
+        dir.create(paste0(task_path, "/output"))
+    }
+    if (!dir.exists(paste0(task_path, "/output", "/picture"))) {
+        dir.create(paste0(task_path, "/output", "/picture"))
+    }
+    if (!dir.exists(paste0(task_path, "/output", "/store"))) {
+        dir.create(paste0(task_path, "/output", "/store"))
+    }
+    if (!dir.exists(paste0(task_path, "/output", "/store", "/", prefix, "_", type))) {
+        dir.create(paste0(task_path, "/output", "/store", "/", prefix, "_", type))
+    }
+
+
     gene2cnv <- rownames(object) %>%
         AnnoProbe::annoGene(., "SYMBOL", species) %>%
         arrange(chr, start) %>%
         select(SYMBOL, chr, start, end) %>%
         distinct(SYMBOL, .keep_all = T)
     write.table(gene2cnv,
-        file = paste0(outpath, "/input", "/gene_file.txt"),
+        file = paste0(task_path, "/output","/store",  "/", prefix, "_gene_file.txt"),
         sep = "\t",
         quote = F,
         row.names = F,
@@ -74,17 +91,16 @@ sc_cnv_infercnv <- function(object,
         vars = gene2cnv$SYMBOL,
         cells = colnames(object),
         layer = "count"
-    )
+    ) %>% t
     write.table(exp2cnv,
-        file = paste0(outpath, "/input", "/exp_file.txt"),
+        file = paste0(task_path, "/output","/store",  "/", prefix, "_exp_file.txt"),
         sep = "\t",
-        quote = F
     )
     anno2cnv <- object@meta.data %>%
         mutate(cellnames2cnv = rownames(.)) %>%
         select(cellnames2cnv, !!sym(celltype_col))
     write.table(anno2cnv,
-        file = paste0(outpath, "/input", "/anno_file.txt"),
+        file = paste0(task_path, "/output", "/store", "/", prefix, "_anno_file.txt"),
         sep = "\t",
         quote = F,
         row.names = F,
@@ -93,19 +109,20 @@ sc_cnv_infercnv <- function(object,
     rm(list = c("exp2cnv", "gene2cnv", "anno2cnv"))
     message("Succeed to prepare the input")
     # 2 run the program
-    future::plan("multiprocess", workers = ncores)
+    future::plan("multisession", workers = ncores)
     infercnv_obj <- CreateInfercnvObject(
-        raw_counts_matrix = paste0(outpath, "/input", "/exp_file.txt"), # raw counts matrix
-        annotations_file = paste0(outpath, "/input", "/anno_file.txt"), # an annotations file which indicates which cells are tumor vs. normal.
+        raw_counts_matrix = paste0(task_path, "/output","/store", "/", prefix, "_exp_file.txt"), # raw counts matrix
+        annotations_file = paste0(task_path, "/output", "/store","/", prefix, "_anno_file.txt"), # an annotations file which indicates which cells are tumor vs. normal.
         delim = "\t",
-        gene_order_file = paste0(outpath, "/input", "/gene_file.txt"), # gene/chromosome positions file
+        gene_order_file = paste0(task_path, "/output", "/store","/", prefix, "_gene_file.txt"), # gene/chromosome positions file
         ref_group_names = normal_cell # reference cell name
     )
+    message("Succeed to Create Infercnv Object")
     if (type == "samples") {
         infercnv_obj <- infercnv::run(infercnv_obj,
             cutoff = 0.1,
             # cutoff=1 works well for Smart-seq2, and cutoff=0.1 works well for 10x Genomics
-            out_dir = paste0(outpath, "/output", type),
+            out_dir = paste0(task_path, "/output", "/store", "/", prefix, "_", type),
             cluster_by_groups = TRUE,
             analysis_mode = type,
             denoise = TRUE,
@@ -114,7 +131,7 @@ sc_cnv_infercnv <- function(object,
     } else {
         infercnv_obj <- infercnv::run(infercnv_obj,
             cutoff = 0.1,
-            out_dir = paste0(outpath, "/output", type),
+            out_dir = paste0(task_path, "/output", "/store", "/", prefix, "_", type),
             cluster_by_groups = F,
             analysis_mode = type,
             hclust_method = "ward.D2",
@@ -124,10 +141,11 @@ sc_cnv_infercnv <- function(object,
             HMM = TRUE
         )
     }
-    saveRDS(infercnv_obj, file = paste0(outpath, "/output", "/infercnv_obj.RDS"))
+    saveRDS(infercnv_obj, file = paste0(task_path, "/output", "/store", "/", prefix, "_infercnv_obj.RDS"))
+    message("Succeed to run Infercnv")
     infercnv::plot_cnv(infercnv_obj,
-        out_dir = outpath,
-        output_filename = "infercnv.plot",
+        out_dir = paste0(task_path, "/output", "/picture"),
+        output_filename = paste0(prefix, "_infercnv.plot"),
         plot_chr_scale = F, # 是否画染色体全长
         output_format = "pdf",
         x.range = "auto",
@@ -145,39 +163,60 @@ sc_cnv_infercnv <- function(object,
 #' basic plots to visualize the results.
 #'
 #' @param object an object of class Seurat
-#' @param outpath the output path
+#' @param task_path the output path
 #' @param celltype_col the cell type column name
 #' @param normal_cell the normal cell type names
 #' @param ncores number of cores
 #'
 #' @return copykat.test object
 sc_cnv_copykat <- function(object,
-                           outpath,
+                           task_path,
+                           prefix,
                            celltype_col,
                            normal_cell,
                            ncores) {
     # 0 check the setting
     library(copykat)
     assertthat::assert_that(class(object) == "Seurat")
+    species <- check_species(object)
+    assertthat::assert_that(species %in% c("human", "mouse"))
     assertthat::assert_that(all(celltype_col %in% colnames(object@meta.data)))
     assertthat::assert_that(all(normal_cell %in% unique(object@meta.data[, celltype_col])))
     ncores <- ncores %||% 20
     # 1 prepare the input
-    dir.create(paste0(outpath, "/input"))
-    dir.create(paste0(outpath, "/output"))
-    dir.create(paste0(outpath, "/output", "/picture"))
+    if (!dir.exists(task_path)) {
+        dir.create(task_path)
+    }
+    if (!dir.exists(paste0(task_path, "/input"))) {
+        dir.create(paste0(task_path, "/input"))
+    }
+    if (!dir.exists(paste0(task_path, "/output"))) {
+        dir.create(paste0(task_path, "/output"))
+    }
+    if (!dir.exists(paste0(task_path, "/output", "/picture"))) {
+        dir.create(paste0(task_path, "/output", "/picture"))
+    }
+    if (!dir.exists(paste0(task_path, "/output", "/store"))) {
+        dir.create(paste0(task_path, "/output", "/store"))
+    }
+    gene2cnv <- rownames(object) %>%
+        AnnoProbe::annoGene(., "SYMBOL", species) %>%
+        arrange(chr, start) %>%
+        select(SYMBOL, chr, start, end) %>%
+        distinct(SYMBOL, .keep_all = T)
     exp2cnv <- FetchData(object,
         vars = gene2cnv$SYMBOL,
         cells = colnames(object),
         layer = "count"
-    )
+        ) %>% t
     write.table(exp2cnv,
-        file = paste0(outpath, "/input", "/exp_file.txt"),
+        file = paste0(task_path, "/output", "/store", "/", prefix, "_exp_file.txt"),
         sep = "\t",
         quote = F,
         row.names = T,
         col.names = T
-    )
+        )
+    #exp2cnv <- read.table(file = paste0(task_path, "/output", "/store","/", prefix, "_exp_file.txt"), sep = "\t", row.names = T, col.names = T)
     anno2cnv <- object@meta.data %>%
         mutate(cellnames2cnv = rownames(.)) %>%
         dplyr::select(cellnames2cnv, !!sym(celltype_col))
@@ -185,6 +224,7 @@ sc_cnv_copykat <- function(object,
         dplyr::filter(!!sym(celltype_col) %in% normal_cell) %>%
         dplyr::pull(cellnames2cnv)
     assertthat::assert_that(length(normal2cnv) > 50)
+    message("Succeed to prepare for copykat")
     # 2 run the program
     copykat_obj <- copykat(
         rawmat = exp2cnv,
@@ -198,18 +238,20 @@ sc_cnv_copykat <- function(object,
         distance = "euclidean",
         n.cores = ncores
     )
-    saveRDS(copykat_obj, file = paste0(outpath, "/output", "/copykat_obj.RDS"))
+    saveRDS(copykat_obj, file = paste0(task_path, "/output", "/store", "/", prefix, "_copykat_obj.RDS"))
+    message("Succeed to run copykat")
     # 肿瘤是否恶性
     pred.test <- data.frame(copykat.test$prediction)
     pred.test <- lefj_join(
         x = pred.test, y = anno2cnv,
         dplyr::join_by(cell.names == cellnames2cnv)
     ) # copykat会自动过滤基因数少于100的细胞
-    saveRDS(pred.test, file = paste0(outpath, "/output", "/pred.test.RDS"))
+    saveRDS(pred.test, file = paste0(task_path, "/output", "/store", "/", prefix, "_pred.test.RDS"))
     print(table(pred.test[, c(celltype_col, "copykat.pred")]))
     # cnv事件坐标与检测量
     CNA.test <- data.frame(copykat.test$CNAmat)
-    saveRDS(CNA.test, file = paste0(outpath, "/output", "/CNA.test.RDS"))
+    saveRDS(CNA.test, file = paste0(task_path, "/output", "/store", "/", prefix, "_CNA.test.RDS"))
+    message("Succeed to analysis of groups for copykat")
     # 3 plot the result
     ## chromosome color
     my_palette <- colorRampPalette(rev(RColorBrewer::brewer.pal(n = 3, name = "RdBu")))(n = 999)
@@ -229,7 +271,7 @@ sc_cnv_copykat <- function(object,
         seq(0.2, 0.4, length = 150),
         seq(0.4, 1, length = 50)
     )
-    pdf(paste0(outpath, "/output", "/picture", "/CNA_tumor_normal.pdf"),
+    pdf(paste0(task_path, "/output", "/picture", "/", prefix, "_CNA_tumor_normal.pdf"),
         width = 14, height = 16
     )
     heatmap.3(t(CNA.test[, 4:ncol(CNA.test)]),
@@ -261,11 +303,12 @@ sc_cnv_copykat <- function(object,
         method = "ward.D2"
     )
     hc.umap <- cutree(hcc, 2)
-    saveRDS(list(hclust = hcc, hcut = hc.umap), file = paste0(outpath, "/output", "/CNA_hclust_result.RDS"))
+    saveRDS(list(hclust = hcc, hcut = hc.umap), file = paste0(task_path, "/output", "/store", "/", prefix, "_CNA_hclust_result.RDS"))
+    message("Succeed to analysis of subclones for copykat")
     rbPal6 <- colorRampPalette(RColorBrewer::brewer.pal(n = 8, name = "Dark2")[3:4])
     subpop <- rbPal6(2)[as.numeric(factor(hc.umap))]
     cells <- rbind(subpop, subpop)
-    pdf(paste0(outpath, "/output", "/picture", "/CNA_tumor_subclone.pdf"),
+    pdf(paste0(task_path, "/output", "/picture", "/", prefix, "_CNA_tumor_subclone.pdf"),
         width = 14, height = 16
     )
     heatmap.3(t(tumor.mat),
