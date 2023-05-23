@@ -35,9 +35,9 @@ process_read <- function(filename,
             .[[matrix]] %>%
             as.Seurat()
     }
-    ###read matrix in tsv format
-    read_mtx <- function(filename){
-        read.csv(filename,sep="\t", header=T, row.names = 1) %>%
+    ### read matrix in tsv format
+    read_mtx <- function(filename) {
+        read.csv(filename, sep = "\t", header = T, row.names = 1) %>%
             CreateSeuratObject(project = project, min.cells = min.cells, ...)
     }
     read_table <- function(filename) {
@@ -82,18 +82,27 @@ process_read_v5 <- function(filename,
 
 process_to_v5 <- function(object, store_path) {
     options(Seurat.object.assay.version = "v5")
-    # if(!dir.exists(store_path)){
-    #    dir.create(store_path, recursive = T)
-    # }
-    write_matrix_dir(
-        mat = object[["RNA"]]$counts,
-        dir = store_path
-    )
+    library(Matrix)
+    bool_exist <- dir.exists(store_path)
+    bool_store <- length(list.files(store_path)) > 0
+    if (bool_exist & bool_store){
+        print(paste0("The seurat v5 data has been stored in ", store_path))
+    }else{
+        write_matrix_dir(
+            mat = FetchData(object,
+                vars = rownames(object),
+                cells = colnames(object),
+                layer = "count"
+            ) %>%
+                t() %>%
+                as(., "sparseMatrix"),
+            dir = store_path
+        )
+    }
     meta.data <- object@meta.data
     counts.mat <- open_matrix_dir(dir = store_path)
     object <- CreateSeuratObject(counts = counts.mat)
     object <- AddMetaData(object, meta.data)
-    gc()
     return(object)
 }
 
@@ -265,7 +274,7 @@ process_annotation <- function(object,
         ))
     }
     object@meta.data %<>% mutate(
-        !!col.new := map(!!sym(col.id), ~ {
+        !!col.new := map_chr(!!sym(col.id), ~ {
             ident.pairs[as.character(.x)]
         })
     )

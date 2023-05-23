@@ -32,6 +32,7 @@ check_species <- function(object) {
     if (human_bool == F & mouse_bool == F) {
         species <- "unknown"
     }
+    return(species)
 }
 
 
