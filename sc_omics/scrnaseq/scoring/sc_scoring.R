@@ -3,8 +3,10 @@ sc_score_function <- function(...) {
     cat("#-- sc_score_seurat: scoring by seurat\n")
     cat("#-- sc_score_aucell: scoring by aucell\n")
     cat("#-- sc_score_ucell: scoring by ucell\n")
+    cat("#-- sc_score_pagoda2: scoring by pagoda2\n")
     cat("#-- sc_score_maya: scoring by maya\n")
     cat("#-- sc_score_jasmine: scoring by jasmine\n")
+    cat("#-- warning: The following methods are slow!")
 }
 
 # Seurat - AddModuleScore
