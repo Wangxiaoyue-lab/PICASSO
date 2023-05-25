@@ -13,23 +13,25 @@
 enrich_ora <- function(genes = NULL, enrich_fun = "GO", species = "mm", simplify_cutoff = NULL, ...) {
     library(clusterProfiler)
     Org <- switch(species,
-        "mm" = "org.Mm.eg.db" %>% library(char = .),
-        "hs" = "org.Hs.eg.db" %>% library(char = .)
+        "mm" = "org.Mm.eg.db",
+        "hs" = "org.Hs.eg.db",
+        stop("Invalid species")
     )
-    simplify_ <- function(res, simplify_cutoff = simplify_cutoff) {
+    library(Org, character.only = TRUE)
+    simplify_ <- function(res) {
         if (!is.null(simplify_cutoff)) {
             res <- clusterProfiler::simplify(res, cutoff = as.numeric(simplify_cutoff))
         }
         return(res)
     }
     data <- switch(enrich_fun,
-        "GO" = enrichGO(gene = genes, OrgDb = names(Org), keyType = "SYMBOL", ont = "BP", ...) %>% simplify_() %>%
+        "GO" = enrichGO(gene = genes, OrgDb = get(Org), keyType = "SYMBOL", ont = "BP", ...) %>% simplify_() %>%
             as.data.frame(),
         "KEGG" = enrichKEGG(gene = genes, organism = switch(species,
             "mm" = "mmu",
             "hs" = "hsa"
         ), ...) %>%
-            setReadable(OrgDb = names(Org), keyType = "ENTREZID") %>% as.data.frame()
+            setReadable(OrgDb = get(Org), keyType = "ENTREZID") %>% as.data.frame()
     )
 }
 
