@@ -12,6 +12,9 @@ sc_score_seurat <- function(object, genes_list) {
     # 1 check
     assertthat::assert_that(class(object) == "Seurat")
     assertthat::assert_that(class(genes_list) == "list")
+    genes_list <- lapply(genes_list,function(g){
+        intersect(genes_list[[g]],rownames(object))
+    }) %>% list_clean
     # 2 run
     object <- Seurat::AddModuleScore(object,
         features = genes_list,
@@ -28,6 +31,9 @@ sc_score_aucell <- function(object, genes_list) {
     # 1 check
     assertthat::assert_that(class(object) == "Seurat")
     assertthat::assert_that(class(genes_list) == "list")
+    genes_list <- lapply(genes_list, function(g) {
+        intersect(genes_list[[g]], rownames(object))
+    }) %>% list_clean()
     # 2 run
     matrix <- FetchData(object,
         vars = rownames(object),
@@ -51,6 +57,9 @@ sc_score_ucell <- function(object, genes_list) {
     # 1 check
     assertthat::assert_that(class(object) == "Seurat")
     assertthat::assert_that(class(genes_list) == "list")
+    genes_list <- lapply(genes_list, function(g) {
+        intersect(genes_list[[g]], rownames(object))
+    }) %>% list_clean() 
     # 2 run
     object <- AddModuleScore_UCell(object,
         features = genes_list,
@@ -70,6 +79,9 @@ sc_score_singscore <- function(object, genes_list) {
     # 1 check
     assertthat::assert_that(class(object) == "Seurat")
     assertthat::assert_that(class(genes_list) == "list")
+    genes_list <- lapply(genes_list, function(g) {
+        intersect(genes_list[[g]], rownames(object))
+    }) %>% list_clean()
     matrix <- FetchData(object,
         vars = rownames(object),
         cells = colnames(object),
@@ -92,27 +104,167 @@ sc_score_singscore <- function(object, genes_list) {
 
 sc_score_plage <- function(...) {
     # too slow
+    # 0 check
+    assertthat::assert_that(class(object) == "Seurat")
+    assertthat::assert_that(class(genes_list) == "list")
+    n_cores <- n_cores %||% 4
+    genes_list <- lapply(genes_list, function(g) {
+        intersect(genes_list[[g]], rownames(object))
+    }) %>% list_clean()
+    # 1 extract data
+    counts <- FetchData(object,
+        vars = rownames(object),
+        cells = colnames(object),
+        layer = "counts"
+    ) %>% t()
+    # 2 run
+    score <- GSVA::gsva(counts,
+        genes_list,
+        method = "plage",
+        parallel.sz = n_cores,
+        verbose = T
+    ) %>% as.data.frame()
+    colnames(score) <- paste0(colnames(score), "_gsva")
+    object@meta.data <- cbind(object@meta.data, score)
+    return(object)
 }
 sc_score_zscore <- function(...) {
     # too slow
+    # 0 check
+    assertthat::assert_that(class(object) == "Seurat")
+    assertthat::assert_that(class(genes_list) == "list")
+    n_cores <- n_cores %||% 4
+    genes_list <- lapply(genes_list, function(g) {
+        intersect(genes_list[[g]], rownames(object))
+    }) %>% list_clean()
+    # 1 extract data
+    counts <- FetchData(object,
+        vars = rownames(object),
+        cells = colnames(object),
+        layer = "counts"
+    ) %>% t()
+    # 2 run
+    score <- GSVA::gsva(counts,
+        genes_list,
+        method = "zscore",
+        parallel.sz = n_cores,
+        verbose = T
+    ) %>% as.data.frame()
+    colnames(score) <- paste0(colnames(score), "_gsva")
+    object@meta.data <- cbind(object@meta.data, score)
+    return(object)
 }
 sc_score_gsea <- function(...) {
     # too slow
 }
 sc_score_ssgsea <- function(...) {
     # too slow
+    # 0 check
+    assertthat::assert_that(class(object) == "Seurat")
+    assertthat::assert_that(class(genes_list) == "list")
+    n_cores <- n_cores %||% 4
+    genes_list <- lapply(genes_list, function(g) {
+        intersect(genes_list[[g]], rownames(object))
+    }) %>% list_clean()
+    # 1 extract data
+    counts <- FetchData(object,
+        vars = rownames(object),
+        cells = colnames(object),
+        layer = "counts"
+    ) %>% t()
+    # 2 run
+    score <-  GSVA::gsva(counts,
+        genes_list,
+        method = "ssgsea",
+        parallel.sz = n_cores,
+        verbose = T
+    ) %>% as.data.frame
+    colnames(score) <- paste0(colnames(score), "_gsva")
+    object@meta.data <- cbind(object@meta.data, score)
+    return(object)
 }
-sc_score_gsva <- function(...) {
+sc_score_gsva <- function(object, genes_list, n_cores=NULL) {
     # too slow
+    # 0 check
+    assertthat::assert_that(class(object) == "Seurat")
+    assertthat::assert_that(class(genes_list) == "list")
+    n_cores <- n_cores %||% 4
+    genes_list <- lapply(genes_list, function(g) {
+        intersect(genes_list[[g]], rownames(object))
+    }) %>% list_clean()
+    # 1 extract data
+    counts <- FetchData(object,
+        vars = rownames(object),
+        cells = colnames(object),
+        layer = "counts"
+    ) %>% t()
+    # 2 run
+    score <-  GSVA::gsva(counts,
+        genes_list,
+        method = "gsva",
+        parallel.sz = n_cores,
+        verbose = T
+    ) %>% as.data.frame
+    colnames(score) <- paste0(colnames(score), "_gsva")
+    object@meta.data <- cbind(object@meta.data, score)
+    return(object)
 }
+
 sc_score_vision <- function(...) {
     # too slow
 }
 
 
 # Pagoda2
-sc_score_pagoda2 <- function(){
-
+sc_score_pagoda2 <- function(object, genes_list, n_cores=NULL){
+    # https://github.com/sulab-wmu/PASBench/blob/master/R/tools.R
+    library(pagoda2)
+    # 0 check
+    assertthat::assert_that(class(object) == "Seurat")
+    assertthat::assert_that(class(genes_list) == "list")
+    n_cores <- n_cores %||% 4
+    genes_list <- lapply(genes_list, function(g) {
+        intersect(genes_list[[g]], rownames(object))
+    }) %>% list_clean()
+    # 1 extract data
+    counts <- FetchData(object,
+        vars = rownames(object),
+        cells = colnames(object),
+        layer = "counts"
+    ) %>% t()
+    # 2 construct the pagoda2 object
+    nPcs = min(round(ncol(counts)/5),5)
+    #counts = apply(counts,2,function(x) {storage.mode(x) = 'integer'; x})
+    p2 = Pagoda2$new(counts, n.cores = n_cores,log.scale=F)
+    p2$adjustVariance(plot=F)
+    p2$calculatePcaReduction(nPcs = nPcs,use.odgenes=F,fastpath=F)
+    # 3 run
+    path_names = c()
+    env = new.env(parent=globalenv())
+    invisible(lapply(1:length(genes_list),function(i) {
+      genes = intersect(genes_list[[i]], rownames(counts))
+      name = paste0(names(genes_list[i]), i)
+      if(length(genes)>3){
+        assign(name, genes, envir = env)
+        path_names = c(path_names, name)
+      }
+    }))
+    p2$testPathwayOverdispersion(
+        setenv = env, verbose = T,
+        recalculate.pca = T,
+        min.pathway.size = 1
+    )
+    path_names = names(p2@.xData$misc$pwpca)
+    score = matrix(NA, nrow = length(path_names), ncol = ncol(counts))
+    rownames(score) = path_names
+    colnames(score) = colnames(counts)
+    for (i in 1:length(p2@.xData$misc$pwpca)) {
+        if (!is.null(p2@.xData$misc$pwpca[[i]]$xp$score)) {
+            score[i, ] = as.numeric(p2@.xData$misc$pwpca[[i]]$xp$scores)
+        }
+    }
+    object@meta.data <- cbind(object@meta.data, as.data.frame(score))
+    return(object)
 }
 
 # MAYA
@@ -198,7 +350,9 @@ sc_score_jasmine <- function(object, genes_list) {
     # 1 check
     assertthat::assert_that(class(object) == "Seurat")
     assertthat::assert_that(class(genes_list) == "list")
-
+    genes_list <- lapply(genes_list, function(g) {
+        intersect(genes_list[[g]], rownames(object))
+    }) %>% list_clean()
     # 2 extract the data
     data_f <- FetchData(object,
         vars = rownames(object),
