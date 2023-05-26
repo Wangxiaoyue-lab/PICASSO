@@ -294,8 +294,125 @@ sc_score_pagoda2 <- function(object, genes_list, n_cores = NULL) {
 }
 
 # MAYA
-sc_score_maya <- function(...) {
-    next
+sc_score_maya <- function(object, genes_list = NULL, n_cores = NULL) {
+    # https://github.com/One-Biosciences/MAYA/
+    library(MAYA)
+    # 0 modified the function
+    study_pathways <- function(PCA_obj, compute_umap = T) {
+        # compute activity mat
+        activity_mat <- build_activity_mat(PCA_obj, scaled = F)
+
+        # clustering and generate average score by matrix
+        # knn.matrix <- RANN::nn2(t(activity_mat), t(activity_mat), k = 20, searchtype = "standard")[[1]]
+        # jaccard.adj <- knn_jaccard(knn.matrix)
+        # graph <- igraph::graph.adjacency(
+        #    jaccard.adj,
+        #    mode = "undirected",
+        #    weighted = TRUE
+        # )
+        # set.seed(2016)
+        # cluster_result <- leidenbase::leiden_find_partition(
+        #    graph,
+        #    verbose = FALSE,
+        #    seed = 2016, num_iter = 2, partition_type = "ModularityVertexPartition", edge_weights = igraph::E(graph)$weight
+        # )
+        # cluster_result$membership <- paste0("C", cluster_result$membership)
+        # tmp <- average_by_cluster(activity_mat, cluster_result$membership)
+
+        # compute umap
+        if (compute_umap) {
+            umap <- run_umap(activity_mat)
+        } else {
+            umap <- NULL
+        }
+        return(list(cluster_matrix = NULL, clusters_annotation = NULL, activity_matrix = activity_mat, umap = umap))
+        # return(list(cluster_matrix = tmp, clusters_annotation = cluster_result$membership, activity_matrix = activity_mat, umap = umap))
+    }
+
+    MAYA_pathway_analysis <- function(expr_mat, modules_list = NULL, min_cells_pct = 0.05, is_logcpm = T, nCores = 1, min_genes = 10, max_contrib = 0.5, compute_umap = T, scale_before_pca = T, all_PCs_in_range = F) {
+        message("Running pathway analysis")
+
+        #### Check parameters ####
+        stopifnot(
+            is.logical(is_logcpm),
+            is.numeric(min_cells_pct), is.numeric(nCores)
+        )
+
+        # load modules list in Panglao if necessary
+        if (is.null(modules_list)) {
+            message("Loading HALLMARK from MSigDB")
+            path <- system.file("extdata", "h.all.v7.4.symbols.gmt", package = "MAYA")
+            modules_list <- read_gmt(path)
+        }
+        if (is.character(modules_list)) {
+            if (modules_list == "hallmark") {
+                message("Loading HALLMARK from MSigDB")
+                path <- system.file("extdata", "h.all.v7.4.symbols.gmt", package = "MAYA")
+                modules_list <- read_gmt(path)
+            } else {
+                if (modules_list == "kegg") {
+                    message("Loading KEGG from MSigDB")
+                    path <- system.file("extdata", "c2.cp.kegg.v7.4.symbols.gmt", package = "MAYA")
+                    modules_list <- read_gmt(path)
+                }
+            }
+        }
+        # at this stage, it can only be a list
+        stopifnot(is.list(modules_list))
+
+        # run MAYA with pathways parameters
+        suppressWarnings(PCA_obj <- run_activity_analysis(
+            expr_mat = expr_mat,
+            modules_list = modules_list,
+            nb_comp_max = 5,
+            min_cells_pct = min_cells_pct,
+            min_module_size = min_genes,
+            max_contrib = max_contrib,
+            norm = !is_logcpm,
+            nCores = nCores,
+            scale_before_pca = scale_before_pca,
+            all_PCs_in_range = all_PCs_in_range
+        ))
+        # analyze pathways
+        if (length(PCA_obj) != 0) {
+            annot <- study_pathways(PCA_obj, compute_umap = compute_umap)
+        } else {
+            annot <- NULL
+        }
+
+        return(c(annot, list(PCA_obj = PCA_obj)))
+    }
+    # 1 check
+    assertthat::assert_that(class(object) == "Seurat")
+    n_cores <- n_cores %||% 4
+    if (is.null(genes_list)) {
+        genes_list <- "hallmark"
+    } else {
+        assertthat::assert_that(class(genes_list) == "list")
+        genes_list <- lapply(genes_list, function(g) {
+            intersect(genes_list[[g]], rownames(object))
+        }) %>% list_clean()
+    }
+    # 2 extract data
+    counts <- FetchData(object,
+        vars = rownames(object),
+        cells = colnames(object),
+        layer = "counts"
+    ) %>% t()
+    # 3 run
+    activity_summary <- MAYA_pathway_analysis(
+        expr_mat = counts,
+        modules_list = genes_list,
+        is_logcpm = F,
+        nCores = n_cores,
+        compute_umap = F
+    )
+    score <- scale_0_1(activity_summary$activity_matrix) %>%
+        t() %>%
+        as.data.frame()
+    colnames(score) <- paste0(colnames(score), "_maya")
+    object@meta.data <- cbind(object@meta.data, score)
+    return(object)
 }
 
 # JASMINE
