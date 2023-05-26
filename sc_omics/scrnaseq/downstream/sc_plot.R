@@ -141,6 +141,7 @@ plot_processed <- function(
 
 
 # Plot marker genes
+# Suggested plot size: width = 35, height = 20
 plot_markers <- function(
     object,
     markers,
@@ -186,10 +187,10 @@ plot_markers <- function(
                 features = features,
                 group.by = ident_group,
                 flip_axes = TRUE,
+                dot.scale = 20,
                 colors_use = colors_use, ,
                 ...
-            ) +
-                theme(axis.text.x = element_text(angle = 90))
+            ) + theme(axis.text.x = element_text(size = 32, angle = 90),axis.text.y = element_text(size = 32))
         } else {
             Clustered_DotPlot(object,
                 features = features,
@@ -220,8 +221,8 @@ plot_markers <- function(
             features = features,
             colors_use = colors_use,
             raster = feature_raster,
-            ncol = feature_ncol, ...
-        ) & NoAxes()
+            num_columns = feature_ncol, ...
+        ) & NoAxes() & theme(plot.title = element_text(size = 40))
     }
     draw_feature_plot_v5 <- function(object, features, colors_use = feature_col, raster = feature_raster, feature_ncol, ...) {
         FeaturePlot(object,
@@ -237,7 +238,7 @@ plot_markers <- function(
         library(patchwork)
         plot + plot_annotation(paste0(cell_p),
             theme = theme(
-                plot.title = element_text(size = 18, face = "bold")
+                plot.title = element_text(size = 50, face = "bold")
             )
         )
     }
@@ -261,7 +262,7 @@ plot_markers <- function(
         group.by = ident_group,
         label = T,
         label.size = 7
-    ) & NoAxes() & NoLegend()
+    ) & NoAxes() & NoLegend() & theme(plot.title = element_text(size = 40))
     if (dot_plot == T) {
         lapply_par(seq_along(dot_markers), function(m) {
             p_dot <- draw_dot_plot(
@@ -283,20 +284,28 @@ plot_markers <- function(
                 features = feature_markers[[m]],
                 colors_use = feature_col,
                 feature_ncol = feature_ncol
-            ) %>%
-                spacer_plot(plot = ., n = length(feature_markers[[m]]), max = dot_max) #+
-            p_feature <- p_dim | p_feature
-            p_feature %>%
+            ) #%>%
+                #spacer_plot(plot = ., n = length(feature_markers[[m]]), max = dot_max) #+
+            n = length(feature_markers[[m]])
+            if (n > 6){
+                design <- c(area(1,1,5,5), area(1,6,6,11))
+            } else if(n < 7 && n>3) {
+                design <- c(area(1,1,5,5),area(1,6,4,11),area(6,1,6,5),area(5,6,6,11))
+            } else {
+                design <- c(area(1,6,6,11),area(1,1,2,5),area(6,1,6,5),area(3,6,6,11))
+            }
+            p_combine <- p_dim  + p_feature +
+                plot_layout(
+                    design = design
+                )
+            #p_feature <- p_dim | p_feature
+            p_combine %>%
                 Annotation_plot(., cell_p = names(feature_markers)[m])
-            # plot_layout(
-            #    ncol = feature_ncol
-            # )
             # print(p_feature)
         }, parallel = parallel.bool) %>% lapply(., print)
     }
     message("plot the dot_plot of markers")
 }
-
 
 # plot_function <- function(markers, annotation) {
 #    draw_dot_plot <- function() {
