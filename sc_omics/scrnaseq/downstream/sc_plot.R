@@ -291,7 +291,7 @@ plot_markers <- function(
             if (n > 6){
                 design <- c(area(1,6,6,11),area(1,1,5,5))
             } else if(n < 7 && n>3) {
-                design <- c(area(1,6,4,11),area(1,1,5,5),area(6,1,6,5),area(5,6,6,11))
+                design <- c(area(1,6,6,11),area(1,1,5,5),area(6,1,6,5),area(5,6,6,11))
             } else {
                 design <- c(area(1,6,6,11),area(1,1,2,5),area(6,1,6,5),area(3,6,6,11))
             }
