@@ -1,20 +1,28 @@
-sc_pseudotime <- function(...) {
+sc_trace <- function(...) {
     next
 }
 
-sc_pseudotime_monocle2 <- function(...) {
+# PHATE
+sc_trace_phate <- function(...) {
     next
 }
 
-sc_pseudotime_slingshot <- function(...) {
+# monocle2
+sc_trace_monocle2 <- function(...) {
     next
 }
 
-sc_pseudotime_paga <- function(...) {
+# slingshot
+sc_trace_slingshot <- function(...) {
     next
 }
 
+# paga
+sc_trace_paga <- function(...) {
+    next
+}
 
-sc_pseudotime_diffussion_map <- function(...) {
+# difussion_map
+sc_trace_dmap <- function(...) {
     next
 }
