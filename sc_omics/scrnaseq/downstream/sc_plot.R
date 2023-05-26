@@ -261,7 +261,8 @@ plot_markers <- function(
     p_dim <- DimPlot(object,
         group.by = ident_group,
         label = T,
-        label.size = 7
+        label.size = 10,
+        pt.size = 2
     ) & NoAxes() & NoLegend() & theme(plot.title = element_text(size = 40))
     if (dot_plot == T) {
         lapply_par(seq_along(dot_markers), function(m) {
@@ -288,9 +289,9 @@ plot_markers <- function(
                 #spacer_plot(plot = ., n = length(feature_markers[[m]]), max = dot_max) #+
             n = length(feature_markers[[m]])
             if (n > 6){
-                design <- c(area(1,1,5,5), area(1,6,6,11))
+                design <- c(area(1,6,6,11),area(1,1,5,5))
             } else if(n < 7 && n>3) {
-                design <- c(area(1,1,5,5),area(1,6,4,11),area(6,1,6,5),area(5,6,6,11))
+                design <- c(area(1,6,4,11),area(1,1,5,5),area(6,1,6,5),area(5,6,6,11))
             } else {
                 design <- c(area(1,6,6,11),area(1,1,2,5),area(6,1,6,5),area(3,6,6,11))
             }
