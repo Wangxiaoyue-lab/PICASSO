@@ -15,16 +15,16 @@ check_files_input <- function(path, pattern = NULL) {
     return(bool_)
 }
 
-check_species <- function(object) {
+check_species <- function(object, abbr = F) {
     assertthat::assert_that(class(object) == "Seurat")
     check_gene <- row.names(object)
     human_bool <- any(grepl(check_gene, pattern = "^(ACTB|GAPDH)$"))
     mouse_bool <- any(grepl(check_gene, pattern = "^(Actb|Gapdh)$"))
     if (human_bool == T & mouse_bool == F) {
-        species <- "human"
+        species <- ifelse(abbr, "hs", "human")
     }
     if (human_bool == F & mouse_bool == T) {
-        species <- "mouse"
+        species <- ifelse(abbr, "mm", "mouse")
     }
     if (human_bool == T & mouse_bool == T) {
         species <- c("human_mouse_mixed")
@@ -32,6 +32,7 @@ check_species <- function(object) {
     if (human_bool == F & mouse_bool == F) {
         species <- "unknown"
     }
+
     return(species)
 }
 
@@ -111,12 +112,13 @@ check_markers <- function(genes, object) {
 #' check_pre(pbmc_small)
 check_pre <- function(
     object,
-    species,
+    species = NULL,
     cell_cycle_source = NULL,
     npcs = 20,
     # check_doublet = TRUE,
     verbose = F) {
-    assertthat::assert_that(species %in% c("hs", "mm"))
+    # assertthat::assert_that(species %in% c("hs", "mm"))
+    species <- species %||% check_species(object, abbr = T)
     cell_cycle_source <- cell_cycle_source %||% "seurat"
     assertthat::assert_that(cell_cycle_source %in% c("seurat", "local"))
     hb_pattern <- switch(species,

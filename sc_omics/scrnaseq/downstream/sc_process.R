@@ -41,8 +41,13 @@ process_read <- function(filename,
             CreateSeuratObject(project = project, min.cells = min.cells, ...)
     }
     read_table <- function(filename) {
+        library(data.table)
         library(Matrix)
-        as.matrix(filename) %>%
+        fread(filename) %>%
+            as.data.frame() %>%
+            set_rownames(.$V1) %>%
+            select(-1) %>%
+            as.matrix() %>%
             as(., "dgCMatrix") %>%
             CreateSeuratObject(project = project, min.cells = min.cells, ...)
     }
