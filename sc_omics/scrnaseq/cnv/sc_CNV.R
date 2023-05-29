@@ -43,7 +43,8 @@ sc_cnv_infercnv <- function(object,
                             type,
                             denoise = T,
                             HMM = T,
-                            ncores = NULL) {
+                            ncores = NULL,
+                            generate = F) {
     # 0 check the settings
     library(infercnv)
     library(ggplot2)
@@ -74,47 +75,49 @@ sc_cnv_infercnv <- function(object,
         dir.create(paste0(task_path, "/output", "/store", "/", prefix, "_", type))
     }
 
+    if (generate == F) {
+        gene2cnv <- rownames(object) %>%
+            AnnoProbe::annoGene(., "SYMBOL", species) %>%
+            arrange(chr, start) %>%
+            select(SYMBOL, chr, start, end) %>%
+            distinct(SYMBOL, .keep_all = T)
+        write.table(gene2cnv,
+            file = paste0(task_path, "/output", "/store", "/", prefix, "_gene_file.txt"),
+            sep = "\t",
+            quote = F,
+            row.names = F,
+            col.names = F
+        )
+        exp2cnv <- FetchData(object,
+            vars = gene2cnv$SYMBOL,
+            cells = colnames(object),
+            layer = "count"
+        ) %>% t()
+        write.table(exp2cnv,
+            file = paste0(task_path, "/output", "/store", "/", prefix, "_exp_file.txt"),
+            sep = "\t",
+        )
+        anno2cnv <- object@meta.data %>%
+            mutate(cellnames2cnv = rownames(.)) %>%
+            select(cellnames2cnv, !!sym(celltype_col))
+        write.table(anno2cnv,
+            file = paste0(task_path, "/output", "/store", "/", prefix, "_anno_file.txt"),
+            sep = "\t",
+            quote = F,
+            row.names = F,
+            col.names = F
+        )
+        rm(list = c("exp2cnv", "gene2cnv", "anno2cnv"))
+    }
 
-    gene2cnv <- rownames(object) %>%
-        AnnoProbe::annoGene(., "SYMBOL", species) %>%
-        arrange(chr, start) %>%
-        select(SYMBOL, chr, start, end) %>%
-        distinct(SYMBOL, .keep_all = T)
-    write.table(gene2cnv,
-        file = paste0(task_path, "/output","/store",  "/", prefix, "_gene_file.txt"),
-        sep = "\t",
-        quote = F,
-        row.names = F,
-        col.names = F
-    )
-    exp2cnv <- FetchData(object,
-        vars = gene2cnv$SYMBOL,
-        cells = colnames(object),
-        layer = "count"
-    ) %>% t
-    write.table(exp2cnv,
-        file = paste0(task_path, "/output","/store",  "/", prefix, "_exp_file.txt"),
-        sep = "\t",
-    )
-    anno2cnv <- object@meta.data %>%
-        mutate(cellnames2cnv = rownames(.)) %>%
-        select(cellnames2cnv, !!sym(celltype_col))
-    write.table(anno2cnv,
-        file = paste0(task_path, "/output", "/store", "/", prefix, "_anno_file.txt"),
-        sep = "\t",
-        quote = F,
-        row.names = F,
-        col.names = F
-    )
-    rm(list = c("exp2cnv", "gene2cnv", "anno2cnv"))
     message("Succeed to prepare the input")
     # 2 run the program
     future::plan("multisession", workers = ncores)
     infercnv_obj <- CreateInfercnvObject(
-        raw_counts_matrix = paste0(task_path, "/output","/store", "/", prefix, "_exp_file.txt"), # raw counts matrix
-        annotations_file = paste0(task_path, "/output", "/store","/", prefix, "_anno_file.txt"), # an annotations file which indicates which cells are tumor vs. normal.
+        raw_counts_matrix = paste0(task_path, "/output", "/store", "/", prefix, "_exp_file.txt"), # raw counts matrix
+        annotations_file = paste0(task_path, "/output", "/store", "/", prefix, "_anno_file.txt"), # an annotations file which indicates which cells are tumor vs. normal.
         delim = "\t",
-        gene_order_file = paste0(task_path, "/output", "/store","/", prefix, "_gene_file.txt"), # gene/chromosome positions file
+        gene_order_file = paste0(task_path, "/output", "/store", "/", prefix, "_gene_file.txt"), # gene/chromosome positions file
         ref_group_names = normal_cell # reference cell name
     )
     message("Succeed to Create Infercnv Object")
@@ -144,7 +147,7 @@ sc_cnv_infercnv <- function(object,
     saveRDS(infercnv_obj, file = paste0(task_path, "/output", "/store", "/", prefix, "_infercnv_obj.RDS"))
     message("Succeed to run Infercnv")
     infercnv::plot_cnv(infercnv_obj,
-        out_dir = paste0(task_path, "/output", "/picture"),
+        out_dir = paste0(task_path, "/output", "/picture", "/", prefix, "_", type),
         output_filename = paste0(prefix, "_infercnv.plot"),
         plot_chr_scale = F, # 是否画染色体全长
         output_format = "pdf",
@@ -208,15 +211,15 @@ sc_cnv_copykat <- function(object,
         vars = gene2cnv$SYMBOL,
         cells = colnames(object),
         layer = "count"
-        ) %>% t
+    ) %>% t()
     write.table(exp2cnv,
         file = paste0(task_path, "/output", "/store", "/", prefix, "_exp_file.txt"),
         sep = "\t",
         quote = F,
         row.names = T,
         col.names = T
-        )
-    #exp2cnv <- read.table(file = paste0(task_path, "/output", "/store","/", prefix, "_exp_file.txt"), sep = "\t", row.names = T, col.names = T)
+    )
+    # exp2cnv <- read.table(file = paste0(task_path, "/output", "/store","/", prefix, "_exp_file.txt"), sep = "\t", row.names = T, col.names = T)
     anno2cnv <- object@meta.data %>%
         mutate(cellnames2cnv = rownames(.)) %>%
         dplyr::select(cellnames2cnv, !!sym(celltype_col))
@@ -333,13 +336,33 @@ sc_cnv_copykat <- function(object,
 
 
 
-sc_cnv_score <- function() {
+sc_cnv_score <- function(expr, methods) {
     # https://zhuanlan.zhihu.com/p/433234064
     # https://www.jianshu.com/p/1fa1fd4f97ff
+    expr %<>% as.matrix()
+    if (methods == 1) {
+        expr.scale <- scale(t(expr))
+        tmp1 <- sweep(expr.scale, 2, apply(expr.scale, 2, min), "-")
+        tmp2 <- apply(expr.scale, 2, max) - apply(expr.scale, 2, min)
+        expr_1 <- t(2 * sweep(tmp1, 2, tmp2, "/") - 1)
+        cnv_score <- as.data.frame(colSums(expr_1 * expr_1))
+        colnames(cnv_score) <- "cnv_score"
+        cnv_score <- rownames_to_column(cnv_score, var = "cell")
+        return(cnv_score)
+    } else if (methods == 2) {
+        expr[expr > 0 & expr < 0.3] <- 2 # complete loss. 2pts
+        expr[expr >= 0.3 & expr < 0.7] <- 1 # loss of one copy. 1pts
+        expr[expr >= 0.7 & expr < 1.3] <- 0 # Neutral. 0pts
+        expr[expr >= 1.3 & expr <= 1.5] <- 1 # addition of one copy. 1pts
+        expr[expr > 1.5 & expr <= 2] <- 2 # addition of two copies. 2pts
+        expr[expr > 2] <- 2 # addition of more than two copies. 2pts
+        cnv_score <- as.data.frame(colSums(expr))
+        colnames(cnv_score) <- "cnv_score"
+        cnv_score$cell <- rownames(cnv_score)
+        cnv_score <- cnv_score[, c("cell", "cnv_score")]
+        return(cnv_score)
+    }
 }
-
-
-
 
 
 

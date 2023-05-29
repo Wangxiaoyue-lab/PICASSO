@@ -286,8 +286,40 @@ process_annotation <- function(object,
     }
 }
 
-process_anno_merge <- function(object, sub_object, sub_id, new_col_id = NULL) {
-    next
+#' Merge metadata tables of two Seurat objects
+#'
+#' This function merges two metadata tables from two Seurat objects based on a
+#' common column named 'cellnames_'. A new column is created that contains the
+#' values from the 'ref' column if they exist, and the 'back' column otherwise.
+#'
+#' @param object A Seurat object
+#' @param ref_object A Seurat object to merge with 'object'
+#' @param ref_id The column name to match in 'ref_object' metadata table
+#' @param back_id The name of the new column to create in 'object'
+#' @return Updated 'object' with merged metadata tables
+#' @examples
+#' \dontrun{
+#' process_anno_merge(object, ref_object, "ref_id", "back_id")
+#' }
+process_anno_merge <- function(object, ref_object, ref_id, back_id = NULL) {
+    # 0 check
+    assertthat::assert_that(class(object) == "Seurat")
+    assertthat::assert_that(class(ref_object) == "Seurat")
+    assertthat::assert_that(ref_id %in% colnames(ref_object@meta.data))
+    if(!back_id %in% colnames(object@meta.data)) {
+        warning(paste0(back_id," will be created in the meta.data"))
+    }
+    # 1 merge
+    meta_back <- object@meta.data %>% 
+        dplyr::mutate(cellnames_ = row.names(.), back = NA) %>%
+            dplyr::select(cellnames_, back)
+    meta_ref <- ref_object@meta.data %>%
+        dplyr::mutate(cellnames_ = row.names(.),ref=!!sym(ref_id)) %>%
+        dplyr::select(cellnames_, ref)
+    merged.meta <- left_join(meta_back, meta_ref, by = "cellnames_")
+    object@meta.data %<>% 
+        mutate(!!back_id := ifelse(!is.na(merged.meta$ref), merged.meta$ref, merged.meta$back))
+    return(object)
 }
 
 # process_integration
