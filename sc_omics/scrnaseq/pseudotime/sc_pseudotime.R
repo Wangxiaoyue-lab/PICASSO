@@ -4,7 +4,7 @@ sc_trace <- function(...) {
 
 # PHATE
 sc_trace_phate <- function(...) {
-    next
+    library(phateR)
 }
 
 # monocle2
