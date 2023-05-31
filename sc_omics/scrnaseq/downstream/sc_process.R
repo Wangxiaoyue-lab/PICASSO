@@ -90,9 +90,9 @@ process_to_v5 <- function(object, store_path) {
     library(Matrix)
     bool_exist <- dir.exists(store_path)
     bool_store <- length(list.files(store_path)) > 0
-    if (bool_exist & bool_store){
+    if (bool_exist & bool_store) {
         print(paste0("The seurat v5 data has been stored in ", store_path))
-    }else{
+    } else {
         write_matrix_dir(
             mat = FetchData(object,
                 vars = rownames(object),
@@ -111,7 +111,7 @@ process_to_v5 <- function(object, store_path) {
     return(object)
 }
 
-#process_full_merge_v5 <- function(seurat_list, store_path) {
+# process_full_merge_v5 <- function(seurat_list, store_path) {
 #    options(Seurat.object.assay.version = "v5")
 #    library(Matrix)
 #    bool_exist <- dir.exists(store_path)
@@ -143,11 +143,11 @@ process_to_v5 <- function(object, store_path) {
 #    object <- CreateSeuratObject(counts = counts.mat)
 #    object <- AddMetaData(object, meta.data)
 #    return(object)
-#}
+# }
 
 
-process_store_dir_v5 <- function(object, store_path){
-    assertthat::assert_that(class(object)=="Seurat")
+process_store_dir_v5 <- function(object, store_path) {
+    assertthat::assert_that(class(object) == "Seurat")
     assertthat::assert_that(dir.exists(store_path))
     object@assays$RNA@layers$counts@matrix@dir <- store_path
     object@assays$RNA@layers$data@matrix@matrix@matrix@dir <- store_path
@@ -355,18 +355,18 @@ process_anno_merge <- function(object, ref_object, ref_id, back_id = NULL) {
     assertthat::assert_that(class(object) == "Seurat")
     assertthat::assert_that(class(ref_object) == "Seurat")
     assertthat::assert_that(ref_id %in% colnames(ref_object@meta.data))
-    if(!back_id %in% colnames(object@meta.data)) {
-        warning(paste0(back_id," will be created in the meta.data"))
+    if (!back_id %in% colnames(object@meta.data)) {
+        warning(paste0(back_id, " will be created in the meta.data"))
     }
     # 1 merge
-    meta_back <- object@meta.data %>% 
+    meta_back <- object@meta.data %>%
         dplyr::mutate(cellnames_ = row.names(.), back = NA) %>%
-            dplyr::select(cellnames_, back)
+        dplyr::select(cellnames_, back)
     meta_ref <- ref_object@meta.data %>%
-        dplyr::mutate(cellnames_ = row.names(.),ref=!!sym(ref_id)) %>%
+        dplyr::mutate(cellnames_ = row.names(.), ref = !!sym(ref_id)) %>%
         dplyr::select(cellnames_, ref)
     merged.meta <- left_join(meta_back, meta_ref, by = "cellnames_")
-    object@meta.data %<>% 
+    object@meta.data %<>%
         mutate(!!back_id := ifelse(!is.na(merged.meta$ref), merged.meta$ref, merged.meta$back))
     return(object)
 }
@@ -443,7 +443,6 @@ process_find_markers <- function(object,
 }
 
 
-
 FindMarkers_replace <- function(object,
                                 ident.1,
                                 ident.2,
@@ -461,7 +460,12 @@ FindMarkers_replace <- function(object,
         cells.1 <- sample(names(cells[cells == ident.1]), max.cells.per.ident)
         cells.2 <- sample(names(cells[cells == ident.2]), max.cells.per.ident)
     }
-    data <- FetchData(object = object, vars = rownames(object), cells = c(cells.1, cells.2)) %>%
+    data <- FetchData(
+        object = object,
+        vars = rownames(object),
+        cells = c(cells.1, cells.2),
+        layer = "data"
+    ) %>%
         t() %>%
         as.data.frame()
 
@@ -479,6 +483,7 @@ FindMarkers_replace <- function(object,
         object = data, slot = slot, cells.1 = cells.1, cells.2 = cells.2, features = features,
         fc.results = fc.results
     )
+    return(de.results)
     # de.results %<>% filter(p_val_adj < 0.05) %>% arrange(desc(avg_log2FC))
 }
 
