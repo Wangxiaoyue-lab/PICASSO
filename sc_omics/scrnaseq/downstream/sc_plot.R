@@ -123,6 +123,9 @@ plot_processed <- function(
     feats = c("nFeature_RNA", "nCount_RNA", "percent_mito", "percent_hb"),
     colors = pal,
     resolutions = c(0.1, 0.2, 0.3, 0.5)) {
+    assertthat::assert_that(class(object)=="Seurat")
+    assertthat::assert_that(all(dim_group %in% colnames(object@meta.data)))
+    assertthat::assert_that(all(feats %in% colnames(object@meta.data)))
     assay_use <<- ifelse(exists("assay_use"), assay_use %||%
         DefaultAssay(object), DefaultAssay(object))
     lapply(dim_group, function(x) {

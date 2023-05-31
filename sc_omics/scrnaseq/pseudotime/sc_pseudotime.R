@@ -2,11 +2,6 @@ sc_trace <- function(...) {
     next
 }
 
-# PHATE
-sc_trace_phate <- function(...) {
-    library(phateR)
-}
-
 # monocle2
 sc_trace_monocle2 <- function(...) {
     next

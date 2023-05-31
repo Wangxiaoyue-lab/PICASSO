@@ -361,6 +361,19 @@ sc_cnv_score <- function(expr, methods) {
         cnv_score$cell <- rownames(cnv_score)
         cnv_score <- cnv_score[, c("cell", "cnv_score")]
         return(cnv_score)
+    } else if (methods == 3) {
+        # https://www.sciencedirect.com/science/article/pii/S0092867421013325#sec7
+        cnv_score <- expr %>%
+            as.data.frame() %>%
+            apply(., 2, function(x) {
+                mean_x <- mean(x)
+                mean((x - mean_x)^2)
+            }) %>%
+            as.data.frame()
+        colnames(cnv_score) <- "cnv_score"
+        cnv_score$cell <- rownames(cnv_score)
+        cnv_score <- cnv_score[, c("cell", "cnv_score")]
+        return(cnv_score)
     }
 }
 

@@ -111,6 +111,50 @@ process_to_v5 <- function(object, store_path) {
     return(object)
 }
 
+#process_full_merge_v5 <- function(seurat_list, store_path) {
+#    options(Seurat.object.assay.version = "v5")
+#    library(Matrix)
+#    bool_exist <- dir.exists(store_path)
+#    bool_store <- length(list.files(store_path)) > 0
+#    if (bool_exist & bool_store) {
+#        print(paste0("The seurat v5 data has been stored in ", store_path))
+#    } else {
+#        lapply(seq_along(seurat_list),function(obj){
+#            FetchData(seurat_list[[obj]],
+#                vars = seurat_list[[obj]],
+#                cells = seurat_list[[obj]],
+#                layer = "count"
+#            )
+#        })
+#
+#        write_matrix_dir(
+#            mat = FetchData(object,
+#                vars = rownames(object),
+#                cells = colnames(object),
+#                layer = "count"
+#            ) %>%
+#                t() %>%
+#                as(., "sparseMatrix"),
+#            dir = store_path
+#        )
+#    }
+#    meta.data <- object@meta.data
+#    counts.mat <- open_matrix_dir(dir = store_path)
+#    object <- CreateSeuratObject(counts = counts.mat)
+#    object <- AddMetaData(object, meta.data)
+#    return(object)
+#}
+
+
+process_store_dir_v5 <- function(object, store_path){
+    assertthat::assert_that(class(object)=="Seurat")
+    assertthat::assert_that(dir.exists(store_path))
+    object@assays$RNA@layers$counts@matrix@dir <- store_path
+    object@assays$RNA@layers$data@matrix@matrix@matrix@dir <- store_path
+    object@assays$RNA@layers$scale.data@matrix@matrix@matrix@matrix@matrix@dir <- store_path
+    return(object)
+}
+
 
 #' Process Seurat object to 3 files
 #'
