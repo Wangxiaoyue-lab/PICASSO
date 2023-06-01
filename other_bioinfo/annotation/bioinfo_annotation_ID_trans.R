@@ -21,7 +21,7 @@ library(tidyverse)
 ah <- AnnotationHub(localHub = FALSE)
 
 ## choice2:local
-symbol <- mapIds(org.Mm.eg.db,
+symbol <- AnnotationHub::mapIds(org.Mm.eg.db,
     keys = ensmel,
     column = "SYMBOL",
     keytype = "ENSEMBL", #' ENTREZID'

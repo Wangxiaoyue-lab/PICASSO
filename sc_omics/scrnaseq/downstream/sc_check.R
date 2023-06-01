@@ -287,3 +287,17 @@ check_outlier.default <- function(object, col_name = NULL, n_mad = 5) {
     cat(paste("Upper bound:", upper_bound, "\n"))
     return(list("max" = upper_bound, "min" = lower_bound))
 }
+
+
+check_pca <- function(object) {
+    assertthat::assert_that(class(object) == "Seurat")
+    # loading <- object@reductions$pca@feature.loadings
+    embedding <- object@reductions$pca@cell.embeddings %>% t()
+    sdev <- sqrt(rowSums(embedding^2) / (nrow(embedding) - 1))
+    findPC(sdev = sdev, method = "all") %>%
+        .[1, ] %>%
+        table() %>%
+        which.max() %>%
+        names() %>%
+        as.numeric()
+}
