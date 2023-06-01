@@ -104,4 +104,5 @@ GO_plot <- function(df, group = NULL, class = NULL, n = 10) {
             group_by(df[[group]]) %>%
             group_map(~ plot_func(.x))
     }
+    return(invisible(NULL))
 }
