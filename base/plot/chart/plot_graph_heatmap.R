@@ -76,16 +76,16 @@ plot_rearrange <- function(df, group_df, seed = 1) {
 #' @examples
 #' mat <- matrix(rnorm(100), nrow = 10)
 #' ordered_hclust <- hclust_order(mat, method = "raw")
-hclust_order <- function(mat, method, manual=NULL, row_select=NULL) {
+hclust_order <- function(mat, method, manual = NULL, row_select = NULL) {
         library(dendextend)
-        assertthat::assert_that(method %in% c("raw","manual","row_select","col_names","eigenvalue"))
+        assertthat::assert_that(method %in% c("raw", "manual", "row_select", "col_names", "eigenvalue"))
         mat_t <- mat %>%
                 t() %>%
                 as.data.frame()
         hclust_mat <- mat_t %>%
                 dist() %>%
                 hclust()
-        if (method == "raw"){
+        if (method == "raw") {
                 return(hclust_mat)
         } else if (method == "manual") {
                 hclust_manual <- reorder(as.dendrogram(hclust_mat),
@@ -106,8 +106,9 @@ hclust_order <- function(mat, method, manual=NULL, row_select=NULL) {
                         as.hclust()
                 return(hclust_col_names)
         } else if (method == "eigenvalue") {
-                hclust_eigenvalue <- reorder(as.dendrogram(hclust_mat), 
-                                wts = svd(mat)$v[, 1]) %>% 
+                hclust_eigenvalue <- reorder(as.dendrogram(hclust_mat),
+                        wts = svd(mat)$v[, 1]
+                ) %>%
                         as.hclust()
                 return(hclust_eigenvalue)
         }
@@ -219,9 +220,9 @@ plot_heatmap <- function(data,
 #' @export
 #' @examples
 #' plot_add_flag(pheatmap, c("label1", "label2"), 0.5)
-plot_add_flag <- function(pheatmap,  
-                     kept.labels,
-                     repel.degree) {
+plot_add_flag <- function(pheatmap,
+                          kept.labels,
+                          repel.degree) {
         library(ggplot2)
         library(grid)
 
@@ -239,39 +240,39 @@ plot_add_flag <- function(pheatmap,
                         d2 <- strip.npc(dd$arg2)
                         fn <- dd$fname
                         return(lazyeval::lazy_eval(paste(d1, fn, d2)))
-                        full.range <- sapply(seq_along(d), function(i) strip.npc(d[i]))
-                        selected.range <- sapply(seq_along(d[d.select]), function(i) strip.npc(d[d.select][i]))
-                        return(unit(
-                                seq(
-                                        from = max(selected.range) + k * (max(full.range) - max(selected.range)),
-                                        to = min(selected.range) - k * (min(selected.range) - min(full.range)),
-                                        length.out = sum(d.select)
-                                ),
-                                "npc"
-                        ))
                 }
-                new.y.positions <- repelled.y(new.label$y,
-                        d.select = new.label$label != ""
-                )
-                new.flag <- segmentsGrob(
-                        x0 = new.label$x,
-                        x1 = new.label$x + unit(0.15, "npc"),
-                        y0 = new.label$y[new.label$label != ""],
-                        y1 = new.y.positions
-                )
-                new.label$x <- new.label$x + unit(0.2, "npc")
-                new.label$y[new.label$label != ""] <- new.y.positions
-                heatmap <- gtable::gtable_add_grob(
-                        x = heatmap,
-                        grobs = new.flag,
-                        t = 4,
-                        l = 4
-                )
-                heatmap$grobs[[which(heatmap$layout$name == "row_names")]] <- new.label
-                grid.newpage()
-                grid.draw(heatmap)
-                invisible(heatmap)
+                full.range <- sapply(seq_along(d), function(i) strip.npc(d[i]))
+                selected.range <- sapply(seq_along(d[d.select]), function(i) strip.npc(d[d.select][i]))
+                return(unit(
+                        seq(
+                                from = max(selected.range) + k * (max(full.range) - max(selected.range)),
+                                to = min(selected.range) - k * (min(selected.range) - min(full.range)),
+                                length.out = sum(d.select)
+                        ),
+                        "npc"
+                ))
         }
+        new.y.positions <- repelled.y(new.label$y,
+                d.select = new.label$label != ""
+        )
+        new.flag <- segmentsGrob(
+                x0 = new.label$x,
+                x1 = new.label$x + unit(0.15, "npc"),
+                y0 = new.label$y[new.label$label != ""],
+                y1 = new.y.positions
+        )
+        new.label$x <- new.label$x + unit(0.2, "npc")
+        new.label$y[new.label$label != ""] <- new.y.positions
+        heatmap <- gtable::gtable_add_grob(
+                x = heatmap,
+                grobs = new.flag,
+                t = 4,
+                l = 4
+        )
+        heatmap$grobs[[which(heatmap$layout$name == "row_names")]] <- new.label
+        grid.newpage()
+        grid.draw(heatmap)
+        invisible(heatmap)
 }
 
 
