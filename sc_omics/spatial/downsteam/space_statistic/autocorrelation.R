@@ -9,7 +9,7 @@ moran.test(your_data, listw)
 # Geary's C
 geary.test(your_data, listw)
 
-
+        
 
 
 
